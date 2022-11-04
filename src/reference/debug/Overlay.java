@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.debug;
+package com.engineersbox.quanta.debug;
 
 import com.engineersbox.yajge.rendering.Renderer;
 import com.engineersbox.yajge.rendering.view.Camera;

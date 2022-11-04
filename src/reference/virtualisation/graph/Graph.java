@@ -1,8 +1,9 @@
-package com.engineersbox.yajge.scene.element.object.composite.virtualisation.graph;
+package com.engineersbox.quanta.virtualisation.graph;
 
-import com.engineersbox.yajge.scene.element.object.composite.Mesh;
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.primitive.Triangle;
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.primitive.Vertex;
+import com.engineersbox.quanta.Mesh;
+import com.engineersbox.quanta.virtualisation.primitive.Triangle;
+import com.engineersbox.quanta.virtualisation.primitive.Vertex;
+
 import java.util.*;
 
 public class Graph {

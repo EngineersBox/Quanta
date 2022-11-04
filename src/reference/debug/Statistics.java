@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.debug;
+package com.engineersbox.quanta.debug;
 
 import org.lwjgl.system.MemoryUtil;
 

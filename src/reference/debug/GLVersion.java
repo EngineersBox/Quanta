@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.debug;
+package com.engineersbox.quanta.debug;
 
 import java.util.Collection;
 import java.util.HashMap;

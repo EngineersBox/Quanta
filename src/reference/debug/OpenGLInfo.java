@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.debug;
+package com.engineersbox.quanta.debug;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

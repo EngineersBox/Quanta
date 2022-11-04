@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="542644bb-45b9-42fd-90fa-a67ea0679a32" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/debug/GLVersion.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/debug/GLVersion.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/debug/OpenGLInfo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/debug/OpenGLInfo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/debug/Overlay.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/debug/Overlay.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/debug/Statistics.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/debug/Statistics.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/test/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/test/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/ClusterGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/ClusterGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/LODGraph.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/LODGraph.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/LODLevel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/LODLevel.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/QuadricErrorSimplifier.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/QuadricErrorSimplifier.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/Quanta.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/Quanta.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/VertexCluster.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/VertexCluster.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/graph/Graph.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/graph/Graph.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/graph/GraphEdge.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/graph/GraphEdge.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/graph/GraphVertex.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/graph/GraphVertex.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/primitive/Ref.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/primitive/Ref.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/primitive/SymetricMatrix.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/primitive/SymetricMatrix.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/primitive/Triangle.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/primitive/Triangle.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/virtualisation/primitive/Vertex.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/primitive/Vertex.java" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CodeStyleSettingsInfer">
+    <option name="done" value="true" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="pgk29g7f" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="useMavenConfig" value="true" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectCodeStyleSettingsMigration">
+    <option name="version" value="2" />
+  </component>
+  <component name="ProjectId" id="2H4tEYAsCFAzNZvKFWQ6ZDeQt8m" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Project.color": "53043d",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "aspect.path.notification.shown": "true",
+    "last_opened_file_path": "E:/Quanta",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "configurable.group.editor"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="E:\Quanta\src\reference" />
+      <recent name="E:\Quanta" />
+    </key>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="542644bb-45b9-42fd-90fa-a67ea0679a32" name="Changes" comment="" />
+      <created>1667556074425</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1667556074425</updated>
+      <workItem from="1667556075814" duration="1045000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>
