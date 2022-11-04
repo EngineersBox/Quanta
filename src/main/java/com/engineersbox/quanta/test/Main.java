@@ -4,6 +4,7 @@ import com.engineersbox.quanta.core.Engine;
 import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.graph.Render;
+import com.engineersbox.quanta.resources.object.Mesh;
 import com.engineersbox.quanta.scene.Scene;
 
 public class Main implements IAppLogic {
@@ -19,13 +20,14 @@ public class Main implements IAppLogic {
     }
 
     @Override
-    public void cleanup() {
-
-    }
-
-    @Override
     public void init(final Window window, final Scene scene, final Render render) {
-
+        final float[] positions = new float[]{
+                0.0f, 0.5f, 0.0f,
+                -0.5f, -0.5f, 0.0f,
+                0.5f, -0.5f, 0.0f
+        };
+        final Mesh mesh = new Mesh(positions, 3);
+        scene.addMesh("triangle", mesh);
     }
 
     @Override
@@ -35,6 +37,11 @@ public class Main implements IAppLogic {
 
     @Override
     public void update(final Window window, final Scene scene, final long diffTimeMillis) {
+
+    }
+
+    @Override
+    public void cleanup() {
 
     }
 }

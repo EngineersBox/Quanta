@@ -5,17 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="542644bb-45b9-42fd-90fa-a67ea0679a32" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/core/Engine.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/core/IAppLogic.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/core/Window.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/graph/Render.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/scene/Scene.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/shaders/scene/scene.frag" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/assets/shaders/scene/scene.vert" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/resources/object/Mesh.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/resources/shader/ShaderModuleData.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/resources/shader/ShaderProgram.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/utils/FileUtils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/4/4/442292b8a7efeabbe4cc176709b833b1792140ec" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/a/9/a91794ca0971cee678c9e8a646d74bb732fb4b98" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/c/8/c81449baf17708757ee5d6b85957ffa69ebf1e60" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/d/6/d68e24a17731eb9887080132c173743a218a6388" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/f/7/f709c8d736647e7945b7ce1d675c0a4d90eb2cf2" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/sonarlint/issuestore/index.pb" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/sonarlint/issuestore/index.pb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/scene/Scene.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/scene/Scene.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/test/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/engineersbox/quanta/test/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/reference/virtualisation/graph/Graph.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/reference/virtualisation/graph/Graph.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -29,6 +34,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Interface" />
+        <option value="Record" />
         <option value="Class" />
       </list>
     </option>
@@ -57,20 +63,21 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Project.color&quot;: &quot;53043d&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;aspect.path.notification.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;E:/Quanta&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.editor&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Project.color": "53043d",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "aspect.path.notification.shown": "true",
+    "last_opened_file_path": "E:/Quanta",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "configurable.group.editor"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="E:\Quanta\src\reference" />
@@ -103,6 +110,7 @@
       <workItem from="1667556075814" duration="1892000" />
       <workItem from="1667558846545" duration="3541000" />
       <workItem from="1667563980571" duration="155000" />
+      <workItem from="1667573029327" duration="2601000" />
     </task>
     <servers />
   </component>
