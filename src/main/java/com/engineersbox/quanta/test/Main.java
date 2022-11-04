@@ -3,7 +3,7 @@ package com.engineersbox.quanta.test;
 import com.engineersbox.quanta.core.Engine;
 import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
-import com.engineersbox.quanta.graph.Render;
+import com.engineersbox.quanta.graph.Renderer;
 import com.engineersbox.quanta.resources.object.Mesh;
 import com.engineersbox.quanta.scene.Scene;
 
@@ -20,7 +20,7 @@ public class Main implements IAppLogic {
     }
 
     @Override
-    public void init(final Window window, final Scene scene, final Render render) {
+    public void init(final Window window, final Scene scene, final Renderer renderer) {
         final float[] positions = new float[]{
                 0.0f, 0.5f, 0.0f,
                 -0.5f, -0.5f, 0.0f,

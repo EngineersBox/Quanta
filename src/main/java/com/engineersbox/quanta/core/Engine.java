@@ -1,6 +1,6 @@
 package com.engineersbox.quanta.core;
 
-import com.engineersbox.quanta.graph.Render;
+import com.engineersbox.quanta.graph.Renderer;
 import com.engineersbox.quanta.scene.Scene;
 
 public class Engine {
@@ -8,7 +8,7 @@ public class Engine {
     public static final int TARGET_UPS = 30;
     private final IAppLogic appLogic;
     private final Window window;
-    private final Render render;
+    private final Renderer renderer;
     private boolean running;
     private final Scene scene;
     private final int targetFPS;
@@ -24,9 +24,9 @@ public class Engine {
         this.targetFPS = options.fps;
         this.targetUPS = options.ups;
         this.appLogic = appLogic;
-        this.render = new Render();
+        this.renderer = new Renderer();
         this.scene = new Scene();
-        this.appLogic.init(this.window, this.scene, this.render);
+        this.appLogic.init(this.window, this.scene, this.renderer);
         this.running = true;
     }
 
@@ -66,7 +66,7 @@ public class Engine {
             }
 
             if (this.targetFPS <= 0 || deltaFps >= 1) {
-                this.render.render(this.window, this.scene);
+                this.renderer.render(this.window, this.scene);
                 deltaFps--;
                 this.window.update();
             }
@@ -78,7 +78,7 @@ public class Engine {
 
     private void cleanup() {
         this.appLogic.cleanup();
-        this.render.cleanup();
+        this.renderer.cleanup();
         this.scene.cleanup();
         this.window.cleanup();
     }

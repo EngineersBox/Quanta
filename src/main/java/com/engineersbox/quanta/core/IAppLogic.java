@@ -1,6 +1,6 @@
 package com.engineersbox.quanta.core;
 
-import com.engineersbox.quanta.graph.Render;
+import com.engineersbox.quanta.graph.Renderer;
 import com.engineersbox.quanta.scene.Scene;
 
 public interface IAppLogic {
@@ -9,7 +9,7 @@ public interface IAppLogic {
 
     void init(final Window window,
               final Scene scene,
-              final Render render);
+              final Renderer renderer);
 
     void input(final Window window,
                final Scene scene,

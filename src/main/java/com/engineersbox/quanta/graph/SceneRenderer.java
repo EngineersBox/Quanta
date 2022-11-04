@@ -14,11 +14,11 @@ import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
-public class SceneRender {
+public class SceneRenderer {
 
     private final ShaderProgram shader;
 
-    public SceneRender() {
+    public SceneRenderer() {
         final List<ShaderModuleData> modules = List.of(
                 new ShaderModuleData("assets/shaders/scene/scene.vert", GL_VERTEX_SHADER),
                 new ShaderModuleData("assets/shaders/scene/scene.frag", GL_FRAGMENT_SHADER)

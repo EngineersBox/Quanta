@@ -4,22 +4,22 @@ import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.scene.Scene;
 import org.lwjgl.opengl.GL;
 
-public class Render {
+public class Renderer {
 
-    private final SceneRender sceneRender;
+    private final SceneRenderer sceneRenderer;
 
-    public Render() {
+    public Renderer() {
         GL.createCapabilities();
-        this.sceneRender = new SceneRender();
+        this.sceneRenderer = new SceneRenderer();
     }
 
     public void cleanup() {
-        this.sceneRender.cleanup();
+        this.sceneRenderer.cleanup();
     }
 
     public void render(final Window window,
                        final Scene scene) {
-        this.sceneRender.render(window, scene);
+        this.sceneRenderer.render(window, scene);
     }
 
 }
