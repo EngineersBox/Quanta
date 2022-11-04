@@ -47,7 +47,7 @@ public class Graph {
         }
     }
 
-    public Mesh reconstructMesh() {
+    public static Mesh reconstructMesh() {
         final Mesh mesh = new Mesh(
                 new float[0],
                 new float[0],

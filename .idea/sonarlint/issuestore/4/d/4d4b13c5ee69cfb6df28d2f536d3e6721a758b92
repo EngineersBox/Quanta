@@ -1,0 +1,26 @@
+
+f	java:S117 "QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+f	java:S1170"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+f	java:S117C"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+f	java:S117O"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+f	java:S117]"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+g	java:S117†"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+g	java:S117–"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+g	java:S117Ÿ"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+g	java:S117¹"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+g	java:S117Í"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(ÄÆ×Ñ
+l	java:S117Ú"QRename this local variable to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(¡Å–úÿÿÿÿ
+h	java:S101û"MRename this class name to match the regular expression '^[A-Z][a-zA-Z0-9]*$'.(ª…§ãıÿÿÿÿ
+\
+java:S1172"FRemove these unused method parameters "parentPath", "$tsCfgValidator".(²¤É
+\
+java:S1172/"FRemove these unused method parameters "parentPath", "$tsCfgValidator".(²¤É
+h	java:S100K"NRename this method name to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(˜Àñ¹ÿÿÿÿÿ
+]
+java:S1172…"FRemove these unused method parameters "parentPath", "$tsCfgValidator".(²¤É
+]
+java:S1172•"FRemove these unused method parameters "parentPath", "$tsCfgValidator".(²¤É
+]
+java:S1172¸"FRemove these unused method parameters "parentPath", "$tsCfgValidator".(²¤É
+]
+java:S1172Ì"FRemove these unused method parameters "parentPath", "$tsCfgValidator".(²¤É
