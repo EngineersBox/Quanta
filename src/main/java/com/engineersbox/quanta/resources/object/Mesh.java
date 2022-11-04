@@ -41,7 +41,7 @@ public class Mesh {
         }
     }
 
-    public int getVetexCount() {
+    public int getVertexCount() {
         return this.vertexCount;
     }
 

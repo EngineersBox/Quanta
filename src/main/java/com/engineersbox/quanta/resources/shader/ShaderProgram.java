@@ -55,6 +55,10 @@ public class ShaderProgram {
         moduleIds.forEach(GL30::glDeleteShader);
     }
 
+    public void bind() {
+        glUseProgram(this.programId);
+    }
+
     public static void unbind() {
         glUseProgram(0);
     }
@@ -68,4 +72,12 @@ public class ShaderProgram {
             ));
         }
     }
+
+    public void cleanup() {
+        ShaderProgram.unbind();
+        if (this.programId != 0) {
+            glDeleteProgram(this.programId);
+        }
+    }
+
 }

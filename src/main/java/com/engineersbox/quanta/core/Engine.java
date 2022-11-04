@@ -66,7 +66,7 @@ public class Engine {
             }
 
             if (this.targetFPS <= 0 || deltaFps >= 1) {
-                Render.render(this.window, this.scene);
+                this.render.render(this.window, this.scene);
                 deltaFps--;
                 this.window.update();
             }
