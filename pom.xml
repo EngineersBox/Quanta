@@ -18,7 +18,7 @@
         <commons-lang3.version>3.12.0</commons-lang3.version>
         <log4j-core.version>2.19.0</log4j-core.version>
         <lwjgl.version>3.3.1</lwjgl.version>
-        <joml.version>1.10.2</joml.version>
+        <joml.version>1.10.4</joml.version>
         <jaxb-api.version>2.4.0-b180830.0359</jaxb-api.version>
         <jaxb-runtime.version>4.0.0</jaxb-runtime.version>
         <pngdecoder.version>1.0</pngdecoder.version>
@@ -212,6 +212,17 @@
                                     <mainClass>com.engineersbox.quanta.test.Main</mainClass>
                                 </transformer>
                             </transformers>
+                            <!-- Fixes a JNI issue with running in RenderDoc -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>
