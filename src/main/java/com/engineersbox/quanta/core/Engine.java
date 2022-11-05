@@ -1,10 +1,22 @@
 package com.engineersbox.quanta.core;
 
+import com.engineersbox.quanta.debug.OpenGLInfo;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.GL;
+
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
+import static org.lwjgl.opengl.GL30.GL_NUM_EXTENSIONS;
 
 public class Engine {
+
+    private static final Logger LOGGER = LogManager.getLogger(Engine.class);
+
+    private final OpenGLInfo info;
 
     private final IAppLogic appLogic;
     private final Window window;
@@ -20,6 +32,9 @@ public class Engine {
             resize();
             return null;
         });
+        GL.createCapabilities();
+        this.info = Engine.saturateOpenGLInfo();
+        Engine.LOGGER.info("[OPENGL] Created context");
         this.targetFPS = ConfigHandler.CONFIG.video.fps;
         this.targetUPS = ConfigHandler.CONFIG.video.ups;
         this.appLogic = appLogic;
@@ -30,6 +45,18 @@ public class Engine {
         );
         this.appLogic.init(this.window, this.scene, this.renderer);
         this.running = true;
+    }
+
+    private static OpenGLInfo saturateOpenGLInfo() {
+        final int[] supportedExtensionsCount = new int[1];
+        glGetIntegerv(GL_NUM_EXTENSIONS, supportedExtensionsCount);
+        return new OpenGLInfo(
+                glGetString(GL_VERSION),
+                glGetString(GL_SHADING_LANGUAGE_VERSION),
+                glGetString(GL_VENDOR),
+                glGetString(GL_RENDERER),
+                supportedExtensionsCount[0]
+        );
     }
 
     public void start() {

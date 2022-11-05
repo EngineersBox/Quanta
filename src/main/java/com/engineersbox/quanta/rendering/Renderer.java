@@ -2,7 +2,6 @@ package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.scene.Scene;
-import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.opengl.GL11.*;
 
@@ -11,7 +10,6 @@ public class Renderer {
     private final SceneRenderer sceneRenderer;
 
     public Renderer() {
-        GL.createCapabilities();
         this.sceneRenderer = new SceneRenderer();
     }
 
