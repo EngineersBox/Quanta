@@ -1,11 +1,11 @@
 package com.engineersbox.quanta.core;
 
 import com.engineersbox.quanta.rendering.Renderer;
+import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
 
 public class Engine {
 
-    public static final int TARGET_UPS = 30;
     private final IAppLogic appLogic;
     private final Window window;
     private final Renderer renderer;
@@ -15,14 +15,13 @@ public class Engine {
     private final int targetUPS;
 
     public Engine(final String title,
-                  final Window.Options options,
                   final IAppLogic appLogic) {
-        this.window = new Window(title, options, () -> {
+        this.window = new Window(title, () -> {
             resize();
             return null;
         });
-        this.targetFPS = options.fps;
-        this.targetUPS = options.ups;
+        this.targetFPS = ConfigHandler.CONFIG.video.fps;
+        this.targetUPS = ConfigHandler.CONFIG.video.ups;
         this.appLogic = appLogic;
         this.renderer = new Renderer();
         this.scene = new Scene(

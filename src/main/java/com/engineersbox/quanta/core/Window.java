@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.core;
 
+import com.engineersbox.quanta.resources.config.ConfigHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -18,21 +19,12 @@ public class Window {
 
     private static final Logger LOGGER = LogManager.getLogger(Window.class);
 
-    public static class Options {
-        public boolean compatibleProfile;
-        public int fps;
-        public int ups = Engine.TARGET_UPS;
-        public int width;
-        public int height;
-    }
-
     private final long windowHandle;
     private int height;
     private int width;
     private final Callable<Void> resizeHandler;
 
     public Window(final String title,
-                  final Options options,
                   final Callable<Void> resizeHandler) {
         this.resizeHandler = resizeHandler;
         if (!glfwInit()) {
@@ -44,16 +36,16 @@ public class Window {
 
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-        if (options.compatibleProfile) {
+        if (ConfigHandler.CONFIG.engine.glOptions.compatProfile) {
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
         } else {
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         }
 
-        if (options.width > 0 && options.height > 0) {
-            this.width = options.width;
-            this.height = options.height;
+        if (ConfigHandler.CONFIG.video.width > 0 && ConfigHandler.CONFIG.video.height > 0) {
+            this.width = ConfigHandler.CONFIG.video.width;
+            this.height = ConfigHandler.CONFIG.video.height;
         } else {
             glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
             final GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -87,7 +79,7 @@ public class Window {
         });
 
         glfwMakeContextCurrent(this.windowHandle);
-        glfwSwapInterval(options.fps > 0 ? 0 : 1);
+        glfwSwapInterval(ConfigHandler.CONFIG.video.fps > 0 ? 0 : 1);
         glfwShowWindow(this.windowHandle);
 
         final int[] fbWidth = new int[1];

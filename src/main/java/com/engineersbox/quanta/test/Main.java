@@ -13,7 +13,6 @@ public class Main implements IAppLogic {
         final Main main = new Main();
         final Engine engine = new Engine(
                 "Quanta",
-                new Window.Options(),
                 main
         );
         engine.start();
@@ -22,10 +21,10 @@ public class Main implements IAppLogic {
     @Override
     public void init(final Window window, final Scene scene, final Renderer renderer) {
         final float[] positions = new float[]{
-                -0.5f, 0.5f, 0.0f,
-                -0.5f, -0.5f, 0.0f,
-                0.5f, -0.5f, 0.0f,
-                0.5f, 0.5f, 0.0f,
+                -0.5f, 0.5f, -1.0f,
+                -0.5f, -0.5f, -1.0f,
+                0.5f, -0.5f, -1.0f,
+                0.5f, 0.5f, -1.0f,
         };
         final float[] colors = new float[]{
                 0.5f, 0.0f, 0.0f,
