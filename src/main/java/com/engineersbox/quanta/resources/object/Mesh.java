@@ -4,6 +4,7 @@ import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,14 +21,16 @@ public class Mesh {
     private final List<Integer> vboIds;
 
     public Mesh(final float[] positions,
-                final int vertexCount) {
+                final float[] colours,
+                final int[] indices) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            this.vertexCount = vertexCount;
+            this.vertexCount = indices.length;
             this.vboIds = new ArrayList<>();
             this.vaoId = glGenVertexArrays();
             glBindVertexArray(this.vaoId);
 
-            final int vboId = glGenBuffers();
+            // Positions
+            int vboId = glGenBuffers();
             this.vboIds.add(vboId);
             final FloatBuffer positionsBuffer = stack.callocFloat(positions.length);
             positionsBuffer.put(0, positions);
@@ -35,6 +38,24 @@ public class Mesh {
             glBufferData(GL_ARRAY_BUFFER, positionsBuffer, GL_STATIC_DRAW);
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
+
+            // Colour
+            vboId = glGenBuffers();
+            this.vboIds.add(vboId);
+            final FloatBuffer coloursBuffer = stack.callocFloat(colours.length);
+            coloursBuffer.put(0, colours);
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, coloursBuffer, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(1);
+            glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+
+            // Indices
+            vboId = glGenBuffers();
+            this.vboIds.add(vboId);
+            final IntBuffer indicesBuffer = stack.callocInt(indices.length);
+            indicesBuffer.put(0, indices);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW);
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);

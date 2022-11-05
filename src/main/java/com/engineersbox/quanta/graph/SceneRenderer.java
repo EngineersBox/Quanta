@@ -8,8 +8,7 @@ import com.engineersbox.quanta.scene.Scene;
 
 import java.util.List;
 
-import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
-import static org.lwjgl.opengl.GL11.glDrawArrays;
+import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
@@ -31,7 +30,7 @@ public class SceneRenderer {
         this.shader.bind();
         scene.getMeshMap().values().forEach((final Mesh mesh) -> {
             glBindVertexArray(mesh.getVaoId());
-            glDrawArrays(GL_TRIANGLES, 0, mesh.getVertexCount());
+            glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
         });
         glBindVertexArray(0);
         ShaderProgram.unbind();

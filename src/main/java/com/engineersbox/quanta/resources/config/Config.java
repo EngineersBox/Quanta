@@ -6,11 +6,6 @@ public class Config {
   public final Config.Sound sound;
   public final Config.Video video;
   // NOTE: incomplete #62 implementation
-  public enum GraphicsAPIType {
-    OPENGL,
-    VULKAN;
-  }
-  // NOTE: incomplete #62 implementation
   public enum MipMapType {
     NONE,
     BILINEAR,
@@ -23,14 +18,12 @@ public class Config {
     public final Engine.Resources resources;
 
     public static class Features {
-      public final GraphicsAPIType graphicsAPI;
       public final boolean showFPS;
 
       public Features(
           com.typesafe.config.Config c,
           java.lang.String parentPath,
           $TsCfgValidator $tsCfgValidator) {
-        this.graphicsAPI = GraphicsAPIType.valueOf(c.getString("graphicsAPI"));
         this.showFPS = c.hasPathOrNull("showFPS") && c.getBoolean("showFPS");
       }
     }
