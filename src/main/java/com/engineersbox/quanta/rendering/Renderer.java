@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.graph;
+package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.scene.Scene;

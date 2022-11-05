@@ -3,7 +3,7 @@ package com.engineersbox.quanta.test;
 import com.engineersbox.quanta.core.Engine;
 import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
-import com.engineersbox.quanta.graph.Renderer;
+import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.resources.object.Mesh;
 import com.engineersbox.quanta.scene.Scene;
 

@@ -1,6 +1,6 @@
 package com.engineersbox.quanta.core;
 
-import com.engineersbox.quanta.graph.Renderer;
+import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.scene.Scene;
 
 public interface IAppLogic {

@@ -1,6 +1,6 @@
 package com.engineersbox.quanta.core;
 
-import com.engineersbox.quanta.graph.Renderer;
+import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.scene.Scene;
 
 public class Engine {
@@ -25,7 +25,10 @@ public class Engine {
         this.targetUPS = options.ups;
         this.appLogic = appLogic;
         this.renderer = new Renderer();
-        this.scene = new Scene();
+        this.scene = new Scene(
+                this.window.getWidth(),
+                this.window.getHeight()
+        );
         this.appLogic.init(this.window, this.scene, this.renderer);
         this.running = true;
     }
@@ -84,7 +87,10 @@ public class Engine {
     }
 
     public void resize() {
-
+        this.scene.resize(
+                this.window.getWidth(),
+                this.window.getHeight()
+        );
     }
 
 }

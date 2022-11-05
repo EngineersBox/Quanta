@@ -73,6 +73,10 @@ public class ShaderProgram {
         }
     }
 
+    public int getProgramId() {
+        return this.programId;
+    }
+
     public void cleanup() {
         ShaderProgram.unbind();
         if (this.programId != 0) {
