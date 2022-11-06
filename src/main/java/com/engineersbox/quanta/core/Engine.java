@@ -32,7 +32,7 @@ public class Engine {
             resize();
             return null;
         });
-        GL.createCapabilities();
+        Engine.init();
         this.info = Engine.saturateOpenGLInfo();
         Engine.LOGGER.info("[OPENGL] Created context");
         this.targetFPS = ConfigHandler.CONFIG.video.fps;
@@ -57,6 +57,11 @@ public class Engine {
                 glGetString(GL_RENDERER),
                 supportedExtensionsCount[0]
         );
+    }
+
+    private static void init() {
+        GL.createCapabilities();
+        glEnable(GL_DEPTH_TEST);
     }
 
     public void start() {

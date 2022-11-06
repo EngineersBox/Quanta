@@ -1,7 +1,8 @@
 package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
-import com.engineersbox.quanta.resources.object.Mesh;
+import com.engineersbox.quanta.resources.object.Entity;
+import com.engineersbox.quanta.resources.object.Model;
 import com.engineersbox.quanta.resources.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.shader.Uniforms;
@@ -31,6 +32,7 @@ public class SceneRenderer {
     private void createUniforms() {
         this.uniforms = new Uniforms(this.shader.getProgramId());
         this.uniforms.createUniform("projectionMatrix");
+        this.uniforms.createUniform("modelMatrix");
     }
 
     public void render(final Window window,
@@ -40,10 +42,16 @@ public class SceneRenderer {
                 "projectionMatrix",
                 scene.getProjection().getProjectionMatrix()
         );
-        scene.getMeshMap().values().forEach((final Mesh mesh) -> {
-            glBindVertexArray(mesh.getVaoId());
-            glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-        });
+        for (final Model model : scene.getModels().values()) {
+            model.getMeshes().forEach(mesh -> {
+                glBindVertexArray(mesh.getVaoId());
+                final List<Entity> entities = model.getEntities();
+                for (final Entity entity : entities) {
+                    this.uniforms.setUniform("modelMatrix", entity.getModelMatrix());
+                    glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+                }
+            });
+        }
         glBindVertexArray(0);
         ShaderProgram.unbind();
     }
