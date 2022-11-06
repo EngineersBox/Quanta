@@ -3,11 +3,11 @@ package com.engineersbox.quanta.resources.shader;
 import org.joml.Matrix4f;
 import org.lwjgl.system.MemoryStack;
 
+import java.nio.IntBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4fv;
+import static org.lwjgl.opengl.GL20.*;
 
 public class Uniforms {
 
@@ -34,7 +34,7 @@ public class Uniforms {
     public void setUniform(final String name,
                            final Matrix4f value) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final Integer location = uniforms.get(name);
+            final Integer location = this.uniforms.get(name);
             if (location == null) {
                 throw new RuntimeException(String.format(
                         "No such uniform \"%s\"",
@@ -48,5 +48,21 @@ public class Uniforms {
             );
         }
     }
-    
+
+    public void setUniform(final String name,
+                           final int value) {
+        try (final MemoryStack stack = MemoryStack.stackPush()) {
+            final Integer location = this.uniforms.get(name);
+            if (location == null) {
+                throw new RuntimeException(String.format(
+                        "No such uniform \"%s\"",
+                        name
+                ));
+            }
+            final IntBuffer intBuffer = stack.mallocInt(1);
+            intBuffer.put(value);
+            glUniform1iv(location, intBuffer);
+        }
+    }
+
 }

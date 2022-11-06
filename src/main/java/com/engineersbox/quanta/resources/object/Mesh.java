@@ -2,6 +2,7 @@ package com.engineersbox.quanta.resources.object;
 
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -21,7 +22,7 @@ public class Mesh {
     private final List<Integer> vboIds;
 
     public Mesh(final float[] positions,
-                final float[] colours,
+                final float[] textCoords,
                 final int[] indices) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             this.vertexCount = indices.length;
@@ -39,15 +40,15 @@ public class Mesh {
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
-            // Colour
+            // Texture coordinates VBO
             vboId = glGenBuffers();
             this.vboIds.add(vboId);
-            final FloatBuffer coloursBuffer = stack.callocFloat(colours.length);
-            coloursBuffer.put(0, colours);
+            final FloatBuffer textCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.length);
+            textCoordsBuffer.put(0, textCoords);
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
-            glBufferData(GL_ARRAY_BUFFER, coloursBuffer, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, textCoordsBuffer, GL_STATIC_DRAW);
             glEnableVertexAttribArray(1);
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
+            glVertexAttribPointer(1, 2, GL_FLOAT, false, 0, 0);
 
             // Indices
             vboId = glGenBuffers();

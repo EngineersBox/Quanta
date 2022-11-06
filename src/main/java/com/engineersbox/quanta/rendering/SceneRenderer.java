@@ -1,7 +1,11 @@
 package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
+import com.engineersbox.quanta.resources.material.Material;
+import com.engineersbox.quanta.resources.material.Texture;
+import com.engineersbox.quanta.resources.material.TextureCache;
 import com.engineersbox.quanta.resources.object.Entity;
+import com.engineersbox.quanta.resources.object.Mesh;
 import com.engineersbox.quanta.resources.object.Model;
 import com.engineersbox.quanta.resources.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.shader.ShaderProgram;
@@ -11,6 +15,8 @@ import com.engineersbox.quanta.scene.Scene;
 import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
 import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
@@ -33,6 +39,7 @@ public class SceneRenderer {
         this.uniforms = new Uniforms(this.shader.getProgramId());
         this.uniforms.createUniform("projectionMatrix");
         this.uniforms.createUniform("modelMatrix");
+        this.uniforms.createUniform("texSampler");
     }
 
     public void render(final Window window,
@@ -42,15 +49,27 @@ public class SceneRenderer {
                 "projectionMatrix",
                 scene.getProjection().getProjectionMatrix()
         );
+        this.uniforms.setUniform(
+                "texSampler",
+                0
+        );
+        final TextureCache textureCache = scene.getTextureCache();
         for (final Model model : scene.getModels().values()) {
-            model.getMeshes().forEach(mesh -> {
-                glBindVertexArray(mesh.getVaoId());
-                final List<Entity> entities = model.getEntities();
-                for (final Entity entity : entities) {
-                    this.uniforms.setUniform("modelMatrix", entity.getModelMatrix());
-                    glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+            final List<Entity> entities = model.getEntities();
+
+            for (final Material material : model.getMaterials()) {
+                final Texture texture = textureCache.getTexture(material.getTexturePath());
+                glActiveTexture(GL_TEXTURE0);
+                texture.bind();
+
+                for (final Mesh mesh : material.getMeshes()) {
+                    glBindVertexArray(mesh.getVaoId());
+                    for (final Entity entity : entities) {
+                        this.uniforms.setUniform("modelMatrix", entity.getModelMatrix());
+                        glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+                    }
                 }
-            });
+            }
         }
         glBindVertexArray(0);
         ShaderProgram.unbind();

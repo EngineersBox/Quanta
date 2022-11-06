@@ -1,5 +1,7 @@
 package com.engineersbox.quanta.resources.object;
 
+import com.engineersbox.quanta.resources.material.Material;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,12 +9,12 @@ public class Model {
 
     private final String id;
     private final List<Entity> entities;
-    private final List<Mesh> meshes;
+    private final List<Material> materials;
 
     public Model(final String id,
-                 final List<Mesh> meshes) {
+                 final List<Material> materials) {
         this.id = id;
-        this.meshes = meshes;
+        this.materials = materials;
         this.entities = new ArrayList<>();
     }
 
@@ -24,13 +26,13 @@ public class Model {
         return this.id;
     }
 
-    public List<Mesh> getMeshes() {
-        return this.meshes;
+    public List<Material> getMaterials() {
+        return this.materials;
     }
 
 
     public void cleanup() {
-        this.meshes.forEach(Mesh::cleanup);
+        this.materials.forEach(Material::cleanup);
     }
 
 }
