@@ -19,7 +19,7 @@ public class Projection {
 
     public void updateProjectionMatrix(final int width, final int height) {
         this.projectionMatrix.setPerspective(
-                (float) ConfigHandler.CONFIG.render.camera.fov,
+                (float) Math.toRadians(ConfigHandler.CONFIG.render.camera.fov),
                 (float) width / height,
                 (float) ConfigHandler.CONFIG.render.camera.zNear,
                 (float) ConfigHandler.CONFIG.render.camera.zFar

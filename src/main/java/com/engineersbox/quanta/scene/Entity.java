@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.resources.object;
+package com.engineersbox.quanta.scene;
 
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;

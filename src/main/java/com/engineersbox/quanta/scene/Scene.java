@@ -3,7 +3,6 @@ package com.engineersbox.quanta.scene;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.rendering.view.Projection;
 import com.engineersbox.quanta.resources.material.TextureCache;
-import com.engineersbox.quanta.resources.object.Entity;
 import com.engineersbox.quanta.resources.object.Model;
 
 import java.util.HashMap;

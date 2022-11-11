@@ -69,7 +69,6 @@ public class Window {
             throw new RuntimeException("Failed to create GLFW window");
         }
 
-        this.mouseInput = new MouseInput(this.windowHandle);
         glfwSetFramebufferSizeCallback(
                 this.windowHandle,
                 (final long window, final int newWidth, final int newHeight) -> resize(newWidth, newHeight)
@@ -90,6 +89,8 @@ public class Window {
         glfwGetFramebufferSize(this.windowHandle, fbWidth, fbHeight);
         this.width = fbWidth[0];
         this.height = fbHeight[0];
+
+        this.mouseInput = new MouseInput(this.windowHandle);
     }
 
     public int getHeight() {

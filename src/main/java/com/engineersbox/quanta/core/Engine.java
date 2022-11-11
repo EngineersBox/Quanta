@@ -67,7 +67,6 @@ public class Engine {
         final float timeR = this.targetFPS > 0 ? 1000.0f / this.targetFPS : 0;
         float deltaUpdate = 0;
         float deltaFps = 0;
-
         long updateTime = initialTime;
         while (this.running && !this.window.windowShouldClose()) {
             this.window.pollEvents();
@@ -94,7 +93,6 @@ public class Engine {
             }
             initialTime = now;
         }
-
         cleanup();
     }
 

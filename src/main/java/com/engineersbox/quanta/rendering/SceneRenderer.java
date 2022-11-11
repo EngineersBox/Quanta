@@ -4,12 +4,12 @@ import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.resources.material.Material;
 import com.engineersbox.quanta.resources.material.Texture;
 import com.engineersbox.quanta.resources.material.TextureCache;
-import com.engineersbox.quanta.resources.object.Entity;
 import com.engineersbox.quanta.resources.object.Mesh;
 import com.engineersbox.quanta.resources.object.Model;
 import com.engineersbox.quanta.resources.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.shader.Uniforms;
+import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 
 import java.util.List;

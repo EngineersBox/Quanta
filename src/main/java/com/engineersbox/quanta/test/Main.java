@@ -9,10 +9,12 @@ import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.material.Material;
 import com.engineersbox.quanta.resources.material.Texture;
-import com.engineersbox.quanta.resources.object.Entity;
 import com.engineersbox.quanta.resources.object.Mesh;
 import com.engineersbox.quanta.resources.object.Model;
+import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
 
@@ -22,6 +24,8 @@ import java.util.List;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Main implements IAppLogic {
+
+    private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
     public static void main(final String[] args) {
         final Main main = new Main();
