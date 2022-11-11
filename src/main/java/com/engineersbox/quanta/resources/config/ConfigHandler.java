@@ -15,4 +15,8 @@ public abstract class ConfigHandler {
         CONFIG = new Config(typesafeConfig);
     }
 
+    private ConfigHandler() {
+        throw new IllegalStateException("Utility class");
+    }
+
 }

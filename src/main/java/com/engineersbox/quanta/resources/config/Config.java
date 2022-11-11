@@ -6,6 +6,11 @@ public class Config {
   public final Config.Sound sound;
   public final Config.Video video;
   // NOTE: incomplete #62 implementation
+  public enum MipMapDistance {
+    NEAR,
+    FAR;
+  }
+  // NOTE: incomplete #62 implementation
   public enum MipMapType {
     NONE,
     BILINEAR,
@@ -135,6 +140,7 @@ public class Config {
 
     public static class Texture {
       public final int lodBias;
+      public final MipMapDistance mipmap_distance;
       public final MipMapType mipmaps;
 
       public Texture(
@@ -142,6 +148,7 @@ public class Config {
           java.lang.String parentPath,
           $TsCfgValidator $tsCfgValidator) {
         this.lodBias = c.hasPathOrNull("lodBias") ? c.getInt("lodBias") : 100;
+        this.mipmap_distance = MipMapDistance.valueOf(c.getString("mipmap_distance"));
         this.mipmaps = MipMapType.valueOf(c.getString("mipmaps"));
       }
     }

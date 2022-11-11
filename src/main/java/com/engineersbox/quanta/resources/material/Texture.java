@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.resources.material;
 
+import com.engineersbox.quanta.resources.config.Config;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import org.lwjgl.system.MemoryStack;
 
@@ -77,9 +78,12 @@ public class Texture {
          * GL_LINEAR / GL_LINEAR                  | On       | On       | None
          */
         final int minFilter = switch (ConfigHandler.CONFIG.render.texture.mipmaps) {
-            case NONE -> GL_LINEAR;
-            case BILINEAR -> GL_LINEAR_MIPMAP_NEAREST;
-            case TRILINEAR -> GL_LINEAR_MIPMAP_LINEAR;
+            case NONE ->
+                    ConfigHandler.CONFIG.render.texture.mipmap_distance == Config.MipMapDistance.FAR ? GL_LINEAR : GL_NEAREST;
+            case BILINEAR ->
+                    ConfigHandler.CONFIG.render.texture.mipmap_distance == Config.MipMapDistance.FAR ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
+            case TRILINEAR ->
+                    ConfigHandler.CONFIG.render.texture.mipmap_distance == Config.MipMapDistance.FAR ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR;
         };
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

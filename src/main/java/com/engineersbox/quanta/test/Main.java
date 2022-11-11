@@ -129,7 +129,7 @@ public class Main implements IAppLogic {
                 16, 18, 19, 17, 16, 19,
                 // Back face
                 4, 6, 7, 5, 4, 7,};
-        final Texture texture = scene.getTextureCache().createTexture("assets/cube/cube.png");
+        final Texture texture = scene.getTextureCache().createTexture("assets/textures/cube.png");
         final Material material = new Material();
         material.setTexturePath(texture.getPath());
         final List<Material> materialList = new ArrayList<>();
