@@ -1,6 +1,7 @@
 package com.engineersbox.quanta.resources.shader;
 
 import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.IntBuffer;
@@ -31,16 +32,22 @@ public class Uniforms {
         this.uniforms.put(name, location);
     }
 
+    private int getUniformLocation(final String name) {
+        final Integer location = this.uniforms.get(name);
+        if (location == null) {
+            throw new RuntimeException(String.format(
+                    "Cannot find uniform \"%s\" in shader %d",
+                    name,
+                    this.programId
+            ));
+        }
+        return location;
+    }
+
     public void setUniform(final String name,
                            final Matrix4f value) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final Integer location = this.uniforms.get(name);
-            if (location == null) {
-                throw new RuntimeException(String.format(
-                        "No such uniform \"%s\"",
-                        name
-                ));
-            }
+            final int location = getUniformLocation(name);
             glUniformMatrix4fv(
                     location,
                     false,
@@ -52,17 +59,22 @@ public class Uniforms {
     public void setUniform(final String name,
                            final int value) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final Integer location = this.uniforms.get(name);
-            if (location == null) {
-                throw new RuntimeException(String.format(
-                        "No such uniform \"%s\"",
-                        name
-                ));
-            }
+            final int location = getUniformLocation(name);
             final IntBuffer intBuffer = stack.mallocInt(1);
             intBuffer.put(value);
             glUniform1iv(location, intBuffer);
         }
+    }
+
+    public void setUniform(final String name,
+                           final Vector4f value) {
+        glUniform4f(
+                getUniformLocation(name),
+                value.x,
+                value.y,
+                value.z,
+                value.w
+        );
     }
 
 }

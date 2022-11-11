@@ -33,6 +33,7 @@ public class SceneRenderer {
                 new ShaderModuleData("assets/shaders/scene/scene.frag", GL_FRAGMENT_SHADER)
         );
         this.shader = new ShaderProgram(modules);
+        this.shader.validate();
         createUniforms();
     }
 
@@ -42,7 +43,8 @@ public class SceneRenderer {
                 "projectionMatrix",
                 "viewMatrix",
                 "modelMatrix",
-                "texSampler"
+                "texSampler",
+                "material.diffuse"
         ).forEach(this.uniforms::createUniform);
     }
 
@@ -64,12 +66,11 @@ public class SceneRenderer {
         final TextureCache textureCache = scene.getTextureCache();
         for (final Model model : scene.getModels().values()) {
             final List<Entity> entities = model.getEntities();
-
             for (final Material material : model.getMaterials()) {
+                this.uniforms.setUniform("material.diffuse", material.getDiffuseColor());
                 final Texture texture = textureCache.getTexture(material.getTexturePath());
                 glActiveTexture(GL_TEXTURE0);
                 texture.bind();
-
                 for (final Mesh mesh : material.getMeshes()) {
                     glBindVertexArray(mesh.getVaoId());
                     for (final Entity entity : entities) {
