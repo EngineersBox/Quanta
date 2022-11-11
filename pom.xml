@@ -26,6 +26,7 @@
         <typesafe-config.version>1.4.2</typesafe-config.version>
         <typesafe.version>1.0.0</typesafe.version>
         <commons-collections.version>4.4</commons-collections.version>
+        <imgui.version>1.86.4</imgui.version>
 
         <!-- Maven Compiler Version -->
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -189,6 +190,18 @@
             <artifactId>lwjgl-assimp</artifactId>
             <version>${lwjgl.version}</version>
             <classifier>${native.target}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        <!-- IMGUI -->
+        <dependency>
+            <groupId>io.github.spair</groupId>
+            <artifactId>imgui-java-binding</artifactId>
+            <version>${imgui.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.spair</groupId>
+            <artifactId>imgui-java-${native.target}</artifactId>
+            <version>${imgui.version}</version>
             <scope>runtime</scope>
         </dependency>
         <!-- JOML -->
