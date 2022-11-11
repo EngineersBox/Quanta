@@ -8,8 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL;
 
-import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
-import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.*;
 
 public class Engine {
 
@@ -50,6 +49,10 @@ public class Engine {
     private static void init() {
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
+        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_BACK);
+        }
     }
 
     public void start() {
