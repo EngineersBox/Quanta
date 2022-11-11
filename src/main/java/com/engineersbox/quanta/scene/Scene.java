@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.scene;
 
+import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.rendering.view.Projection;
 import com.engineersbox.quanta.resources.material.TextureCache;
 import com.engineersbox.quanta.resources.object.Entity;
@@ -13,12 +14,14 @@ public class Scene {
     private final Map<String, Model> models;
     private final Projection projection;
     private final TextureCache textureCache;
+    private final Camera camera;
 
     public Scene(final int width,
                  final int height) {
         this.models = new HashMap<>();
         this.projection = new Projection(width, height);
         this.textureCache = new TextureCache();
+        this.camera = new Camera();
     }
 
     public void addEntity(final Entity entity) {
@@ -52,6 +55,10 @@ public class Scene {
 
     public TextureCache getTextureCache() {
         return this.textureCache;
+    }
+
+    public Camera getCamera() {
+        return this.camera;
     }
 
 }

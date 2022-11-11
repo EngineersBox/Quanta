@@ -79,11 +79,11 @@ public class Texture {
          */
         final int minFilter = switch (ConfigHandler.CONFIG.render.texture.mipmaps) {
             case NONE ->
-                    ConfigHandler.CONFIG.render.texture.mipmap_distance == Config.MipMapDistance.FAR ? GL_LINEAR : GL_NEAREST;
+                    ConfigHandler.CONFIG.render.texture.mipmapDistance == Config.MipMapDistance.FAR ? GL_LINEAR : GL_NEAREST;
             case BILINEAR ->
-                    ConfigHandler.CONFIG.render.texture.mipmap_distance == Config.MipMapDistance.FAR ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
+                    ConfigHandler.CONFIG.render.texture.mipmapDistance == Config.MipMapDistance.FAR ? GL_LINEAR_MIPMAP_NEAREST : GL_NEAREST_MIPMAP_NEAREST;
             case TRILINEAR ->
-                    ConfigHandler.CONFIG.render.texture.mipmap_distance == Config.MipMapDistance.FAR ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR;
+                    ConfigHandler.CONFIG.render.texture.mipmapDistance == Config.MipMapDistance.FAR ? GL_LINEAR_MIPMAP_LINEAR : GL_NEAREST_MIPMAP_LINEAR;
         };
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

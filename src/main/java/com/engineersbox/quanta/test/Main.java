@@ -3,14 +3,17 @@ package com.engineersbox.quanta.test;
 import com.engineersbox.quanta.core.Engine;
 import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
+import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.Renderer;
+import com.engineersbox.quanta.rendering.view.Camera;
+import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.material.Material;
 import com.engineersbox.quanta.resources.material.Texture;
 import com.engineersbox.quanta.resources.object.Entity;
 import com.engineersbox.quanta.resources.object.Mesh;
 import com.engineersbox.quanta.resources.object.Model;
 import com.engineersbox.quanta.scene.Scene;
-import org.joml.Vector3f;
+import org.joml.Vector2f;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
@@ -147,34 +150,32 @@ public class Main implements IAppLogic {
 
     @Override
     public void input(final Window window, final Scene scene, final long diffTimeMillis) {
-        this.displInc.zero();
-        if (window.isKeyPressed(GLFW_KEY_UP)) {
-            this.displInc.y = 1;
-        } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
-            this.displInc.y = -1;
-        }
-        if (window.isKeyPressed(GLFW_KEY_LEFT)) {
-            this.displInc.x = -1;
-        } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) {
-            this.displInc.x = 1;
+        final float move = diffTimeMillis * (float) ConfigHandler.CONFIG.game.movementSpeed;
+        final Camera camera = scene.getCamera();
+        if (window.isKeyPressed(GLFW_KEY_W)) {
+            camera.moveForward(move);
+        } else if (window.isKeyPressed(GLFW_KEY_S)) {
+            camera.moveBackwards(move);
         }
         if (window.isKeyPressed(GLFW_KEY_A)) {
-            this.displInc.z = -1;
-        } else if (window.isKeyPressed(GLFW_KEY_Q)) {
-            this.displInc.z = 1;
+            camera.moveLeft(move);
+        } else if (window.isKeyPressed(GLFW_KEY_D)) {
+            camera.moveRight(move);
         }
-        if (window.isKeyPressed(GLFW_KEY_Z)) {
-            this.displInc.w = -1;
-        } else if (window.isKeyPressed(GLFW_KEY_X)) {
-            this.displInc.w = 1;
+        if (window.isKeyPressed(GLFW_KEY_SPACE)) {
+            camera.moveUp(move);
+        } else if (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
+            camera.moveDown(move);
         }
 
-        this.displInc.mul(diffTimeMillis / 1000.0f);
-
-        final Vector3f entityPos = this.cubeEntity.getPosition();
-        this.cubeEntity.setPosition(this.displInc.x + entityPos.x, this.displInc.y + entityPos.y, this.displInc.z + entityPos.z);
-        this.cubeEntity.setScale(this.cubeEntity.getScale() + this.displInc.w);
-        this.cubeEntity.updateModelMatrix();
+        final MouseInput mouseInput = window.getMouseInput();
+        if (mouseInput.isRightButtonPressed()) {
+            final Vector2f displayVec = mouseInput.getDisplayVec();
+            camera.addRotation(
+                    (float) Math.toRadians(-displayVec.x * ConfigHandler.CONFIG.mouse.sensitivity),
+                    (float) Math.toRadians(-displayVec.y * ConfigHandler.CONFIG.mouse.sensitivity)
+            );
+        }
     }
 
     @Override

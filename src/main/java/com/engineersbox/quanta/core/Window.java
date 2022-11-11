@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.core;
 
+import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,6 +24,7 @@ public class Window {
     private int height;
     private int width;
     private final Callable<Void> resizeHandler;
+    private final MouseInput mouseInput;
 
     public Window(final String title,
                   final Callable<Void> resizeHandler) {
@@ -67,6 +69,7 @@ public class Window {
             throw new RuntimeException("Failed to create GLFW window");
         }
 
+        this.mouseInput = new MouseInput(this.windowHandle);
         glfwSetFramebufferSizeCallback(
                 this.windowHandle,
                 (final long window, final int newWidth, final int newHeight) -> resize(newWidth, newHeight)
@@ -101,8 +104,9 @@ public class Window {
         return glfwGetKey(this.windowHandle, keyCode) == GLFW_PRESS;
     }
 
-    public static void pollEvents() {
+    public void pollEvents() {
         glfwPollEvents();
+        this.mouseInput.input();
     }
 
     protected void resize(final int newWidth, final int newHeight) {
@@ -121,6 +125,10 @@ public class Window {
 
     public boolean windowShouldClose() {
         return glfwWindowShouldClose(this.windowHandle);
+    }
+
+    public MouseInput getMouseInput() {
+        return this.mouseInput;
     }
 
     public void cleanup() {

@@ -82,7 +82,7 @@ public class Engine {
 
         long updateTime = initialTime;
         while (this.running && !this.window.windowShouldClose()) {
-            Window.pollEvents();
+            this.window.pollEvents();
 
             final long now = System.currentTimeMillis();
             deltaUpdate += (now - initialTime) / timeU;

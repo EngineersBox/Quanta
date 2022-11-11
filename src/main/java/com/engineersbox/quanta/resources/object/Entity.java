@@ -47,10 +47,14 @@ public class Entity {
         return this.scale;
     }
 
-    public final void setPosition(final float x, final float y, final float z) {
+    public void setPosition(final float x, final float y, final float z) {
         this.position.x = x;
         this.position.y = y;
         this.position.z = z;
+    }
+
+    public void setPosition(final Vector3f pos) {
+        setPosition(pos.x, pos.y, pos.z);
     }
 
     public void setRotation(final float x, final float y, final float z, final float angle) {

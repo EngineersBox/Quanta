@@ -2,6 +2,8 @@ package com.engineersbox.quanta.resources.config;
 
 public class Config {
   public final Config.Engine engine;
+  public final Config.Game game;
+  public final Config.Mouse mouse;
   public final Config.Render render;
   public final Config.Sound sound;
   public final Config.Video video;
@@ -116,6 +118,42 @@ public class Config {
     }
   }
 
+  public static class Game {
+    public final double movementSpeed;
+
+    public Game(
+        com.typesafe.config.Config c,
+        java.lang.String parentPath,
+        $TsCfgValidator $tsCfgValidator) {
+      this.movementSpeed = c.hasPathOrNull("movementSpeed") ? c.getDouble("movementSpeed") : 0.005;
+    }
+  }
+
+  public static class Mouse {
+    public final double sensitivity;
+
+    public Mouse(
+        com.typesafe.config.Config c,
+        java.lang.String parentPath,
+        $TsCfgValidator $tsCfgValidator) {
+      this.sensitivity = $_reqDbl(parentPath, c, "sensitivity", $tsCfgValidator);
+    }
+
+    private static double $_reqDbl(
+        java.lang.String parentPath,
+        com.typesafe.config.Config c,
+        java.lang.String path,
+        $TsCfgValidator $tsCfgValidator) {
+      if (c == null) return 0;
+      try {
+        return c.getDouble(path);
+      } catch (com.typesafe.config.ConfigException e) {
+        $tsCfgValidator.addBadPath(parentPath + path, e);
+        return 0;
+      }
+    }
+  }
+
   public static class Render {
     public final Render.Camera camera;
     public final Render.Texture texture;
@@ -140,7 +178,7 @@ public class Config {
 
     public static class Texture {
       public final int lodBias;
-      public final MipMapDistance mipmap_distance;
+      public final MipMapDistance mipmapDistance;
       public final MipMapType mipmaps;
 
       public Texture(
@@ -148,7 +186,7 @@ public class Config {
           java.lang.String parentPath,
           $TsCfgValidator $tsCfgValidator) {
         this.lodBias = c.hasPathOrNull("lodBias") ? c.getInt("lodBias") : 100;
-        this.mipmap_distance = MipMapDistance.valueOf(c.getString("mipmap_distance"));
+        this.mipmapDistance = MipMapDistance.valueOf(c.getString("mipmapDistance"));
         this.mipmaps = MipMapType.valueOf(c.getString("mipmaps"));
       }
     }
@@ -223,6 +261,20 @@ public class Config {
             : new Config.Engine(
                 com.typesafe.config.ConfigFactory.parseString("engine{}"),
                 parentPath + "engine.",
+                $tsCfgValidator);
+    this.game =
+        c.hasPathOrNull("game")
+            ? new Config.Game(c.getConfig("game"), parentPath + "game.", $tsCfgValidator)
+            : new Config.Game(
+                com.typesafe.config.ConfigFactory.parseString("game{}"),
+                parentPath + "game.",
+                $tsCfgValidator);
+    this.mouse =
+        c.hasPathOrNull("mouse")
+            ? new Config.Mouse(c.getConfig("mouse"), parentPath + "mouse.", $tsCfgValidator)
+            : new Config.Mouse(
+                com.typesafe.config.ConfigFactory.parseString("mouse{}"),
+                parentPath + "mouse.",
                 $tsCfgValidator);
     this.render =
         c.hasPathOrNull("render")

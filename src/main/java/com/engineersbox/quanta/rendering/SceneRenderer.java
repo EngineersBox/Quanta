@@ -13,6 +13,7 @@ import com.engineersbox.quanta.resources.shader.Uniforms;
 import com.engineersbox.quanta.scene.Scene;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
@@ -37,9 +38,12 @@ public class SceneRenderer {
 
     private void createUniforms() {
         this.uniforms = new Uniforms(this.shader.getProgramId());
-        this.uniforms.createUniform("projectionMatrix");
-        this.uniforms.createUniform("modelMatrix");
-        this.uniforms.createUniform("texSampler");
+        Stream.of(
+                "projectionMatrix",
+                "viewMatrix",
+                "modelMatrix",
+                "texSampler"
+        ).forEach(this.uniforms::createUniform);
     }
 
     public void render(final Window window,
@@ -48,6 +52,10 @@ public class SceneRenderer {
         this.uniforms.setUniform(
                 "projectionMatrix",
                 scene.getProjection().getProjectionMatrix()
+        );
+        this.uniforms.setUniform(
+                "viewMatrix",
+                scene.getCamera().getViewMatrix()
         );
         this.uniforms.setUniform(
                 "texSampler",
