@@ -40,7 +40,7 @@ public class Mesh {
             glEnableVertexAttribArray(0);
             glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
 
-            // Texture coordinates VBO
+            // Texture coordinates
             vboId = glGenBuffers();
             this.vboIds.add(vboId);
             final FloatBuffer textCoordsBuffer = MemoryUtil.memAllocFloat(textCoords.length);
