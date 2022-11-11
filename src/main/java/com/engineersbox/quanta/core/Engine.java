@@ -35,6 +35,7 @@ public class Engine {
         Engine.init();
         this.info = Engine.saturateOpenGLInfo();
         Engine.LOGGER.info("[OPENGL] Created context");
+        this.info.log(false);
         this.targetFPS = ConfigHandler.CONFIG.video.fps;
         this.targetUPS = ConfigHandler.CONFIG.video.ups;
         this.appLogic = appLogic;
