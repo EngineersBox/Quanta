@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.scene;
 
+import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.rendering.view.Projection;
 import com.engineersbox.quanta.resources.material.TextureCache;
@@ -14,6 +15,7 @@ public class Scene {
     private final Projection projection;
     private final TextureCache textureCache;
     private final Camera camera;
+    private IGUIInstance guiInstance;
 
     public Scene(final int width,
                  final int height) {
@@ -60,4 +62,11 @@ public class Scene {
         return this.camera;
     }
 
+    public IGUIInstance getGUIInstance() {
+        return this.guiInstance;
+    }
+    
+    public void setGUIInstance(final IGUIInstance guiInstance) {
+        this.guiInstance = guiInstance;
+    }
 }
