@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.resources.shader;
+package com.engineersbox.quanta.resources.assets.shader;
 
 import org.joml.Matrix4f;
 import org.joml.Vector4f;

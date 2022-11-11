@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.resources.gui;
+package com.engineersbox.quanta.resources.assets.gui;
 
 
 import imgui.ImDrawData;

@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.resources.object;
+package com.engineersbox.quanta.resources.assets.object;
 
 import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryStack;

@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.resources.material;
+package com.engineersbox.quanta.resources.assets.material;
 
 import com.engineersbox.quanta.resources.config.Config;
 import com.engineersbox.quanta.resources.config.ConfigHandler;

@@ -1,14 +1,14 @@
 package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
-import com.engineersbox.quanta.resources.material.Material;
-import com.engineersbox.quanta.resources.material.Texture;
-import com.engineersbox.quanta.resources.material.TextureCache;
-import com.engineersbox.quanta.resources.object.Mesh;
-import com.engineersbox.quanta.resources.object.Model;
-import com.engineersbox.quanta.resources.shader.ShaderModuleData;
-import com.engineersbox.quanta.resources.shader.ShaderProgram;
-import com.engineersbox.quanta.resources.shader.Uniforms;
+import com.engineersbox.quanta.resources.assets.material.Material;
+import com.engineersbox.quanta.resources.assets.material.Texture;
+import com.engineersbox.quanta.resources.assets.material.TextureCache;
+import com.engineersbox.quanta.resources.assets.object.Mesh;
+import com.engineersbox.quanta.resources.assets.object.Model;
+import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
+import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
+import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 

@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.resources.material;
+package com.engineersbox.quanta.resources.assets.material;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,6 +1,6 @@
-package com.engineersbox.quanta.resources.object;
+package com.engineersbox.quanta.resources.assets.object;
 
-import com.engineersbox.quanta.resources.material.Material;
+import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.scene.Entity;
 
 import java.util.ArrayList;

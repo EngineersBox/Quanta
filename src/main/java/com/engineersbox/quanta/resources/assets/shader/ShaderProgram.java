@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.resources.shader;
+package com.engineersbox.quanta.resources.assets.shader;
 
 import com.engineersbox.quanta.utils.FileUtils;
 import org.lwjgl.opengl.GL30;

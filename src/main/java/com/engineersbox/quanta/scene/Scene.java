@@ -3,8 +3,8 @@ package com.engineersbox.quanta.scene;
 import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.rendering.view.Projection;
-import com.engineersbox.quanta.resources.material.TextureCache;
-import com.engineersbox.quanta.resources.object.Model;
+import com.engineersbox.quanta.resources.assets.material.TextureCache;
+import com.engineersbox.quanta.resources.assets.object.Model;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,7 +65,7 @@ public class Scene {
     public IGUIInstance getGUIInstance() {
         return this.guiInstance;
     }
-    
+
     public void setGUIInstance(final IGUIInstance guiInstance) {
         this.guiInstance = guiInstance;
     }

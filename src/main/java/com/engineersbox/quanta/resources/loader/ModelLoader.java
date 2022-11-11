@@ -1,9 +1,9 @@
 package com.engineersbox.quanta.resources.loader;
 
-import com.engineersbox.quanta.resources.material.Material;
-import com.engineersbox.quanta.resources.material.TextureCache;
-import com.engineersbox.quanta.resources.object.Mesh;
-import com.engineersbox.quanta.resources.object.Model;
+import com.engineersbox.quanta.resources.assets.material.Material;
+import com.engineersbox.quanta.resources.assets.material.TextureCache;
+import com.engineersbox.quanta.resources.assets.object.Mesh;
+import com.engineersbox.quanta.resources.assets.object.Model;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;

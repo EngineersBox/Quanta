@@ -1,6 +1,6 @@
-package com.engineersbox.quanta.resources.material;
+package com.engineersbox.quanta.resources.assets.material;
 
-import com.engineersbox.quanta.resources.object.Mesh;
+import com.engineersbox.quanta.resources.assets.object.Mesh;
 import org.joml.Vector4f;
 
 import java.util.ArrayList;
