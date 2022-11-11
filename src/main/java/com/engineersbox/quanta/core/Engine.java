@@ -8,9 +8,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL20.GL_SHADING_LANGUAGE_VERSION;
-import static org.lwjgl.opengl.GL30.GL_NUM_EXTENSIONS;
+import static org.lwjgl.opengl.GL11.GL_DEPTH_TEST;
+import static org.lwjgl.opengl.GL11.glEnable;
 
 public class Engine {
 
@@ -33,8 +32,8 @@ public class Engine {
             return null;
         });
         Engine.init();
-        this.info = Engine.saturateOpenGLInfo();
         Engine.LOGGER.info("[OPENGL] Created context");
+        this.info = OpenGLInfo.retrieve();
         this.info.log(false);
         this.targetFPS = ConfigHandler.CONFIG.video.fps;
         this.targetUPS = ConfigHandler.CONFIG.video.ups;
@@ -46,18 +45,6 @@ public class Engine {
         );
         this.appLogic.init(this.window, this.scene, this.renderer);
         this.running = true;
-    }
-
-    private static OpenGLInfo saturateOpenGLInfo() {
-        final int[] supportedExtensionsCount = new int[1];
-        glGetIntegerv(GL_NUM_EXTENSIONS, supportedExtensionsCount);
-        return new OpenGLInfo(
-                glGetString(GL_VERSION),
-                glGetString(GL_SHADING_LANGUAGE_VERSION),
-                glGetString(GL_VENDOR),
-                glGetString(GL_RENDERER),
-                supportedExtensionsCount[0]
-        );
     }
 
     private static void init() {
