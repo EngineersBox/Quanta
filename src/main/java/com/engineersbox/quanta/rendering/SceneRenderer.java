@@ -34,11 +34,10 @@ public class SceneRenderer {
     private Uniforms uniforms;
 
     public SceneRenderer() {
-        final List<ShaderModuleData> modules = List.of(
+        this.shader = new ShaderProgram(
                 new ShaderModuleData("assets/shaders/scene/scene.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/scene/scene.frag", ShaderType.FRAGMENT)
         );
-        this.shader = new ShaderProgram(modules);
         this.shader.validate();
         createUniforms();
     }
