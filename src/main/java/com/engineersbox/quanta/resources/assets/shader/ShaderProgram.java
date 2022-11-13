@@ -23,14 +23,14 @@ public class ShaderProgram {
         final List<Integer> moduleIds = shaderModuleData.stream()
                 .map((final ShaderModuleData data) -> createShader(
                         FileUtils.readFile(data.file()),
-                        data.type().getType())
-                ).toList();
+                        data.type()
+                )).toList();
         link(moduleIds);
     }
 
     protected int createShader(final String code,
-                               final int type) {
-        final int shaderId = glCreateShader(type);
+                               final ShaderType type) {
+        final int shaderId = glCreateShader(type.getType());
         if (shaderId == 0) {
             throw new RuntimeException(String.format(
                     "[SHADER PROGRAM] Error while creating shader of type %d",
