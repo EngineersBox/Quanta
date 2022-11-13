@@ -6,6 +6,7 @@ import com.engineersbox.quanta.resources.assets.gui.GUIMesh;
 import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
+import com.engineersbox.quanta.resources.assets.shader.ShaderType;
 import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
@@ -22,8 +23,6 @@ import static org.lwjgl.opengl.GL11.GL_BLEND;
 import static org.lwjgl.opengl.GL11.glEnable;
 import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL15.*;
-import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class GUIRenderer {
@@ -36,8 +35,8 @@ public class GUIRenderer {
 
     public GUIRenderer(final Window window) {
         this.shader = new ShaderProgram(
-                new ShaderModuleData("assets/shaders/gui/gui.vert", GL_VERTEX_SHADER),
-                new ShaderModuleData("assets/shaders/gui/gui.frag", GL_FRAGMENT_SHADER)
+                new ShaderModuleData("assets/shaders/gui/gui.vert", ShaderType.VERTEX),
+                new ShaderModuleData("assets/shaders/gui/gui.frag", ShaderType.FRAGMENT)
         );
         this.shader.validate();
         createUniforms();

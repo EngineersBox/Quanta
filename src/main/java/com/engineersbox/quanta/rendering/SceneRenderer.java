@@ -8,6 +8,7 @@ import com.engineersbox.quanta.resources.assets.object.Mesh;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
+import com.engineersbox.quanta.resources.assets.shader.ShaderType;
 import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
@@ -22,8 +23,6 @@ import java.util.stream.Stream;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
-import static org.lwjgl.opengl.GL20.GL_FRAGMENT_SHADER;
-import static org.lwjgl.opengl.GL20.GL_VERTEX_SHADER;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class SceneRenderer {
@@ -36,8 +35,8 @@ public class SceneRenderer {
 
     public SceneRenderer() {
         final List<ShaderModuleData> modules = List.of(
-                new ShaderModuleData("assets/shaders/scene/scene.vert", GL_VERTEX_SHADER),
-                new ShaderModuleData("assets/shaders/scene/scene.frag", GL_FRAGMENT_SHADER)
+                new ShaderModuleData("assets/shaders/scene/scene.vert", ShaderType.VERTEX),
+                new ShaderModuleData("assets/shaders/scene/scene.frag", ShaderType.FRAGMENT)
         );
         this.shader = new ShaderProgram(modules);
         this.shader.validate();

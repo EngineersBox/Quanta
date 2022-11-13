@@ -21,8 +21,10 @@ public class ShaderProgram {
             throw new RuntimeException("Unable to create a new shader program");
         }
         final List<Integer> moduleIds = shaderModuleData.stream()
-                .map((final ShaderModuleData data) -> createShader(FileUtils.readFile(data.file()), data.type()))
-                .toList();
+                .map((final ShaderModuleData data) -> createShader(
+                        FileUtils.readFile(data.file()),
+                        data.type().getType())
+                ).toList();
         link(moduleIds);
     }
 
