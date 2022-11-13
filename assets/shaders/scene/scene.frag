@@ -33,10 +33,10 @@ struct PointLight {
 };
 struct SpotLight {
     PointLight pl;
-    vec3 conedir;
+    vec3 coneDir;
     float cutoff;
 };
-struct DirLight {
+struct DirectionalLight {
     vec3 color;
     vec3 direction;
     float intensity;
@@ -47,7 +47,7 @@ uniform Material material;
 uniform AmbientLight ambientLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
-uniform DirLight dirLight;
+uniform DirectionalLight directionalLight;
 
 vec4 calcAmbient(AmbientLight ambientLight, vec4 ambient) {
     return vec4(ambientLight.factor * ambientLight.color, 1) * ambient;
@@ -88,7 +88,7 @@ vec4 calcSpotLight(vec4 diffuse, vec4 specular, SpotLight light, vec3 position, 
     vec3 light_direction = light.pl.position - position;
     vec3 to_light_dir  = normalize(light_direction);
     vec3 from_light_dir  = -to_light_dir;
-    float spot_alfa = dot(from_light_dir, normalize(light.conedir));
+    float spot_alfa = dot(from_light_dir, normalize(light.coneDir));
 
     vec4 color = vec4(0, 0, 0, 0);
 
@@ -99,25 +99,25 @@ vec4 calcSpotLight(vec4 diffuse, vec4 specular, SpotLight light, vec3 position, 
     return color;
 }
 
-vec4 calcDirLight(vec4 diffuse, vec4 specular, DirLight light, vec3 position, vec3 normal) {
+vec4 calcDirectionalLight(vec4 diffuse, vec4 specular, DirectionalLight light, vec3 position, vec3 normal) {
     return calcLightColor(diffuse, specular, light.color, light.intensity, position, normalize(light.direction), normal);
 }
 
 void main() {
-    vec4 text_color = texture(texSampler, outTextCoord);
-    vec4 ambient = calcAmbient(ambientLight, text_color + material.ambient);
-    vec4 diffuse = text_color + material.diffuse;
-    vec4 specular = text_color + material.specular;
+    vec4 textureColor = texture(texSampler, outTextCoord);
+    vec4 ambient = calcAmbient(ambientLight, textureColor + material.ambient);
+    vec4 diffuse = textureColor + material.diffuse;
+    vec4 specular = textureColor + material.specular;
 
-    vec4 diffuseSpecularComp = calcDirLight(diffuse, specular, dirLight, outPosition, outNormal);
+    vec4 diffuseSpecularComp = calcDirectionalLight(diffuse, specular, directionalLight, outPosition, outNormal);
 
-    for (int i=0; i<MAX_POINT_LIGHTS; i++) {
+    for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
         if (pointLights[i].intensity > 0) {
             diffuseSpecularComp += calcPointLight(diffuse, specular, pointLights[i], outPosition, outNormal);
         }
     }
 
-    for (int i=0; i<MAX_SPOT_LIGHTS; i++) {
+    for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
         if (spotLights[i].pl.intensity > 0) {
             diffuseSpecularComp += calcSpotLight(diffuse, specular, spotLights[i], outPosition, outNormal);
         }

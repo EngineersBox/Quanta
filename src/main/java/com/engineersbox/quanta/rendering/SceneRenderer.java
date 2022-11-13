@@ -57,9 +57,9 @@ public class SceneRenderer {
                 "material.reflectance",
                 "ambientLight.factor",
                 "ambientLight.color",
-                "dirLight.color",
-                "dirLight.direction",
-                "dirLight.intensity"
+                "directionalLight.color",
+                "directionalLight.direction",
+                "directionalLight.intensity"
         ).forEach(this.uniforms::createUniform);
         for (int i = 0; i < SceneRenderer.MAX_POINT_LIGHTS; i++) {
             final String name = "pointLights[" + i + "]";
@@ -81,7 +81,7 @@ public class SceneRenderer {
                     name + ".pl.att.constant",
                     name + ".pl.att.linear",
                     name + ".pl.att.exponent",
-                    name + ".conedir",
+                    name + ".coneDir",
                     name + ".cutoff"
             ).forEach(this.uniforms::createUniform);
         }
@@ -99,9 +99,9 @@ public class SceneRenderer {
         final Vector4f auxDir = new Vector4f(dirLight.getDirection(), 0);
         auxDir.mul(viewMatrix);
         final Vector3f dir = new Vector3f(auxDir.x, auxDir.y, auxDir.z);
-        this.uniforms.setUniform("dirLight.color", dirLight.getColor());
-        this.uniforms.setUniform("dirLight.direction", dir);
-        this.uniforms.setUniform("dirLight.intensity", dirLight.getIntensity());
+        this.uniforms.setUniform("directionalLight.color", dirLight.getColor());
+        this.uniforms.setUniform("directionalLight.direction", dir);
+        this.uniforms.setUniform("directionalLight.intensity", dirLight.getIntensity());
 
         final List<PointLight> pointLights = sceneLights.getPointLights();
         final int numPointLights = pointLights.size();
@@ -169,8 +169,8 @@ public class SceneRenderer {
             cutoff = spotLight.getCutOff();
             pointLight = spotLight.getPointLight();
         }
-        this.uniforms.setUniform(prefix + ".conedir", coneDirection);
-        this.uniforms.setUniform(prefix + ".conedir", cutoff);
+        this.uniforms.setUniform(prefix + ".coneDir", coneDirection);
+        this.uniforms.setUniform(prefix + ".coneDir", cutoff);
         updatePointLight(pointLight, prefix + ".pl", viewMatrix);
     }
 
