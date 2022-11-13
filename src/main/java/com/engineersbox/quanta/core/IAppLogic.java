@@ -13,7 +13,8 @@ public interface IAppLogic {
 
     void input(final Window window,
                final Scene scene,
-               final long diffTimeMillis);
+               final long diffTimeMillis,
+               final boolean inputConsumed);
 
     void update(final Window window,
                 final Scene scene,

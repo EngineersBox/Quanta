@@ -11,6 +11,10 @@ public class ShaderProgram {
 
     private final int programId;
 
+    public ShaderProgram(final ShaderModuleData... shaderModuleData) {
+        this(List.of(shaderModuleData));
+    }
+
     public ShaderProgram(final List<ShaderModuleData> shaderModuleData) {
         this.programId = glCreateProgram();
         if (this.programId == 0) {

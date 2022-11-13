@@ -3,6 +3,7 @@ package com.engineersbox.quanta.test;
 import com.engineersbox.quanta.core.Engine;
 import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
+import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.rendering.view.Camera;
@@ -11,6 +12,9 @@ import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
+import imgui.ImGui;
+import imgui.ImGuiIO;
+import imgui.flag.ImGuiCond;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
@@ -18,7 +22,7 @@ import org.joml.Vector4f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Main implements IAppLogic {
+public class Main implements IAppLogic, IGUIInstance {
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
@@ -46,10 +50,14 @@ public class Main implements IAppLogic {
         this.cubeEntity = new Entity("cube-entity", cubeModel.getId());
         this.cubeEntity.setPosition(0, 0, -2);
         scene.addEntity(this.cubeEntity);
+        scene.setGUIInstance(this);
     }
 
     @Override
-    public void input(final Window window, final Scene scene, final long diffTimeMillis) {
+    public void input(final Window window,
+                      final Scene scene,
+                      final long diffTimeMillis,
+                      final boolean inputConsumed) {
         final float move = diffTimeMillis * (float) ConfigHandler.CONFIG.game.movementSpeed;
         final Camera camera = scene.getCamera();
         if (window.isKeyPressed(GLFW_KEY_W)) {
@@ -90,6 +98,25 @@ public class Main implements IAppLogic {
 
     @Override
     public void cleanup() {
+    }
 
+    @Override
+    public void drawGUI() {
+        ImGui.newFrame();
+        ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
+        ImGui.showDemoWindow();
+        ImGui.endFrame();
+        ImGui.render();
+    }
+
+    @Override
+    public boolean handleGUIInput(final Scene scene, final Window window) {
+        final ImGuiIO imGuiIO = ImGui.getIO();
+        final MouseInput mouseInput = window.getMouseInput();
+        final Vector2f mousePos = mouseInput.getCurrentPos();
+        imGuiIO.setMousePos(mousePos.x, mousePos.y);
+        imGuiIO.setMouseDown(0, mouseInput.isLeftButtonPressed());
+        imGuiIO.setMouseDown(1, mouseInput.isRightButtonPressed());
+        return imGuiIO.getWantCaptureMouse() || imGuiIO.getWantCaptureKeyboard();
     }
 }

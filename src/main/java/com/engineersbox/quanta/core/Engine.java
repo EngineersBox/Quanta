@@ -1,6 +1,7 @@
 package com.engineersbox.quanta.core;
 
 import com.engineersbox.quanta.debug.OpenGLInfo;
+import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
@@ -37,7 +38,7 @@ public class Engine {
         this.targetFPS = ConfigHandler.CONFIG.video.fps;
         this.targetUPS = ConfigHandler.CONFIG.video.ups;
         this.appLogic = appLogic;
-        this.renderer = new Renderer();
+        this.renderer = new Renderer(this.window);
         this.scene = new Scene(
                 this.window.getWidth(),
                 this.window.getHeight()
@@ -71,24 +72,22 @@ public class Engine {
         float deltaUpdate = 0;
         float deltaFps = 0;
         long updateTime = initialTime;
+        final IGUIInstance guiInstance = this.scene.getGUIInstance();
         while (this.running && !this.window.windowShouldClose()) {
             this.window.pollEvents();
-
             final long now = System.currentTimeMillis();
             deltaUpdate += (now - initialTime) / timeU;
             deltaFps += (now - initialTime) / timeR;
-
             if (this.targetFPS <= 0 || deltaFps >= 1) {
-                this.appLogic.input(this.window, this.scene, now - initialTime);
+                final boolean inputConsumed = guiInstance != null ? guiInstance.handleGUIInput(this.scene, this.window) : false;
+                this.appLogic.input(this.window, this.scene, now - initialTime, inputConsumed);
             }
-
             if (deltaUpdate >= 1) {
                 final long diffTimeMillis = now - updateTime;
                 this.appLogic.update(this.window, this.scene, diffTimeMillis);
                 updateTime = now;
                 deltaUpdate--;
             }
-
             if (this.targetFPS <= 0 || deltaFps >= 1) {
                 this.renderer.render(this.window, this.scene);
                 deltaFps--;
@@ -107,10 +106,10 @@ public class Engine {
     }
 
     public void resize() {
-        this.scene.resize(
-                this.window.getWidth(),
-                this.window.getHeight()
-        );
+        final int width = this.window.getWidth();
+        final int height = this.window.getHeight();
+        this.scene.resize(width, height);
+        this.renderer.resize(width, height);
     }
 
 }
