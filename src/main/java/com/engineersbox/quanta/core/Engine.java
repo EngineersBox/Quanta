@@ -79,7 +79,7 @@ public class Engine {
             deltaUpdate += (now - initialTime) / timeU;
             deltaFps += (now - initialTime) / timeR;
             if (this.targetFPS <= 0 || deltaFps >= 1) {
-                final boolean inputConsumed = guiInstance != null ? guiInstance.handleGUIInput(this.scene, this.window) : false;
+                final boolean inputConsumed = guiInstance != null && guiInstance.handleGUIInput(this.scene, this.window);
                 this.appLogic.input(this.window, this.scene, now - initialTime, inputConsumed);
             }
             if (deltaUpdate >= 1) {
