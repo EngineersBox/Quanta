@@ -85,8 +85,11 @@ public class ModelLoader {
 
     private static int[] processIndices(final AIMesh aiMesh) {
         final List<Integer> indices = new ArrayList<>();
-        for (int i = 0; i < aiMesh.mNumFaces(); i++) {
-            final IntBuffer buffer = aiMesh.mFaces().get(i).mIndices();
+        final int numFaces = aiMesh.mNumFaces();
+        final AIFace.Buffer aiFaces = aiMesh.mFaces();
+        for (int i = 0; i < numFaces; i++) {
+            final AIFace aiFace = aiFaces.get(i);
+            final IntBuffer buffer = aiFace.mIndices();
             while (buffer.remaining() > 0) {
                 indices.add(buffer.get());
             }
@@ -94,34 +97,37 @@ public class ModelLoader {
         return indices.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    private static Material processMaterial(final AIMaterial aiMaterial,
-                                            final String modelDir,
-                                            final TextureCache textureCache) {
+    private static Material processMaterial(final AIMaterial aiMaterial, final String modelDir, final TextureCache textureCache) {
         final Material material = new Material();
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final AIColor4D color = AIColor4D.create();
-            final int result = aiGetMaterialColor(
-                    aiMaterial,
-                    AI_MATKEY_COLOR_DIFFUSE,
-                    aiTextureType_NONE,
-                    0,
-                    color
-            );
+
+            int result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_AMBIENT, aiTextureType_NONE, 0,
+                    color);
+            if (result == aiReturn_SUCCESS) {
+                material.setAmbientColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
+            }
+            result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, aiTextureType_NONE, 0,
+                    color);
             if (result == aiReturn_SUCCESS) {
                 material.setDiffuseColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
+            result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_SPECULAR, aiTextureType_NONE, 0,
+                    color);
+            if (result == aiReturn_SUCCESS) {
+                material.setSpecularColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
+            }
+            float reflectance = 0.0f;
+            final float[] shininessFactor = new float[]{0.0f};
+            final int[] pMax = new int[]{1};
+            result = aiGetMaterialFloatArray(aiMaterial, AI_MATKEY_SHININESS_STRENGTH, aiTextureType_NONE, 0, shininessFactor, pMax);
+            if (result != aiReturn_SUCCESS) {
+                reflectance = shininessFactor[0];
+            }
+            material.setReflectance(reflectance);
             final AIString aiTexturePath = AIString.calloc(stack);
-            aiGetMaterialTexture(
-                    aiMaterial,
-                    aiTextureType_DIFFUSE,
-                    0, aiTexturePath,
-                    (IntBuffer) null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );
+            aiGetMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, 0, aiTexturePath, (IntBuffer) null,
+                    null, null, null, null, null);
             final String texturePath = aiTexturePath.dataString();
             if (texturePath != null && texturePath.length() > 0) {
                 material.setTexturePath(modelDir + File.separator + new File(texturePath).getName());
@@ -134,6 +140,7 @@ public class ModelLoader {
 
     private static Mesh processMesh(final AIMesh aiMesh) {
         final float[] vertices = ModelLoader.processVertices(aiMesh);
+        final float[] normals = ModelLoader.processNormals(aiMesh);
         float[] textCoords = ModelLoader.processTextCoords(aiMesh);
         final int[] indices = ModelLoader.processIndices(aiMesh);
         // Texture coordinates may not have been populated. We need at least the empty slots
@@ -141,7 +148,20 @@ public class ModelLoader {
             final int numElements = (vertices.length / 3) * 2;
             textCoords = new float[numElements];
         }
-        return new Mesh(vertices, textCoords, indices);
+        return new Mesh(vertices, normals, textCoords, indices);
+    }
+
+    private static float[] processNormals(final AIMesh aiMesh) {
+        final AIVector3D.Buffer buffer = aiMesh.mNormals();
+        final float[] data = new float[buffer.remaining() * 3];
+        int pos = 0;
+        while (buffer.remaining() > 0) {
+            final AIVector3D normal = buffer.get();
+            data[pos++] = normal.x();
+            data[pos++] = normal.y();
+            data[pos++] = normal.z();
+        }
+        return data;
     }
 
     private static float[] processTextCoords(final AIMesh aiMesh) {

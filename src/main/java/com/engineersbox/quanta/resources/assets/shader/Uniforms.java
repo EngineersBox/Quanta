@@ -2,6 +2,7 @@ package com.engineersbox.quanta.resources.assets.shader;
 
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.system.MemoryStack;
 
@@ -84,6 +85,24 @@ public class Uniforms {
                 getUniformLocation(name),
                 value.x,
                 value.y
+        );
+    }
+
+    public void setUniform(final String name,
+                           final Vector3f value) {
+        glUniform3f(
+                getUniformLocation(name),
+                value.x,
+                value.y,
+                value.z
+        );
+    }
+
+    public void setUniform(final String name,
+                           final float value) {
+        glUniform1f(
+                getUniformLocation(name),
+                value
         );
     }
 

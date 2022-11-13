@@ -3,7 +3,6 @@ package com.engineersbox.quanta.test;
 import com.engineersbox.quanta.core.Engine;
 import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
-import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.rendering.view.Camera;
@@ -12,17 +11,18 @@ import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
-import imgui.ImGui;
-import imgui.ImGuiIO;
-import imgui.flag.ImGuiCond;
+import com.engineersbox.quanta.scene.lighting.PointLight;
+import com.engineersbox.quanta.scene.lighting.SceneLights;
+import com.engineersbox.quanta.scene.lighting.SpotLight;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Main implements IAppLogic, IGUIInstance {
+public class Main implements IAppLogic {
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
 
@@ -38,6 +38,7 @@ public class Main implements IAppLogic, IGUIInstance {
     private Entity cubeEntity;
     private final Vector4f displInc = new Vector4f();
     private float rotation;
+    private LightControls lightControls;
 
     @Override
     public void init(final Window window, final Scene scene, final Renderer renderer) {
@@ -50,7 +51,24 @@ public class Main implements IAppLogic, IGUIInstance {
         this.cubeEntity = new Entity("cube-entity", cubeModel.getId());
         this.cubeEntity.setPosition(0, 0, -2);
         scene.addEntity(this.cubeEntity);
-        scene.setGUIInstance(this);
+        final SceneLights sceneLights = new SceneLights();
+        sceneLights.getAmbientLight().setIntensity(0.3f);
+        scene.setSceneLights(sceneLights);
+        sceneLights.getPointLights().add(new PointLight(
+                new Vector3f(1, 1, 1),
+                new Vector3f(0, 0, -1.4f),
+                1.0f
+        ));
+        final Vector3f coneDir = new Vector3f(0, 0, -1);
+        sceneLights.getSpotLights().add(new SpotLight(new PointLight(
+                new Vector3f(1, 1, 1),
+                new Vector3f(0, 0, -1.4f),
+                0.0f),
+                coneDir,
+                140.0f
+        ));
+        this.lightControls = new LightControls(scene);
+        scene.setGUIInstance(this.lightControls);
     }
 
     @Override
@@ -100,23 +118,4 @@ public class Main implements IAppLogic, IGUIInstance {
     public void cleanup() {
     }
 
-    @Override
-    public void drawGUI() {
-        ImGui.newFrame();
-        ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
-        ImGui.showDemoWindow();
-        ImGui.endFrame();
-        ImGui.render();
-    }
-
-    @Override
-    public boolean handleGUIInput(final Scene scene, final Window window) {
-        final ImGuiIO imGuiIO = ImGui.getIO();
-        final MouseInput mouseInput = window.getMouseInput();
-        final Vector2f mousePos = mouseInput.getCurrentPos();
-        imGuiIO.setMousePos(mousePos.x, mousePos.y);
-        imGuiIO.setMouseDown(0, mouseInput.isLeftButtonPressed());
-        imGuiIO.setMouseDown(1, mouseInput.isRightButtonPressed());
-        return imGuiIO.getWantCaptureMouse() || imGuiIO.getWantCaptureKeyboard();
-    }
 }

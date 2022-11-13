@@ -5,6 +5,7 @@ import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.rendering.view.Projection;
 import com.engineersbox.quanta.resources.assets.material.TextureCache;
 import com.engineersbox.quanta.resources.assets.object.Model;
+import com.engineersbox.quanta.scene.lighting.SceneLights;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,7 @@ public class Scene {
     private final TextureCache textureCache;
     private final Camera camera;
     private IGUIInstance guiInstance;
+    private SceneLights sceneLights;
 
     public Scene(final int width,
                  final int height) {
@@ -68,5 +70,13 @@ public class Scene {
 
     public void setGUIInstance(final IGUIInstance guiInstance) {
         this.guiInstance = guiInstance;
+    }
+
+    public SceneLights getSceneLights() {
+        return this.sceneLights;
+    }
+
+    public void setSceneLights(final SceneLights sceneLights) {
+        this.sceneLights = sceneLights;
     }
 }
