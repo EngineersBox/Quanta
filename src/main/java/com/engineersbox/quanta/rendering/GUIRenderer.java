@@ -85,7 +85,7 @@ public class GUIRenderer {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this.guiMesh.getIndicesVBO());
         final ImGuiIO io = ImGui.getIO();
         this.scale.x = 2.0f / io.getDisplaySizeX();
-        this.scale.y = 2.0f / io.getDisplaySizeY();
+        this.scale.y = -2.0f / io.getDisplaySizeY();
         this.uniforms.setUniform("scale", this.scale);
         final ImDrawData drawData = ImGui.getDrawData();
         final int numLists = drawData.getCmdListsCount();
