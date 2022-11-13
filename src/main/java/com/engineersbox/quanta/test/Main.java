@@ -98,8 +98,8 @@ public class Main implements IAppLogic {
         if (mouseInput.isRightButtonPressed()) {
             final Vector2f displayVec = mouseInput.getDisplayVec();
             camera.addRotation(
-                    (float) Math.toRadians(-displayVec.x * ConfigHandler.CONFIG.mouse.sensitivity),
-                    (float) Math.toRadians(-displayVec.y * ConfigHandler.CONFIG.mouse.sensitivity)
+                    (float) Math.toRadians(displayVec.x * ConfigHandler.CONFIG.mouse.sensitivity),
+                    (float) Math.toRadians(displayVec.y * ConfigHandler.CONFIG.mouse.sensitivity)
             );
         }
     }

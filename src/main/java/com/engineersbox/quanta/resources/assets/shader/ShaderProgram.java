@@ -1,9 +1,12 @@
 package com.engineersbox.quanta.resources.assets.shader;
 
+import com.engineersbox.quanta.utils.EnumSetUtils;
 import com.engineersbox.quanta.utils.FileUtils;
 import org.lwjgl.opengl.GL30;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.lwjgl.opengl.GL20.*;
 
@@ -16,6 +19,7 @@ public class ShaderProgram {
     }
 
     public ShaderProgram(final List<ShaderModuleData> shaderModuleData) {
+        validateUniqueShaderTypes(shaderModuleData);
         this.programId = glCreateProgram();
         if (this.programId == 0) {
             throw new RuntimeException("Unable to create a new shader program");
@@ -26,6 +30,25 @@ public class ShaderProgram {
                         data.type()
                 )).toList();
         link(moduleIds);
+    }
+
+    private void validateUniqueShaderTypes(final List<ShaderModuleData> shaderModuleData) {
+        final Map<ShaderType, Long> counts = shaderModuleData.stream()
+                .map(ShaderModuleData::type)
+                .collect(EnumSetUtils.counting(ShaderType.class));
+        final Optional<Map.Entry<ShaderType, Long>> possibleMultipleTypeBinding = counts.entrySet()
+                .stream()
+                .filter((final Map.Entry<ShaderType, Long> entry) -> entry.getValue() > 1)
+                .findFirst();
+        if (possibleMultipleTypeBinding.isEmpty()) {
+            return;
+        }
+        final Map.Entry<ShaderType, Long> multipleTypeBinding = possibleMultipleTypeBinding.get();
+        throw new IllegalStateException(String.format(
+                "Program was bound with %d instances of %s, only 1 is supported",
+                multipleTypeBinding.getValue(),
+                multipleTypeBinding.getKey().name()
+        ));
     }
 
     protected int createShader(final String code,
