@@ -15,31 +15,42 @@ struct Attenuation {
     float linear;
     float exponent;
 };
+
 struct Material {
     vec4 ambient;
     vec4 diffuse;
     vec4 specular;
     float reflectance;
 };
+
 struct AmbientLight {
     float factor;
     vec3 color;
 };
+
 struct PointLight {
     vec3 position;
     vec3 color;
     float intensity;
     Attenuation att;
 };
+
 struct SpotLight {
     PointLight pl;
     vec3 coneDir;
     float cutoff;
 };
+
 struct DirectionalLight {
     vec3 color;
     vec3 direction;
     float intensity;
+};
+
+struct Fog {
+    int activeFog;
+    vec3 color;
+    float density;
 };
 
 uniform sampler2D texSampler;
@@ -48,6 +59,7 @@ uniform AmbientLight ambientLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 uniform DirectionalLight directionalLight;
+uniform Fog fog;
 
 vec4 calcAmbient(AmbientLight ambientLight, vec4 ambient) {
     return vec4(ambientLight.factor * ambientLight.color, 1) * ambient;
@@ -103,6 +115,16 @@ vec4 calcDirectionalLight(vec4 diffuse, vec4 specular, DirectionalLight light, v
     return calcLightColor(diffuse, specular, light.color, light.intensity, position, normalize(light.direction), normal);
 }
 
+vec4 calcFog(vec3 pos, vec4 color, Fog fog, vec3 ambientLight, DirectionalLight dirLight) {
+    vec3 fogColor = fog.color * (ambientLight + dirLight.color * dirLight.intensity);
+    float distance = length(pos);
+    float fogFactor = 1.0 / exp((distance * fog.density) * (distance * fog.density));
+    fogFactor = clamp(fogFactor, 0.0, 1.0);
+
+    vec3 resultColor = mix(fogColor, color.xyz, fogFactor);
+    return vec4(resultColor.xyz, color.w);
+}
+
 void main() {
     vec4 textureColor = texture(texSampler, outTextCoord);
     vec4 ambient = calcAmbient(ambientLight, textureColor + material.ambient);
@@ -123,4 +145,7 @@ void main() {
         }
     }
     fragColor = ambient + diffuseSpecularComp;
+    if (fog.activeFog == 1) {
+        fragColor = calcFog(outPosition, fragColor, fog, ambientLight.color, directionalLight);
+    }
 }

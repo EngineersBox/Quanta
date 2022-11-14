@@ -12,6 +12,7 @@ import com.engineersbox.quanta.resources.assets.shader.ShaderType;
 import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
+import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.*;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -23,6 +24,8 @@ import java.util.stream.Stream;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
+import static org.lwjgl.opengl.GL14.glBlendEquation;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 public class SceneRenderer {
@@ -57,7 +60,10 @@ public class SceneRenderer {
                 "ambientLight.color",
                 "directionalLight.color",
                 "directionalLight.direction",
-                "directionalLight.intensity"
+                "directionalLight.intensity",
+                "fog.activeFog",
+                "fog.color",
+                "fog.density"
         ).forEach(this.uniforms::createUniform);
         for (int i = 0; i < SceneRenderer.MAX_POINT_LIGHTS; i++) {
             final String name = "pointLights[" + i + "]";
@@ -174,6 +180,9 @@ public class SceneRenderer {
 
     public void render(final Window window,
                        final Scene scene) {
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         this.shader.bind();
         this.uniforms.setUniform(
                 "projectionMatrix",
@@ -187,6 +196,10 @@ public class SceneRenderer {
                 "texSampler",
                 0
         );
+        final Fog fog = scene.getFog();
+        this.uniforms.setUniform("fog.activeFog", fog.isActive());
+        this.uniforms.setUniform("fog.color", fog.getColor());
+        this.uniforms.setUniform("fog.density", fog.getDensity());
         updateLights(scene);
         final TextureCache textureCache = scene.getTextureCache();
         for (final Model model : scene.getModels().values()) {
@@ -211,6 +224,7 @@ public class SceneRenderer {
         }
         glBindVertexArray(0);
         this.shader.unbind();
+        glDisable(GL_BLEND);
     }
 
     public void cleanup() {

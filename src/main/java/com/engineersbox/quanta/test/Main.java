@@ -12,6 +12,9 @@ import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.SkyBox;
+import com.engineersbox.quanta.scene.atmosphere.Fog;
+import com.engineersbox.quanta.scene.lighting.AmbientLight;
+import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,24 +48,24 @@ public class Main implements IAppLogic {
 
     @Override
     public void init(final Window window, final Scene scene, final Renderer renderer) {
-        final String quadModelId = "quad-model";
-        final Model quadModel = ModelLoader.loadModel(
-                "quad-model",
-                "assets/models/quad/quad.obj",
+        final String terrainModelId = "terrain";
+        final Model terrainModel = ModelLoader.loadModel(
+                terrainModelId,
+                "assets/models/terrain/terrain.obj",
                 scene.getTextureCache()
         );
-        scene.addModel(quadModel);
-        final int numRows = Main.NUM_CHUNKS * 2 + 1;
-        this.terrainEntities = new Entity[numRows][numRows];
-        for (int j = 0; j < numRows; j++) {
-            for (int i = 0; i < numRows; i++) {
-                final Entity entity = new Entity("TERRAIN_" + j + "_" + i, quadModelId);
-                this.terrainEntities[j][i] = entity;
-                scene.addEntity(entity);
-            }
-        }
+        scene.addModel(terrainModel);
+        final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
+        terrainEntity.setScale(100.0f);
+        terrainEntity.updateModelMatrix();
+        scene.addEntity(terrainEntity);
         final SceneLights sceneLights = new SceneLights();
-        sceneLights.getAmbientLight().setIntensity(0.2f);
+        final AmbientLight ambientLight = sceneLights.getAmbientLight();
+        ambientLight.setIntensity(0.5f);
+        ambientLight.setColor(0.3f, 0.3f, 0.3f);
+        final DirectionalLight dirLight = sceneLights.getDirectionalLight();
+        dirLight.setPosition(0, 1, 0);
+        dirLight.setIntensity(1.0f);
         scene.setSceneLights(sceneLights);
         final SkyBox skyBox = new SkyBox(
                 "assets/models/skybox/skybox.obj",
@@ -70,8 +73,8 @@ public class Main implements IAppLogic {
         );
         skyBox.getEntity().setScale(50);
         scene.setSkyBox(skyBox);
+        scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.95f));
         scene.getCamera().moveUp(0.1f);
-        updateTerrain(scene);
     }
 
     @Override
@@ -109,7 +112,7 @@ public class Main implements IAppLogic {
 
     @Override
     public void update(final Window window, final Scene scene, final long diffTimeMillis) {
-        updateTerrain(scene);
+//        updateTerrain(scene);
     }
 
     public void updateTerrain(final Scene scene) {

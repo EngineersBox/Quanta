@@ -5,6 +5,7 @@ import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.rendering.view.Projection;
 import com.engineersbox.quanta.resources.assets.material.TextureCache;
 import com.engineersbox.quanta.resources.assets.object.Model;
+import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
 
 import java.util.HashMap;
@@ -19,6 +20,7 @@ public class Scene {
     private IGUIInstance guiInstance;
     private SceneLights sceneLights;
     private SkyBox skyBox;
+    private Fog fog;
 
     public Scene(final int width,
                  final int height) {
@@ -87,5 +89,13 @@ public class Scene {
 
     public void setSkyBox(final SkyBox skyBox) {
         this.skyBox = skyBox;
+    }
+
+    public Fog getFog() {
+        return this.fog;
+    }
+
+    public void setFog(final Fog fog) {
+        this.fog = fog;
     }
 }

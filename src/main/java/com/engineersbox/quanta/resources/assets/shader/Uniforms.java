@@ -66,6 +66,14 @@ public class Uniforms {
     }
 
     public void setUniform(final String name,
+                           final boolean value) {
+        glUniform1i(
+                getUniformLocation(name),
+                value ? 1 : 0
+        );
+    }
+
+    public void setUniform(final String name,
                            final Vector4f value) {
         glUniform4f(
                 getUniformLocation(name),
