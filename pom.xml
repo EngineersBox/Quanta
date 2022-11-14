@@ -192,6 +192,19 @@
             <classifier>${native.target}</classifier>
             <scope>runtime</scope>
         </dependency>
+        <!-- OpenAL -->
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-openal</artifactId>
+            <version>${lwjgl.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.lwjgl</groupId>
+            <artifactId>lwjgl-openal</artifactId>
+            <version>${lwjgl.version}</version>
+            <classifier>${native.target}</classifier>
+            <scope>runtime</scope>
+        </dependency>
         <!-- IMGUI -->
         <dependency>
             <groupId>io.github.spair</groupId>
