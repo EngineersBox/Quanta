@@ -3,10 +3,10 @@
 in vec2 frgTextCoords;
 in vec4 frgColor;
 
-uniform sampler2D txtSampler;
+uniform sampler2D textureSampler;
 
 out vec4 outColor;
 
 void main() {
-    outColor = frgColor  * texture(txtSampler, frgTextCoords);
+    outColor = frgColor  * texture(textureSampler, frgTextCoords);
 }

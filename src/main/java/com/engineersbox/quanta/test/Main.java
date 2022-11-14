@@ -44,16 +44,26 @@ public class Main implements IAppLogic {
     @Override
     public void init(final Window window, final Scene scene, final Renderer renderer) {
         final String terrainModelId = "terrain";
-        final Model terrainModel = ModelLoader.loadModel(terrainModelId, "assets/models/terrain/terrain.obj",
-                scene.getTextureCache(), scene.getMaterialCache(), false);
+        final Model terrainModel = ModelLoader.loadModel(
+                terrainModelId,
+                "assets/models/terrain/terrain.obj",
+                scene.getTextureCache(),
+                scene.getMaterialCache(),
+                false
+        );
         scene.addModel(terrainModel);
         final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
         terrainEntity.setScale(100.0f);
         terrainEntity.updateModelMatrix();
         scene.addEntity(terrainEntity);
 
-        final Model cubeModel = ModelLoader.loadModel("cube-model", "assets/models/cube/cube.obj",
-                scene.getTextureCache(), scene.getMaterialCache(), false);
+        final Model cubeModel = ModelLoader.loadModel(
+                "cube-model",
+                "assets/models/cube/cube.obj",
+                scene.getTextureCache(),
+                scene.getMaterialCache(),
+                false
+        );
         scene.addModel(cubeModel);
         this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
         this.cubeEntity1.setPosition(0, 2, -1);
@@ -77,8 +87,11 @@ public class Main implements IAppLogic {
         dirLight.setIntensity(1.0f);
         scene.setSceneLights(sceneLights);
 
-        final SkyBox skyBox = new SkyBox("assets/models/skybox/skybox.obj", scene.getTextureCache(),
-                scene.getMaterialCache());
+        final SkyBox skyBox = new SkyBox(
+                "assets/models/skybox/skybox.obj",
+                scene.getTextureCache(),
+                scene.getMaterialCache()
+        );
         skyBox.getEntity().setScale(100);
         skyBox.getEntity().updateModelMatrix();
         scene.setSkyBox(skyBox);

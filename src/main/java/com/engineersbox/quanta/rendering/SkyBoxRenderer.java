@@ -42,7 +42,7 @@ public class SkyBoxRenderer {
                 "viewMatrix",
                 "modelMatrix",
                 "diffuse",
-                "texSampler",
+                "textureSampler",
                 "hasTexture"
         ).forEach(this.uniforms::createUniform);
     }
@@ -66,7 +66,7 @@ public class SkyBoxRenderer {
                 this.viewMatrix
         );
         this.uniforms.setUniform(
-                "texSampler",
+                "textureSampler",
                 0
         );
         final Material material = skyBox.getMaterial();
@@ -87,7 +87,12 @@ public class SkyBoxRenderer {
                 "modelMatrix",
                 skyBox.getEntity().getModelMatrix()
         );
-        glDrawElements(GL_TRIANGLES, mesh.getNumVertices(), GL_UNSIGNED_INT, 0);
+        glDrawElements(
+                GL_TRIANGLES,
+                mesh.getNumVertices(),
+                GL_UNSIGNED_INT,
+                0
+        );
         glBindVertexArray(0);
         this.shader.unbind();
     }

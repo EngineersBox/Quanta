@@ -14,7 +14,7 @@ struct DrawElement {
 };
 
 uniform mat4 modelMatrix;
-uniform mat4 projViewMatrix;
+uniform mat4 projectionViewMatrix;
 uniform DrawElement drawElements[MAX_DRAW_ELEMENTS];
 uniform mat4 modelMatrices[MAX_ENTITIES];
 
@@ -23,5 +23,5 @@ void main() {
     uint idx = gl_BaseInstance + gl_InstanceID;
     int modelMatrixIdx = drawElements[idx].modelMatrixIdx;
     mat4 modelMatrix = modelMatrices[modelMatrixIdx];
-    gl_Position = projViewMatrix * modelMatrix * initPos;
+    gl_Position = projectionViewMatrix * modelMatrix * initPos;
 }

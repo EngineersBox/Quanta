@@ -150,10 +150,21 @@ public class LightingRenderer {
             );
         }
         shadowRender.getShadowBuffer().bindTextures(GL_TEXTURE0 + start);
-        this.uniforms.setUniform("inverseProjectionMatrix", scene.getProjection().getInverseProjectionMatrix());
-        this.uniforms.setUniform("inverseViewMatrix", scene.getCamera().getInverseViewMatrix());
+        this.uniforms.setUniform(
+                "inverseProjectionMatrix",
+                scene.getProjection().getInverseProjectionMatrix()
+        );
+        this.uniforms.setUniform(
+                "inverseViewMatrix",
+                scene.getCamera().getInverseViewMatrix()
+        );
         glBindVertexArray(this.quadMesh.getVaoId());
-        glDrawElements(GL_TRIANGLES, this.quadMesh.getVertexCount(), GL_UNSIGNED_INT, 0);
+        glDrawElements(
+                GL_TRIANGLES,
+                this.quadMesh.getVertexCount(),
+                GL_UNSIGNED_INT,
+                0
+        );
         this.shader.unbind();
     }
 

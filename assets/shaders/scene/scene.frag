@@ -23,12 +23,12 @@ struct Material {
     int textureIdx;
 };
 
-uniform sampler2D txtSampler[MAX_TEXTURES];
+uniform sampler2D textureSampler[MAX_TEXTURES];
 uniform Material materials[MAX_MATERIALS];
 
 vec3 calcNormal(int idx, vec3 normal, vec3 tangent, vec3 bitangent, vec2 textCoords) {
     mat3 TBN = mat3(tangent, bitangent, normal);
-    vec3 newNormal = texture(txtSampler[idx], textCoords).rgb;
+    vec3 newNormal = texture(textureSampler[idx], textCoords).rgb;
     newNormal = normalize(newNormal * 2.0 - 1.0);
     newNormal = normalize(TBN * newNormal);
     return newNormal;
@@ -36,7 +36,7 @@ vec3 calcNormal(int idx, vec3 normal, vec3 tangent, vec3 bitangent, vec2 textCoo
 
 void main() {
     Material material = materials[outMaterialIdx];
-    vec4 text_color = texture(txtSampler[material.textureIdx], outTextCoord);
+    vec4 text_color = texture(textureSampler[material.textureIdx], outTextCoord);
     vec4 diffuse = text_color + material.diffuse;
     if (diffuse.a < 0.5) {
         discard;

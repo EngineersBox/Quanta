@@ -58,7 +58,7 @@ public class ShadowRenderer {
 
     private void createUniforms() {
         this.uniformsMap = new Uniforms(this.shaderProgram.getProgramId());
-        this.uniformsMap.createUniform("projViewMatrix");
+        this.uniformsMap.createUniform("projectionViewMatrix");
         for (int i = 0; i < SceneRenderer.MAX_DRAW_ELEMENTS; i++) {
             final String name = "drawElements[" + i + "]";
             this.uniformsMap.createUniform(name + ".modelMatrixIdx");
@@ -90,18 +90,31 @@ public class ShadowRenderer {
             }
         }
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this.shadowBuffer.getDepthMapTexture().getIds()[i], 0);
+            glFramebufferTexture2D(
+                    GL_FRAMEBUFFER,
+                    GL_DEPTH_ATTACHMENT,
+                    GL_TEXTURE_2D,
+                    this.shadowBuffer.getDepthMapTexture().getIds()[i],
+                    0
+            );
             glClear(GL_DEPTH_BUFFER_BIT);
         }
         // Static meshes
         int drawElement = 0;
-        final List<Model> modelList = scene.getModels().values().stream().filter(m -> !m.isAnimated()).toList();
+        final List<Model> modelList = scene.getModels()
+                .values()
+                .stream()
+                .filter((final Model model) -> !model.isAnimated())
+                .toList();
         for (final Model model : modelList) {
             final List<Entity> entities = model.getEntities();
             for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
                 for (final Entity entity : entities) {
                     final String name = "drawElements[" + drawElement + "]";
-                    this.uniformsMap.setUniform(name + ".modelMatrixIdx", this.entitiesIdxMap.get(entity.getId()));
+                    this.uniformsMap.setUniform(
+                            name + ".modelMatrixIdx",
+                            this.entitiesIdxMap.get(entity.getId())
+                    );
                     drawElement++;
                 }
             }
@@ -109,16 +122,30 @@ public class ShadowRenderer {
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.staticRenderBufferHandle);
         glBindVertexArray(renderBuffers.getStaticVaoId());
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, this.shadowBuffer.getDepthMapTexture().getIds()[i], 0);
+            glFramebufferTexture2D(
+                    GL_FRAMEBUFFER,
+                    GL_DEPTH_ATTACHMENT,
+                    GL_TEXTURE_2D,
+                    this.shadowBuffer.getDepthMapTexture().getIds()[i],
+                    0
+            );
             final ShadowCascade shadowCascade = this.shadowCascades.get(i);
-            this.uniformsMap.setUniform("projViewMatrix", shadowCascade.getProjectionViewMatrix());
-            glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, 0, this.staticDrawCount, 0);
+            this.uniformsMap.setUniform(
+                    "projectionViewMatrix",
+                    shadowCascade.getProjectionViewMatrix()
+            );
+            glMultiDrawElementsIndirect(
+                    GL_TRIANGLES,
+                    GL_UNSIGNED_INT,
+                    0,
+                    this.staticDrawCount,
+                    0
+            );
         }
         glBindVertexArray(0);
         this.shaderProgram.unbind();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
-
     public void setupData(final Scene scene) {
         setupEntitiesData(scene);
         setupStaticCommandBuffer(scene);
@@ -137,7 +164,11 @@ public class ShadowRenderer {
     }
 
     private void setupStaticCommandBuffer(final Scene scene) {
-        final List<Model> modelList = scene.getModels().values().stream().filter(m -> !m.isAnimated()).toList();
+        final List<Model> modelList = scene.getModels()
+                .values()
+                .stream()
+                .filter((final Model model) -> !model.isAnimated())
+                .toList();
         int numMeshes = 0;
         for (final Model model : modelList) {
             numMeshes += model.getMeshDrawDataList().size();
