@@ -1,6 +1,7 @@
 package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
+import com.engineersbox.quanta.rendering.shadow.ShadowCascade;
 import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.material.TextureCache;
@@ -90,6 +91,13 @@ public class SceneRenderer {
                     name + ".pl.att.exponent",
                     name + ".coneDir",
                     name + ".cutoff"
+            ).forEach(this.uniforms::createUniform);
+        }
+        for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
+            Stream.of(
+                    "shadowMap_" + i,
+                    "cascadeshadows[" + i + "]" + ".projectionViewMatrix",
+                    "cascadeshadows[" + i + "]" + ".splitDistance"
             ).forEach(this.uniforms::createUniform);
         }
     }
@@ -182,7 +190,8 @@ public class SceneRenderer {
     }
 
     public void render(final Window window,
-                       final Scene scene) {
+                       final Scene scene,
+                       final ShadowRenderer shadowRenderer) {
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -203,12 +212,22 @@ public class SceneRenderer {
                 "normalSampler",
                 1
         );
+        updateLights(scene);
         final Fog fog = scene.getFog();
         final boolean hasFog = fog != null;
         this.uniforms.setUniform("fog.activeFog", hasFog && fog.isActive());
         this.uniforms.setUniform("fog.color", hasFog ? fog.getColor() : new Vector3f());
         this.uniforms.setUniform("fog.density", hasFog ? fog.getDensity() : 0);
-        updateLights(scene);
+        int start = 2;
+        List<ShadowCascade> cascadeShadows = shadowRenderer.getCascadeShadows();
+        for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
+            this.uniforms.setUniform("shadowMap_" + i, start + i);
+            ShadowCascade cascadeShadow = cascadeShadows.get(i);
+            this.uniforms.setUniform("cascadeshadows[" + i + "]" + ".projectionViewMatrix", cascadeShadow.getProjectionViewMatrix());
+            this.uniforms.setUniform("cascadeshadows[" + i + "]" + ".splitDistance", cascadeShadow.getSplitDistance());
+        }
+
+        shadowRenderer.getShadowBuffer().bindTextures(GL_TEXTURE2);
         final TextureCache textureCache = scene.getTextureCache();
         for (final Model model : scene.getModels().values()) {
             final List<Entity> entities = model.getEntities();

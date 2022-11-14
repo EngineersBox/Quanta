@@ -158,6 +158,7 @@ public class Config {
 
   public static class Render {
     public final Render.Camera camera;
+    public final Render.Shadows shadows;
     public final Render.Texture texture;
 
     public static class Camera {
@@ -175,6 +176,17 @@ public class Config {
             !c.hasPathOrNull("frustrumCulling") || c.getBoolean("frustrumCulling");
         this.zFar = c.hasPathOrNull("zFar") ? c.getDouble("zFar") : 1000.0;
         this.zNear = c.hasPathOrNull("zNear") ? c.getDouble("zNear") : 0.01;
+      }
+    }
+
+    public static class Shadows {
+      public final int mapResolution;
+
+      public Shadows(
+          com.typesafe.config.Config c,
+          java.lang.String parentPath,
+          $TsCfgValidator $tsCfgValidator) {
+        this.mapResolution = c.hasPathOrNull("mapResolution") ? c.getInt("mapResolution") : 4096;
       }
     }
 
@@ -203,6 +215,13 @@ public class Config {
               : new Render.Camera(
                   com.typesafe.config.ConfigFactory.parseString("camera{}"),
                   parentPath + "camera.",
+                  $tsCfgValidator);
+      this.shadows =
+          c.hasPathOrNull("shadows")
+              ? new Render.Shadows(c.getConfig("shadows"), parentPath + "shadows.", $tsCfgValidator)
+              : new Render.Shadows(
+                  com.typesafe.config.ConfigFactory.parseString("shadows{}"),
+                  parentPath + "shadows.",
                   $tsCfgValidator);
       this.texture =
           c.hasPathOrNull("texture")
