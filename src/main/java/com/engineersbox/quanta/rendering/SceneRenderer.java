@@ -22,8 +22,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
+import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
 import static org.lwjgl.opengl.GL14.glBlendEquation;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
@@ -52,10 +51,12 @@ public class SceneRenderer {
                 "viewMatrix",
                 "modelMatrix",
                 "texSampler",
+                "normalSampler",
                 "material.ambient",
                 "material.diffuse",
                 "material.specular",
                 "material.reflectance",
+                "material.hasNormalMap",
                 "ambientLight.factor",
                 "ambientLight.color",
                 "directionalLight.color",
@@ -196,10 +197,15 @@ public class SceneRenderer {
                 "texSampler",
                 0
         );
+        this.uniforms.setUniform(
+                "normalSampler",
+                1
+        );
         final Fog fog = scene.getFog();
-        this.uniforms.setUniform("fog.activeFog", fog.isActive());
-        this.uniforms.setUniform("fog.color", fog.getColor());
-        this.uniforms.setUniform("fog.density", fog.getDensity());
+        final boolean hasFog = fog != null;
+        this.uniforms.setUniform("fog.activeFog", hasFog && fog.isActive());
+        this.uniforms.setUniform("fog.color", hasFog ? fog.getColor() : new Vector3f());
+        this.uniforms.setUniform("fog.density", hasFog ? fog.getDensity() : 0);
         updateLights(scene);
         final TextureCache textureCache = scene.getTextureCache();
         for (final Model model : scene.getModels().values()) {
@@ -210,9 +216,17 @@ public class SceneRenderer {
                 this.uniforms.setUniform("material.specular", material.getSpecularColor());
                 this.uniforms.setUniform("material.reflectance", material.getReflectance());
                 this.uniforms.setUniform("material.diffuse", material.getDiffuseColor());
+                final String normalMapPath = material.getNormalMapPath();
+                final boolean hasNormalMapPath = normalMapPath != null;
+                this.uniforms.setUniform("material.hasNormalMap", hasNormalMapPath ? 1 : 0);
                 final Texture texture = textureCache.getTexture(material.getTexturePath());
                 glActiveTexture(GL_TEXTURE0);
                 texture.bind();
+                if (hasNormalMapPath) {
+                    Texture normalMapTexture = textureCache.getTexture(normalMapPath);
+                    glActiveTexture(GL_TEXTURE1);
+                    normalMapTexture.bind();
+                }
                 for (final Mesh mesh : material.getMeshes()) {
                     glBindVertexArray(mesh.getVaoId());
                     for (final Entity entity : entities) {

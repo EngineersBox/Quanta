@@ -109,25 +109,47 @@ public class ModelLoader {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final AIColor4D color = AIColor4D.create();
 
-            int result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_AMBIENT, aiTextureType_NONE, 0,
-                    color);
+            int result = aiGetMaterialColor(
+                    aiMaterial,
+                    AI_MATKEY_COLOR_AMBIENT,
+                    aiTextureType_NONE,
+                    0,
+                    color
+            );
             if (result == aiReturn_SUCCESS) {
                 material.setAmbientColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
-            result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, aiTextureType_NONE, 0,
-                    color);
+            result = aiGetMaterialColor(
+                    aiMaterial,
+                    AI_MATKEY_COLOR_DIFFUSE,
+                    aiTextureType_NONE,
+                    0,
+                    color
+            );
             if (result == aiReturn_SUCCESS) {
                 material.setDiffuseColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
-            result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_SPECULAR, aiTextureType_NONE, 0,
-                    color);
+            result = aiGetMaterialColor(
+                    aiMaterial,
+                    AI_MATKEY_COLOR_SPECULAR,
+                    aiTextureType_NONE,
+                    0,
+                    color
+            );
             if (result == aiReturn_SUCCESS) {
                 material.setSpecularColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
             float reflectance = 0.0f;
             final float[] shininessFactor = new float[]{0.0f};
             final int[] pMax = new int[]{1};
-            result = aiGetMaterialFloatArray(aiMaterial, AI_MATKEY_SHININESS_STRENGTH, aiTextureType_NONE, 0, shininessFactor, pMax);
+            result = aiGetMaterialFloatArray(
+                    aiMaterial,
+                    AI_MATKEY_SHININESS_STRENGTH,
+                    aiTextureType_NONE,
+                    0,
+                    shininessFactor,
+                    pMax
+            );
             if (result != aiReturn_SUCCESS) {
                 reflectance = shininessFactor[0];
             }
@@ -141,6 +163,16 @@ public class ModelLoader {
                 textureCache.createTexture(material.getTexturePath());
                 material.setDiffuseColor(Material.DEFAULT_COLOR);
             }
+            final AIString aiNormalMapPath = AIString.calloc(stack);
+            Assimp.aiGetMaterialTexture(
+                    aiMaterial,
+                    aiTextureType_NORMALS, 0, aiNormalMapPath, (IntBuffer) null,
+                    null, null, null, null, null);
+            final String normalMapPath = aiNormalMapPath.dataString();
+            if (normalMapPath != null && normalMapPath.length() > 0) {
+                material.setNormalMapPath(modelDir + File.separator + new File(normalMapPath).getName());
+                textureCache.createTexture(material.getNormalMapPath());
+            }
             return material;
         }
     }
@@ -148,6 +180,8 @@ public class ModelLoader {
     private static Mesh processMesh(final AIMesh aiMesh) {
         final float[] vertices = ModelLoader.processVertices(aiMesh);
         final float[] normals = ModelLoader.processNormals(aiMesh);
+        float[] tangents = processTangents(aiMesh, normals);
+        float[] biTangents = processBiTangents(aiMesh, normals);
         float[] textCoords = ModelLoader.processTextureCoordinates(aiMesh);
         final int[] indices = ModelLoader.processIndices(aiMesh);
         // Texture coordinates may not have been populated. We need at least the empty slots
@@ -155,7 +189,7 @@ public class ModelLoader {
             final int numElements = (vertices.length / 3) * 2;
             textCoords = new float[numElements];
         }
-        return new Mesh(vertices, normals, textCoords, indices);
+        return new Mesh(vertices, normals, tangents, biTangents, textCoords, indices);
     }
 
     private static float[] processNormals(final AIMesh aiMesh) {
@@ -167,6 +201,40 @@ public class ModelLoader {
             data[pos++] = normal.x();
             data[pos++] = normal.y();
             data[pos++] = normal.z();
+        }
+        return data;
+    }
+
+    private static float[] processBiTangents(AIMesh aiMesh, float[] normals) {
+        AIVector3D.Buffer buffer = aiMesh.mBitangents();
+        float[] data = new float[buffer.remaining() * 3];
+        int pos = 0;
+        while (buffer.remaining() > 0) {
+            AIVector3D aiBitangent = buffer.get();
+            data[pos++] = aiBitangent.x();
+            data[pos++] = aiBitangent.y();
+            data[pos++] = aiBitangent.z();
+        }
+        // Assimp may not calculate tangents with models that do not have texture coordinates. Just create empty values
+        if (data.length == 0) {
+            data = new float[normals.length];
+        }
+        return data;
+    }
+
+    private static float[] processTangents(AIMesh aiMesh, float[] normals) {
+        AIVector3D.Buffer buffer = aiMesh.mTangents();
+        float[] data = new float[buffer.remaining() * 3];
+        int pos = 0;
+        while (buffer.remaining() > 0) {
+            AIVector3D aiTangent = buffer.get();
+            data[pos++] = aiTangent.x();
+            data[pos++] = aiTangent.y();
+            data[pos++] = aiTangent.z();
+        }
+        // Assimp may not calculate tangents with models that do not have texture coordinates. Just create empty values
+        if (data.length == 0) {
+            data = new float[normals.length];
         }
         return data;
     }

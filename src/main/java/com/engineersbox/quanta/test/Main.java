@@ -11,9 +11,6 @@ import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
-import com.engineersbox.quanta.scene.SkyBox;
-import com.engineersbox.quanta.scene.atmosphere.Fog;
-import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
 import org.apache.logging.log4j.LogManager;
@@ -45,36 +42,44 @@ public class Main implements IAppLogic {
     private final Vector4f displInc = new Vector4f();
     private float rotation;
     private LightControls lightControls;
+    private int lightAngle;
 
     @Override
     public void init(final Window window, final Scene scene, final Renderer renderer) {
-        final String terrainModelId = "terrain";
-        final Model terrainModel = ModelLoader.loadModel(
-                terrainModelId,
-                "assets/models/terrain/terrain.obj",
-                scene.getTextureCache()
-        );
-        scene.addModel(terrainModel);
-        final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
-        terrainEntity.setScale(100.0f);
-        terrainEntity.updateModelMatrix();
-        scene.addEntity(terrainEntity);
+        final String wallNoNormalsModelId = "quad-no-normals-model";
+        final Model quadModelNoNormals = ModelLoader.loadModel(wallNoNormalsModelId, "assets/models/wall/wall_nonormals.obj",
+                scene.getTextureCache());
+        scene.addModel(quadModelNoNormals);
+
+        final Entity wallLeftEntity = new Entity("wallLeftEntity", wallNoNormalsModelId);
+        wallLeftEntity.setPosition(-3f, 0, 0);
+        wallLeftEntity.setScale(2.0f);
+        wallLeftEntity.updateModelMatrix();
+        scene.addEntity(wallLeftEntity);
+
+        final String wallModelId = "quad-model";
+        final Model quadModel = ModelLoader.loadModel(wallModelId, "assets/models/wall/wall.obj",
+                scene.getTextureCache());
+        scene.addModel(quadModel);
+
+        final Entity wallRightEntity = new Entity("wallRightEntity", wallModelId);
+        wallRightEntity.setPosition(3f, 0, 0);
+        wallRightEntity.setScale(2.0f);
+        wallRightEntity.updateModelMatrix();
+        scene.addEntity(wallRightEntity);
+
         final SceneLights sceneLights = new SceneLights();
-        final AmbientLight ambientLight = sceneLights.getAmbientLight();
-        ambientLight.setIntensity(0.5f);
-        ambientLight.setColor(0.3f, 0.3f, 0.3f);
+        sceneLights.getAmbientLight().setIntensity(0.2f);
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();
-        dirLight.setPosition(0, 1, 0);
+        dirLight.setPosition(1, 1, 0);
         dirLight.setIntensity(1.0f);
         scene.setSceneLights(sceneLights);
-        final SkyBox skyBox = new SkyBox(
-                "assets/models/skybox/skybox.obj",
-                scene.getTextureCache()
-        );
-        skyBox.getEntity().setScale(50);
-        scene.setSkyBox(skyBox);
-        scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.95f));
-        scene.getCamera().moveUp(0.1f);
+
+        final Camera camera = scene.getCamera();
+        camera.moveUp(5.0f);
+        camera.addRotation((float) Math.toRadians(90), 0);
+
+        this.lightAngle = -35;
     }
 
     @Override
@@ -99,7 +104,17 @@ public class Main implements IAppLogic {
         } else if (window.isKeyPressed(GLFW_KEY_LEFT_SHIFT)) {
             camera.moveDown(move);
         }
-
+        if (window.isKeyPressed(GLFW_KEY_LEFT)) {
+            this.lightAngle -= 2.5f;
+            if (this.lightAngle < -90) {
+                this.lightAngle = -90;
+            }
+        } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) {
+            this.lightAngle += 2.5f;
+            if (this.lightAngle > 90) {
+                this.lightAngle = 90;
+            }
+        }
         final MouseInput mouseInput = window.getMouseInput();
         if (mouseInput.isRightButtonPressed()) {
             final Vector2f displayVec = mouseInput.getDisplayVec();
@@ -108,6 +123,11 @@ public class Main implements IAppLogic {
                     (float) Math.toRadians(displayVec.y * ConfigHandler.CONFIG.mouse.sensitivity)
             );
         }
+        final SceneLights sceneLights = scene.getSceneLights();
+        final DirectionalLight dirLight = sceneLights.getDirectionalLight();
+        final double angRad = Math.toRadians(this.lightAngle);
+        dirLight.getDirection().x = (float) Math.sin(angRad);
+        dirLight.getDirection().y = (float) Math.cos(angRad);
     }
 
     @Override

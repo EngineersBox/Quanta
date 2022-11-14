@@ -28,6 +28,7 @@ public class Scene {
         this.projection = new Projection(width, height);
         this.textureCache = new TextureCache();
         this.camera = new Camera();
+        this.fog = new Fog();
     }
 
     public void addEntity(final Entity entity) {

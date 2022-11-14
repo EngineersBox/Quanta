@@ -23,6 +23,8 @@ public class Mesh {
 
     public Mesh(final float[] positions,
                 final float[] normals,
+                final float[] tangents,
+                final float[] biTangents,
                 final float[] textCoords,
                 final int[] indices) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
@@ -51,6 +53,26 @@ public class Mesh {
             glEnableVertexAttribArray(1);
             glVertexAttribPointer(1, 3, GL_FLOAT, false, 0, 0);
 
+            // Tangents
+            vboId = glGenBuffers();
+            this.vboIds.add(vboId);
+            FloatBuffer tangentsBuffer = stack.callocFloat(tangents.length);
+            tangentsBuffer.put(0, tangents);
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, tangentsBuffer, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(2);
+            glVertexAttribPointer(2, 3, GL_FLOAT, false, 0, 0);
+
+            // BiTangents
+            vboId = glGenBuffers();
+            this.vboIds.add(vboId);
+            FloatBuffer bitangentsBuffer = stack.callocFloat(biTangents.length);
+            bitangentsBuffer.put(0, biTangents);
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, bitangentsBuffer, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(3);
+            glVertexAttribPointer(3, 3, GL_FLOAT, false, 0, 0);
+
             // Texture coordinates
             vboId = glGenBuffers();
             this.vboIds.add(vboId);
@@ -58,8 +80,8 @@ public class Mesh {
             textCoordsBuffer.put(0, textCoords);
             glBindBuffer(GL_ARRAY_BUFFER, vboId);
             glBufferData(GL_ARRAY_BUFFER, textCoordsBuffer, GL_STATIC_DRAW);
-            glEnableVertexAttribArray(2);
-            glVertexAttribPointer(2, 2, GL_FLOAT, false, 0, 0);
+            glEnableVertexAttribArray(4);
+            glVertexAttribPointer(4, 2, GL_FLOAT, false, 0, 0);
 
             // Index
             vboId = glGenBuffers();
