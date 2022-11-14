@@ -55,6 +55,14 @@
         </dependencies>
     </dependencyManagement>
 
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub EngineersBox Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/EngineersBox/Quanta</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <!-- Apache Commons Collections -->
         <dependency>
