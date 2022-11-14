@@ -45,8 +45,8 @@ public class Window {
             }
             glfwWindowHint(GLFW_SAMPLES, ConfigHandler.CONFIG.engine.glOptions.aaSamples);
         }
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         if (ConfigHandler.CONFIG.engine.glOptions.compatProfile) {
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
         } else {

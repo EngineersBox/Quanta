@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.resources.assets.material;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,10 @@ public class TextureCache {
             texture = this.textureMap.get(TextureCache.DEFAULT_TEXTURE);
         }
         return texture;
+    }
+
+    public Collection<Texture> getAll() {
+        return textureMap.values();
     }
 
 }

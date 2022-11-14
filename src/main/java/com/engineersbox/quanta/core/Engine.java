@@ -105,7 +105,6 @@ public class Engine {
     private void cleanup() {
         this.appLogic.cleanup();
         this.renderer.cleanup();
-        this.scene.cleanup();
         this.window.cleanup();
     }
 

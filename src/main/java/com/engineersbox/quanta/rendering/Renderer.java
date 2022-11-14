@@ -2,7 +2,12 @@ package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
+import com.engineersbox.quanta.rendering.indirect.RenderBuffer;
+import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.scene.Scene;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
@@ -17,6 +22,7 @@ public class Renderer {
     private final ShadowRenderer shadowRenderer;
     private final GBuffer gBuffer;
     private final LightingRenderer lightingRenderer;
+    private final RenderBuffer renderBuffer;
 
     public Renderer(final Window window) {
         this.sceneRenderer = new SceneRenderer();
@@ -25,6 +31,7 @@ public class Renderer {
         this.shadowRenderer = new ShadowRenderer();
         this.gBuffer = new GBuffer(window);
         this.lightingRenderer = new LightingRenderer();
+        this.renderBuffer = new RenderBuffer();
     }
 
     public void cleanup() {
@@ -34,6 +41,7 @@ public class Renderer {
         this.shadowRenderer.cleanup();
         this.lightingRenderer.cleanup();
         this.gBuffer.cleanup();
+        this.renderBuffer.cleanup();
     }
 
     private void lightingRenderFinish() {
@@ -44,23 +52,32 @@ public class Renderer {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, window.getWidth(), window.getHeight());
-
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_ONE, GL_ONE);
-
         glBindFramebuffer(GL_READ_FRAMEBUFFER, this.gBuffer.getGBufferId());
     }
 
     public void render(final Window window,
                        final Scene scene) {
-        this.shadowRenderer.render(scene);
-        this.sceneRenderer.render(scene, this.gBuffer);
+        this.shadowRenderer.render(scene, this.renderBuffer);
+        this.sceneRenderer.render(scene, this.renderBuffer, this.gBuffer);
         lightingRenderStart(window);
         this.lightingRenderer.render(scene, this.shadowRenderer, this.gBuffer);
         this.skyBoxRenderer.render(scene);
         lightingRenderFinish();
         this.guiRenderer.render(scene);
+    }
+
+    public void setupData(final Scene scene) {
+        this.renderBuffer.loadStaticModels(scene);
+        this.renderBuffer.loadAnimatedModels(scene);
+        this.sceneRenderer.setupData(scene);
+        this.shadowRenderer.setupData(scene);
+        new ArrayList<>(scene.getModels().values())
+                .stream()
+                .map(Model::getMeshDataList)
+                .forEach(List::clear);
     }
 
     public void resize(final int width,

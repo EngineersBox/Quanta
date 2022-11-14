@@ -1,13 +1,16 @@
 package com.engineersbox.quanta.resources.loader;
 
 import com.engineersbox.quanta.resources.assets.material.Material;
+import com.engineersbox.quanta.resources.assets.material.MaterialCache;
 import com.engineersbox.quanta.resources.assets.material.TextureCache;
 import com.engineersbox.quanta.resources.assets.object.Mesh;
+import com.engineersbox.quanta.resources.assets.object.MeshData;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.*;
 import com.engineersbox.quanta.utils.ListUtils;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
@@ -42,12 +45,14 @@ public class ModelLoader {
             nodeTransform = ModelLoader.buildNodeTransformationMatrix(aiNodeAnim, frame);
         }
         final Matrix4f nodeGlobalTransform = new Matrix4f(parentTransformation).mul(nodeTransform);
+
         final List<Bone> affectedBones = boneList.stream().filter(b -> b.boneName().equals(nodeName)).toList();
         for (final Bone bone : affectedBones) {
             final Matrix4f boneTransform = new Matrix4f(globalInverseTransform).mul(nodeGlobalTransform).
                     mul(bone.offsetMatrix());
             animatedFrame.boneMatrices()[bone.boneId()] = boneTransform;
         }
+
         for (final Node childNode : node.getChildren()) {
             ModelLoader.buildFrameMatrices(aiAnimation, boneList, animatedFrame, frame, childNode, nodeGlobalTransform,
                     globalInverseTransform);
@@ -59,8 +64,10 @@ public class ModelLoader {
         final AIVectorKey.Buffer positionKeys = aiNodeAnim.mPositionKeys();
         final AIVectorKey.Buffer scalingKeys = aiNodeAnim.mScalingKeys();
         final AIQuatKey.Buffer rotationKeys = aiNodeAnim.mRotationKeys();
+
         AIVectorKey aiVecKey;
         AIVector3D vec;
+
         final Matrix4f nodeTransform = new Matrix4f();
         final int numPositions = aiNodeAnim.mNumPositionKeys();
         if (numPositions > 0) {
@@ -81,6 +88,7 @@ public class ModelLoader {
             vec = aiVecKey.mValue();
             nodeTransform.scale(vec.x(), vec.y(), vec.z());
         }
+
         return nodeTransform;
     }
 
@@ -88,6 +96,7 @@ public class ModelLoader {
                                        final Node parentNode) {
         final String nodeName = aiNode.mName().dataString();
         final Node node = new Node(nodeName, parentNode, ModelLoader.toMatrix(aiNode.mTransformation()));
+
         final int numChildren = aiNode.mNumChildren();
         final PointerBuffer aiChildren = aiNode.mChildren();
         for (int i = 0; i < numChildren; i++) {
@@ -130,17 +139,20 @@ public class ModelLoader {
     public static Model loadModel(final String modelId,
                                   final String modelPath,
                                   final TextureCache textureCache,
+                                  final MaterialCache materialCache,
                                   final boolean animation) {
         return ModelLoader.loadModel(
                 modelId,
                 modelPath,
                 textureCache,
+                materialCache,
                 aiProcess_GenSmoothNormals
                         | aiProcess_JoinIdenticalVertices
                         | aiProcess_Triangulate
                         | aiProcess_FixInfacingNormals
                         | aiProcess_CalcTangentSpace
                         | aiProcess_LimitBoneWeights
+                        | aiProcess_GenBoundingBoxes
                         | (animation ? 0 : aiProcess_PreTransformVertices)
         );
     }
@@ -148,6 +160,7 @@ public class ModelLoader {
     public static Model loadModel(final String modelId,
                                   final String modelPath,
                                   final TextureCache textureCache,
+                                  final MaterialCache materialCache,
                                   final int flags) {
         final File file = new File(modelPath);
         if (!file.exists()) {
@@ -162,27 +175,26 @@ public class ModelLoader {
         final List<Material> materialList = new ArrayList<>();
         for (int i = 0; i < numMaterials; i++) {
             final AIMaterial aiMaterial = AIMaterial.create(aiScene.mMaterials().get(i));
-            materialList.add(ModelLoader.processMaterial(aiMaterial, modelDir, textureCache));
+            final Material material = ModelLoader.processMaterial(aiMaterial, modelDir, textureCache);
+            materialCache.addMaterial(material);
+            materialList.add(material);
         }
         final int numMeshes = aiScene.mNumMeshes();
         final PointerBuffer aiMeshes = aiScene.mMeshes();
-        final Material defaultMaterial = new Material();
+        final List<MeshData> meshDataList = new ArrayList<>();
         final List<Bone> boneList = new ArrayList<>();
         for (int i = 0; i < numMeshes; i++) {
             final AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
-            final Mesh mesh = ModelLoader.processMesh(aiMesh, boneList);
+            final MeshData meshData = ModelLoader.processMesh(aiMesh, boneList);
             final int materialIdx = aiMesh.mMaterialIndex();
-            final Material material;
             if (materialIdx >= 0 && materialIdx < materialList.size()) {
-                material = materialList.get(materialIdx);
+                meshData.setMaterialIdx(materialList.get(materialIdx).getMaterialIdx());
             } else {
-                material = defaultMaterial;
+                meshData.setMaterialIdx(MaterialCache.DEFAULT_MATERIAL_IDX);
             }
-            material.getMeshes().add(mesh);
+            meshDataList.add(meshData);
         }
-        if (!defaultMaterial.getMeshes().isEmpty()) {
-            materialList.add(defaultMaterial);
-        }
+
         List<Animation> animations = new ArrayList<>();
         final int numAnimations = aiScene.mNumAnimations();
         if (numAnimations > 0) {
@@ -190,12 +202,16 @@ public class ModelLoader {
             final Matrix4f globalInverseTransformation = ModelLoader.toMatrix(aiScene.mRootNode().mTransformation()).invert();
             animations = ModelLoader.processAnimations(aiScene, boneList, rootNode, globalInverseTransformation);
         }
+
         aiReleaseImport(aiScene);
-        return new Model(modelId, materialList, animations);
+
+        return new Model(modelId, meshDataList, animations);
     }
 
-    private static List<Animation> processAnimations(final AIScene aiScene, final List<Bone> boneList,
-                                                     final Node rootNode, final Matrix4f globalInverseTransformation) {
+    private static List<Animation> processAnimations(final AIScene aiScene,
+                                                     final List<Bone> boneList,
+                                                     final Node rootNode,
+                                                     final Matrix4f globalInverseTransformation) {
         final List<Animation> animations = new ArrayList<>();
         // Process all animations
         final int numAnimations = aiScene.mNumAnimations();
@@ -235,7 +251,8 @@ public class ModelLoader {
         return data;
     }
 
-    private static AnimMeshData processBones(final AIMesh aiMesh, final List<Bone> boneList) {
+    private static AnimMeshData processBones(final AIMesh aiMesh,
+                                             final List<Bone> boneList) {
         final List<Integer> boneIds = new ArrayList<>();
         final List<Float> weights = new ArrayList<>();
         final Map<Integer, List<VertexWeight>> weightSet = new HashMap<>();
@@ -244,21 +261,14 @@ public class ModelLoader {
         for (int i = 0; i < numBones; i++) {
             final AIBone aiBone = AIBone.create(aiBones.get(i));
             final int id = boneList.size();
-            final Bone bone = new Bone(
-                    id,
-                    aiBone.mName().dataString(),
-                    ModelLoader.toMatrix(aiBone.mOffsetMatrix())
-            );
+            final Bone bone = new Bone(id, aiBone.mName().dataString(), ModelLoader.toMatrix(aiBone.mOffsetMatrix()));
             boneList.add(bone);
             final int numWeights = aiBone.mNumWeights();
             final AIVertexWeight.Buffer aiWeights = aiBone.mWeights();
             for (int j = 0; j < numWeights; j++) {
                 final AIVertexWeight aiWeight = aiWeights.get(j);
-                final VertexWeight vw = new VertexWeight(
-                        bone.boneId(),
-                        aiWeight.mVertexId(),
-                        aiWeight.mWeight()
-                );
+                final VertexWeight vw = new VertexWeight(bone.boneId(), aiWeight.mVertexId(),
+                        aiWeight.mWeight());
                 List<VertexWeight> vertexWeightList = weightSet.get(vw.vertexId());
                 if (vertexWeightList == null) {
                     vertexWeightList = new ArrayList<>();
@@ -282,10 +292,7 @@ public class ModelLoader {
                 }
             }
         }
-        return new AnimMeshData(
-                ListUtils.listFloatToArray(weights),
-                ListUtils.listIntToArray(boneIds)
-        );
+        return new AnimMeshData(ListUtils.listFloatToArray(weights), ListUtils.listIntToArray(boneIds));
     }
 
     private static int[] processIndices(final AIMesh aiMesh) {
@@ -308,69 +315,32 @@ public class ModelLoader {
         final Material material = new Material();
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final AIColor4D color = AIColor4D.create();
-
-            int result = aiGetMaterialColor(
-                    aiMaterial,
-                    AI_MATKEY_COLOR_AMBIENT,
-                    aiTextureType_NONE,
-                    0,
-                    color
-            );
+            int result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_AMBIENT, aiTextureType_NONE, 0,
+                    color);
             if (result == aiReturn_SUCCESS) {
                 material.setAmbientColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
-
-            result = aiGetMaterialColor(
-                    aiMaterial,
-                    AI_MATKEY_COLOR_DIFFUSE,
-                    aiTextureType_NONE,
-                    0,
-                    color
-            );
+            result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, aiTextureType_NONE, 0,
+                    color);
             if (result == aiReturn_SUCCESS) {
                 material.setDiffuseColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
-
-            result = aiGetMaterialColor(
-                    aiMaterial,
-                    AI_MATKEY_COLOR_SPECULAR,
-                    aiTextureType_NONE,
-                    0,
-                    color
-            );
+            result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_SPECULAR, aiTextureType_NONE, 0,
+                    color);
             if (result == aiReturn_SUCCESS) {
                 material.setSpecularColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
-
             float reflectance = 0.0f;
             final float[] shininessFactor = new float[]{0.0f};
             final int[] pMax = new int[]{1};
-            result = aiGetMaterialFloatArray(
-                    aiMaterial,
-                    AI_MATKEY_SHININESS_STRENGTH,
-                    aiTextureType_NONE,
-                    0,
-                    shininessFactor,
-                    pMax
-            );
+            result = aiGetMaterialFloatArray(aiMaterial, AI_MATKEY_SHININESS_STRENGTH, aiTextureType_NONE, 0, shininessFactor, pMax);
             if (result != aiReturn_SUCCESS) {
                 reflectance = shininessFactor[0];
             }
             material.setReflectance(reflectance);
-
             final AIString aiTexturePath = AIString.calloc(stack);
-            aiGetMaterialTexture(
-                    aiMaterial,
-                    aiTextureType_DIFFUSE,
-                    0,
-                    aiTexturePath,
-                    (IntBuffer) null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );
+            aiGetMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, 0, aiTexturePath, (IntBuffer) null,
+                    null, null, null, null, null);
             final String texturePath = aiTexturePath.dataString();
             if (texturePath != null && texturePath.length() > 0) {
                 material.setTexturePath(modelDir + File.separator + new File(texturePath).getName());
@@ -378,18 +348,8 @@ public class ModelLoader {
                 material.setDiffuseColor(Material.DEFAULT_COLOR);
             }
             final AIString aiNormalMapPath = AIString.calloc(stack);
-            Assimp.aiGetMaterialTexture(
-                    aiMaterial,
-                    aiTextureType_NORMALS,
-                    0,
-                    aiNormalMapPath,
-                    (IntBuffer) null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );
+            Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_NORMALS, 0, aiNormalMapPath, (IntBuffer) null,
+                    null, null, null, null, null);
             final String normalMapPath = aiNormalMapPath.dataString();
             if (normalMapPath != null && normalMapPath.length() > 0) {
                 material.setNormalMapPath(modelDir + File.separator + new File(normalMapPath).getName());
@@ -399,7 +359,8 @@ public class ModelLoader {
         }
     }
 
-    private static Mesh processMesh(final AIMesh aiMesh, final List<Bone> boneList) {
+    private static MeshData processMesh(final AIMesh aiMesh,
+                                        final List<Bone> boneList) {
         final float[] vertices = ModelLoader.processVertices(aiMesh);
         final float[] normals = ModelLoader.processNormals(aiMesh);
         final float[] tangents = ModelLoader.processTangents(aiMesh, normals);
@@ -412,14 +373,20 @@ public class ModelLoader {
             final int numElements = (vertices.length / 3) * 2;
             textCoords = new float[numElements];
         }
-        return new Mesh(
+        final AIAABB aabb = aiMesh.mAABB();
+        final Vector3f aabbMin = new Vector3f(aabb.mMin().x(), aabb.mMin().y(), aabb.mMin().z());
+        final Vector3f aabbMax = new Vector3f(aabb.mMax().x(), aabb.mMax().y(), aabb.mMax().z());
+        return new MeshData(
                 vertices,
                 normals,
-                tangents,biTangents,
+                tangents,
+                biTangents,
                 textCoords,
                 indices,
                 animMeshData.boneIds(),
-                animMeshData.weights()
+                animMeshData.weights(),
+                aabbMin,
+                aabbMax
         );
     }
 

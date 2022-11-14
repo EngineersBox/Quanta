@@ -14,23 +14,18 @@ public class Material {
     private float reflectance;
     private Vector4f specularColor;
     private Vector4f diffuseColor;
-    private final List<Mesh> meshes;
     private String texturePath;
     private String normalMapPath;
+    private int materialIdx;
 
     public Material() {
         this.diffuseColor = Material.DEFAULT_COLOR;
         this.ambientColor = Material.DEFAULT_COLOR;
         this.specularColor = Material.DEFAULT_COLOR;
-        this.meshes = new ArrayList<>();
+        materialIdx = 0;
     }
 
     public void cleanup() {
-        this.meshes.forEach(Mesh::cleanup);
-    }
-
-    public List<Mesh> getMeshes() {
-        return this.meshes;
     }
 
     public String getTexturePath() {
@@ -79,6 +74,14 @@ public class Material {
 
     public void setNormalMapPath(final String normalMapPath) {
         this.normalMapPath = normalMapPath;
+    }
+
+    public int getMaterialIdx() {
+        return this.materialIdx;
+    }
+
+    public void setMaterialIdx(final int materialIdx) {
+        this.materialIdx = materialIdx;
     }
 
 }

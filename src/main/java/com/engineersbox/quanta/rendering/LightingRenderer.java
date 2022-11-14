@@ -135,7 +135,7 @@ public class LightingRenderer {
                 fog.getDensity()
         );
         final int start = 4;
-        final List<ShadowCascade> cascadeShadows = shadowRender.getCascadeShadows();
+        final List<ShadowCascade> cascadeShadows = shadowRender.getShadowCascades();
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             glActiveTexture(GL_TEXTURE0 + start + i);
             this.uniforms.setUniform("shadowMap_" + i, start + i);

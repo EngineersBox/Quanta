@@ -3,6 +3,7 @@ package com.engineersbox.quanta.scene;
 import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.rendering.view.Projection;
+import com.engineersbox.quanta.resources.assets.material.MaterialCache;
 import com.engineersbox.quanta.resources.assets.material.TextureCache;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
@@ -16,6 +17,7 @@ public class Scene {
     private final Map<String, Model> models;
     private final Projection projection;
     private final TextureCache textureCache;
+    private final MaterialCache materialCache;
     private final Camera camera;
     private IGUIInstance guiInstance;
     private SceneLights sceneLights;
@@ -27,6 +29,7 @@ public class Scene {
         this.models = new HashMap<>();
         this.projection = new Projection(width, height);
         this.textureCache = new TextureCache();
+        this.materialCache = new MaterialCache();
         this.camera = new Camera();
         this.fog = new Fog();
     }
@@ -44,10 +47,6 @@ public class Scene {
         this.models.put(model.getId(), model);
     }
 
-    public void cleanup() {
-        this.models.values().forEach(Model::cleanup);
-    }
-
     public Map<String, Model> getModels() {
         return this.models;
     }
@@ -62,6 +61,10 @@ public class Scene {
 
     public TextureCache getTextureCache() {
         return this.textureCache;
+    }
+
+    public MaterialCache getMaterialCache() {
+        return this.materialCache;
     }
 
     public Camera getCamera() {

@@ -4,12 +4,10 @@ import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.material.TextureCache;
 import com.engineersbox.quanta.resources.assets.object.Mesh;
-import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
 import com.engineersbox.quanta.resources.assets.shader.Uniforms;
-import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.SkyBox;
 import org.joml.Matrix4f;
@@ -71,21 +69,25 @@ public class SkyBoxRenderer {
                 "texSampler",
                 0
         );
-        final Model skyBoxModel = skyBox.getModel();
-        final Entity skyBoxEntity = skyBox.getEntity();
-        final TextureCache textureCache = scene.getTextureCache();
-        for (final Material material : skyBoxModel.getMaterials()) {
-            final Texture texture = textureCache.getTexture(material.getTexturePath());
-            glActiveTexture(GL_TEXTURE0);
-            texture.bind();
-            this.uniforms.setUniform("diffuse", material.getDiffuseColor());
-            this.uniforms.setUniform("hasTexture", texture.getPath().equals(TextureCache.DEFAULT_TEXTURE) ? 0 : 1);
-            for (final Mesh mesh : material.getMeshes()) {
-                glBindVertexArray(mesh.getVaoId());
-                this.uniforms.setUniform("modelMatrix", skyBoxEntity.getModelMatrix());
-                glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
-            }
-        }
+        final Material material = skyBox.getMaterial();
+        final Mesh mesh = skyBox.getMesh();
+        final Texture texture = scene.getTextureCache().getTexture(material.getTexturePath());
+        glActiveTexture(GL_TEXTURE0);
+        texture.bind();
+        this.uniforms.setUniform(
+                "diffuse",
+                material.getDiffuseColor()
+        );
+        this.uniforms.setUniform(
+                "hasTexture",
+                texture.getPath().equals(TextureCache.DEFAULT_TEXTURE) ? 0 : 1
+        );
+        glBindVertexArray(mesh.getVaoId());
+        this.uniforms.setUniform(
+                "modelMatrix",
+                skyBox.getEntity().getModelMatrix()
+        );
+        glDrawElements(GL_TRIANGLES, mesh.getNumVertices(), GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
         this.shader.unbind();
     }

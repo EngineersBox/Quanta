@@ -1,6 +1,6 @@
 package com.engineersbox.quanta.resources.assets.object;
 
-import com.engineersbox.quanta.resources.assets.material.Material;
+import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
 import com.engineersbox.quanta.resources.assets.object.animation.Animation;
 import com.engineersbox.quanta.scene.Entity;
 
@@ -10,37 +10,43 @@ import java.util.List;
 public class Model {
 
     private final String id;
-    private final List<Entity> entities;
-    private final List<Material> materials;
-    private final List<Animation> animations;
+    private final List<Animation> animationList;
+    private final List<Entity> entitiesList;
+    private final List<MeshData> meshData;
+    private final List<MeshDrawData> meshDrawData;
 
     public Model(final String id,
-                 final List<Material> materials,
-                 final List<Animation> animations) {
+                 final List<MeshData> meshData,
+                 final List<Animation> animationList) {
+        this.entitiesList = new ArrayList<>();
         this.id = id;
-        this.materials = materials;
-        this.entities = new ArrayList<>();
-        this.animations = animations;
+        this.meshData = meshData;
+        this.animationList = animationList;
+        this.meshDrawData = new ArrayList<>();
+    }
+
+    public List<Animation> getAnimationList() {
+        return this.animationList;
     }
 
     public List<Entity> getEntities() {
-        return this.entities;
+        return this.entitiesList;
     }
 
     public String getId() {
         return this.id;
     }
 
-    public List<Material> getMaterials() {
-        return this.materials;
+    public List<MeshData> getMeshDataList() {
+        return this.meshData;
     }
 
-    public List<Animation> getAnimations() {
-        return this.animations;
+    public List<MeshDrawData> getMeshDrawDataList() {
+        return this.meshDrawData;
     }
 
-    public void cleanup() {
-        this.materials.forEach(Material::cleanup);
+    public boolean isAnimated() {
+        return this.animationList != null && !this.animationList.isEmpty();
     }
 
 }
