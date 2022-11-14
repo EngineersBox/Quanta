@@ -10,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
 
 public class Engine {
 
@@ -50,6 +51,9 @@ public class Engine {
     private static void init() {
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
+        if (ConfigHandler.CONFIG.engine.glOptions.antialiasing) {
+            glEnable(GL_MULTISAMPLE);
+        }
         if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);

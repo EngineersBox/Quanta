@@ -35,7 +35,16 @@ public class Window {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
-
+        if (ConfigHandler.CONFIG.engine.glOptions.antialiasing) {
+            if (ConfigHandler.CONFIG.engine.glOptions.aaSamples < 0) {
+                throw new IllegalArgumentException(String.format(
+                        "Invalid MSAA sample size %d, expected to be in range [0,%d]",
+                        ConfigHandler.CONFIG.engine.glOptions.aaSamples,
+                        Integer.MAX_VALUE
+                ));
+            }
+            glfwWindowHint(GLFW_SAMPLES, ConfigHandler.CONFIG.engine.glOptions.aaSamples);
+        }
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
         if (ConfigHandler.CONFIG.engine.glOptions.compatProfile) {
