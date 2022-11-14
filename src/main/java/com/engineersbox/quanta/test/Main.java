@@ -6,6 +6,10 @@ import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.rendering.view.Camera;
+import com.engineersbox.quanta.resources.assets.audio.SoundBuffer;
+import com.engineersbox.quanta.resources.assets.audio.SoundListener;
+import com.engineersbox.quanta.resources.assets.audio.SoundManager;
+import com.engineersbox.quanta.resources.assets.audio.SoundSource;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
@@ -22,6 +26,7 @@ import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+import org.lwjgl.openal.AL11;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -48,6 +53,8 @@ public class Main implements IAppLogic {
     private LightControls lightControls;
     private int lightAngle;
     private AnimationData animationData;
+    private SoundSource playerSoundSource;
+    private SoundManager soundManager;
 
     @Override
     public void init(final Window window, final Scene scene, final Renderer renderer) {
@@ -93,6 +100,27 @@ public class Main implements IAppLogic {
         camera.addRotation((float) Math.toRadians(15.0f), (float) Math.toRadians(390.f));
 
         this.lightAngle = 0;
+        initSounds(bobEntity.getPosition(), camera);
+    }
+
+    private void initSounds(final Vector3f position, final Camera camera) {
+        this.soundManager = new SoundManager();
+        this.soundManager.setAttenuationModel(AL11.AL_EXPONENT_DISTANCE);
+        this.soundManager.setListener(new SoundListener(camera.getPosition()));
+
+        SoundBuffer buffer = new SoundBuffer("assets/sounds/creak1.ogg");
+        this.soundManager.addSoundBuffer(buffer);
+        this.playerSoundSource = new SoundSource(false, false);
+        this.playerSoundSource.setPosition(position);
+        this.playerSoundSource.setBuffer(buffer.getBufferId());
+        this.soundManager.addSoundSource("CREAK", this.playerSoundSource);
+
+        buffer = new SoundBuffer("assets/sounds/woo_scary.ogg");
+        this.soundManager.addSoundBuffer(buffer);
+        final SoundSource source = new SoundSource(true, true);
+        source.setBuffer(buffer.getBufferId());
+        this.soundManager.addSoundSource("MUSIC", source);
+        source.play();
     }
 
     @Override
@@ -141,15 +169,21 @@ public class Main implements IAppLogic {
         final double angRad = Math.toRadians(this.lightAngle);
         dirLight.getDirection().x = (float) Math.sin(angRad);
         dirLight.getDirection().y = (float) Math.cos(angRad);
+
+        this.soundManager.updateListenerPosition(camera);
     }
 
     @Override
     public void update(final Window window, final Scene scene, final long diffTimeMillis) {
-        this.animationData.nextFrame();
+        animationData.nextFrame();
+        if (animationData.getCurrentFrameIdx() == 45) {
+            playerSoundSource.play();
+        }
     }
 
     @Override
     public void cleanup() {
+        this.soundManager.cleanup();
     }
 
 }
