@@ -6,15 +6,21 @@ import org.joml.Matrix4f;
 public class Projection {
 
     private final Matrix4f projectionMatrix;
+    private final Matrix4f inverseProjectionMatrix;
 
     public Projection(final int width,
                       final int height) {
         this.projectionMatrix = new Matrix4f();
+        this.inverseProjectionMatrix = new Matrix4f();
         updateProjectionMatrix(width, height);
     }
 
     public Matrix4f getProjectionMatrix() {
         return this.projectionMatrix;
+    }
+
+    public Matrix4f getInverseProjectionMatrix() {
+        return this.inverseProjectionMatrix;
     }
 
     public void updateProjectionMatrix(final int width, final int height) {
@@ -24,5 +30,6 @@ public class Projection {
                 (float) ConfigHandler.CONFIG.render.camera.zNear,
                 (float) ConfigHandler.CONFIG.render.camera.zFar
         );
+        this.inverseProjectionMatrix.set(this.projectionMatrix).invert();
     }
 }

@@ -12,14 +12,16 @@ public class Camera {
     private final Vector2f rotation;
     private final Vector3f up;
     private final Matrix4f viewMatrix;
+    private final Matrix4f inverseViewMatrix;
 
     public Camera() {
         this.direction = new Vector3f();
         this.right = new Vector3f();
         this.up = new Vector3f();
         this.position = new Vector3f();
-        this.viewMatrix = new Matrix4f();
         this.rotation = new Vector2f();
+        this.viewMatrix = new Matrix4f();
+        this.inverseViewMatrix = new Matrix4f();
     }
 
     public void addRotation(final float x, final float y) {
@@ -33,6 +35,10 @@ public class Camera {
 
     public Matrix4f getViewMatrix() {
         return this.viewMatrix;
+    }
+
+    public Matrix4f getInverseViewMatrix() {
+        return this.inverseViewMatrix;
     }
 
     public void moveBackwards(final float inc) {
@@ -76,6 +82,7 @@ public class Camera {
                 .rotateX(this.rotation.x)
                 .rotateY(this.rotation.y)
                 .translate(-this.position.x, -this.position.y, -this.position.z);
+        this.inverseViewMatrix.set(this.viewMatrix).invert();
     }
 
     public void setPosition(final float x, final float y, final float z) {
