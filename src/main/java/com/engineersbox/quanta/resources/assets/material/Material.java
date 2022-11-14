@@ -21,6 +21,7 @@ public class Material {
     public Material() {
         this.diffuseColor = Material.DEFAULT_COLOR;
         this.ambientColor = Material.DEFAULT_COLOR;
+        this.specularColor = Material.DEFAULT_COLOR;
         this.meshes = new ArrayList<>();
     }
 

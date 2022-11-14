@@ -11,7 +11,7 @@ public class SkyBox {
 
     public SkyBox(final String modelPath,
                   final TextureCache textureCache) {
-        this.model = ModelLoader.loadModel("skybox-model", modelPath, textureCache);
+        this.model = ModelLoader.loadModel("skybox-model", modelPath, textureCache, false);
         this.entity = new Entity("skybox-entity", this.model.getId());
     }
 

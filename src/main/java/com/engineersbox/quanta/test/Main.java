@@ -7,10 +7,14 @@ import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.assets.object.Model;
+import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
+import com.engineersbox.quanta.scene.SkyBox;
+import com.engineersbox.quanta.scene.atmosphere.Fog;
+import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
 import org.apache.logging.log4j.LogManager;
@@ -43,43 +47,52 @@ public class Main implements IAppLogic {
     private float rotation;
     private LightControls lightControls;
     private int lightAngle;
+    private AnimationData animationData;
 
     @Override
     public void init(final Window window, final Scene scene, final Renderer renderer) {
-        final String wallNoNormalsModelId = "quad-no-normals-model";
-        final Model quadModelNoNormals = ModelLoader.loadModel(wallNoNormalsModelId, "assets/models/wall/wall_nonormals.obj",
-                scene.getTextureCache());
-        scene.addModel(quadModelNoNormals);
+        final String terrainModelId = "terrain";
+        final Model terrainModel = ModelLoader.loadModel(terrainModelId, "assets/models/terrain/terrain.obj",
+                scene.getTextureCache(), false);
+        scene.addModel(terrainModel);
+        final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
+        terrainEntity.setScale(100.0f);
+        terrainEntity.updateModelMatrix();
+        scene.addEntity(terrainEntity);
 
-        final Entity wallLeftEntity = new Entity("wallLeftEntity", wallNoNormalsModelId);
-        wallLeftEntity.setPosition(-3f, 0, 0);
-        wallLeftEntity.setScale(2.0f);
-        wallLeftEntity.updateModelMatrix();
-        scene.addEntity(wallLeftEntity);
-
-        final String wallModelId = "quad-model";
-        final Model quadModel = ModelLoader.loadModel(wallModelId, "assets/models/wall/wall.obj",
-                scene.getTextureCache());
-        scene.addModel(quadModel);
-
-        final Entity wallRightEntity = new Entity("wallRightEntity", wallModelId);
-        wallRightEntity.setPosition(3f, 0, 0);
-        wallRightEntity.setScale(2.0f);
-        wallRightEntity.updateModelMatrix();
-        scene.addEntity(wallRightEntity);
+        final String bobModelId = "bobModel";
+        final Model bobModel = ModelLoader.loadModel(bobModelId, "assets/models/bob/boblamp.md5mesh",
+                scene.getTextureCache(), true);
+        scene.addModel(bobModel);
+        final Entity bobEntity = new Entity("bobEntity", bobModelId);
+        bobEntity.setScale(0.05f);
+        bobEntity.updateModelMatrix();
+        this.animationData = new AnimationData(bobModel.getAnimations().get(0));
+        bobEntity.setAnimationData(this.animationData);
+        scene.addEntity(bobEntity);
 
         final SceneLights sceneLights = new SceneLights();
-        sceneLights.getAmbientLight().setIntensity(0.2f);
+        final AmbientLight ambientLight = sceneLights.getAmbientLight();
+        ambientLight.setIntensity(0.5f);
+        ambientLight.setColor(0.3f, 0.3f, 0.3f);
+
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();
-        dirLight.setPosition(1, 1, 0);
+        dirLight.setPosition(0, 1, 0);
         dirLight.setIntensity(1.0f);
         scene.setSceneLights(sceneLights);
 
-        final Camera camera = scene.getCamera();
-        camera.moveUp(5.0f);
-        camera.addRotation((float) Math.toRadians(90), 0);
+        final SkyBox skyBox = new SkyBox("assets/models/skybox/skybox.obj", scene.getTextureCache());
+        skyBox.getEntity().setScale(100);
+        skyBox.getEntity().updateModelMatrix();
+        scene.setSkyBox(skyBox);
 
-        this.lightAngle = -35;
+        scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.02f));
+
+        final Camera camera = scene.getCamera();
+        camera.setPosition(-1.5f, 3.0f, 4.5f);
+        camera.addRotation((float) Math.toRadians(15.0f), (float) Math.toRadians(390.f));
+
+        this.lightAngle = 0;
     }
 
     @Override
@@ -132,28 +145,7 @@ public class Main implements IAppLogic {
 
     @Override
     public void update(final Window window, final Scene scene, final long diffTimeMillis) {
-//        updateTerrain(scene);
-    }
-
-    public void updateTerrain(final Scene scene) {
-        final int cellSize = 10;
-        final Vector3f cameraPos = scene.getCamera().getPosition();
-        final int cellCol = (int) (cameraPos.x / cellSize);
-        final int cellRow = (int) (cameraPos.z / cellSize);
-        final int numRows = Main.NUM_CHUNKS * 2 + 1;
-        int zOffset = -Main.NUM_CHUNKS;
-        final float scale = cellSize / 2.0f;
-        for (int j = 0; j < numRows; j++) {
-            int xOffset = -Main.NUM_CHUNKS;
-            for (int i = 0; i < numRows; i++) {
-                final Entity entity = this.terrainEntities[j][i];
-                entity.setScale(scale);
-                entity.setPosition((cellCol + xOffset) * 2.0f, 0, (cellRow + zOffset) * 2.0f);
-                entity.getModelMatrix().identity().scale(scale).translate(entity.getPosition());
-                xOffset++;
-            }
-            zOffset++;
-        }
+        this.animationData.nextFrame();
     }
 
     @Override

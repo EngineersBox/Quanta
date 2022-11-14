@@ -17,6 +17,8 @@ import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 
 public class Mesh {
 
+    public static final int MAX_WEIGHTS = 4;
+
     private final int vertexCount;
     private final int vaoId;
     private final List<Integer> vboIds;
@@ -26,7 +28,9 @@ public class Mesh {
                 final float[] tangents,
                 final float[] biTangents,
                 final float[] textCoords,
-                final int[] indices) {
+                final int[] indices,
+                final int[] boneIndices,
+                final float[] weights) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             this.vertexCount = indices.length;
             this.vboIds = new ArrayList<>();
@@ -82,6 +86,26 @@ public class Mesh {
             glBufferData(GL_ARRAY_BUFFER, textCoordsBuffer, GL_STATIC_DRAW);
             glEnableVertexAttribArray(4);
             glVertexAttribPointer(4, 2, GL_FLOAT, false, 0, 0);
+
+            // Bone weights
+            vboId = glGenBuffers();
+            this.vboIds.add(vboId);
+            FloatBuffer weightsBuffer = MemoryUtil.memAllocFloat(weights.length);
+            weightsBuffer.put(weights).flip();
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, weightsBuffer, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(5);
+            glVertexAttribPointer(5, 4, GL_FLOAT, false, 0, 0);
+
+            // Bone indices
+            vboId = glGenBuffers();
+            this.vboIds.add(vboId);
+            IntBuffer boneIndicesBuffer = MemoryUtil.memAllocInt(boneIndices.length);
+            boneIndicesBuffer.put(boneIndices).flip();
+            glBindBuffer(GL_ARRAY_BUFFER, vboId);
+            glBufferData(GL_ARRAY_BUFFER, boneIndicesBuffer, GL_STATIC_DRAW);
+            glEnableVertexAttribArray(6);
+            glVertexAttribPointer(6, 4, GL_FLOAT, false, 0, 0);
 
             // Index
             vboId = glGenBuffers();

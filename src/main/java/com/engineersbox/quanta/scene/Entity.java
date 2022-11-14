@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.scene;
 
+import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -12,6 +13,7 @@ public class Entity {
     private final Vector3f position;
     private final Quaternionf rotation;
     private float scale;
+    private AnimationData animationData;
 
     public Entity(final String id,
                   final String modelId) {
@@ -71,6 +73,13 @@ public class Entity {
                 this.rotation,
                 this.scale
         );
+    }
+
+    public AnimationData getAnimationData() {
+        return this.animationData;
+    }
+    public void setAnimationData(final AnimationData animationData) {
+        this.animationData = animationData;
     }
 
 }

@@ -6,6 +6,7 @@ import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.material.TextureCache;
 import com.engineersbox.quanta.resources.assets.object.Mesh;
 import com.engineersbox.quanta.resources.assets.object.Model;
+import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
@@ -64,7 +65,8 @@ public class SceneRenderer {
                 "directionalLight.intensity",
                 "fog.activeFog",
                 "fog.color",
-                "fog.density"
+                "fog.density",
+                "bonesMatrices"
         ).forEach(this.uniforms::createUniform);
         for (int i = 0; i < SceneRenderer.MAX_POINT_LIGHTS; i++) {
             final String name = "pointLights[" + i + "]";
@@ -231,6 +233,13 @@ public class SceneRenderer {
                     glBindVertexArray(mesh.getVaoId());
                     for (final Entity entity : entities) {
                         this.uniforms.setUniform("modelMatrix", entity.getModelMatrix());
+                        AnimationData animationData = entity.getAnimationData();
+                        this.uniforms.setUniform(
+                                "bonesMatrices",
+                                animationData == null
+                                        ? AnimationData.DEFAULT_BONES_MATRICES
+                                        : animationData.getCurrentFrame().boneMatrices()
+                        );
                         glDrawElements(GL_TRIANGLES, mesh.getVertexCount(), GL_UNSIGNED_INT, 0);
                     }
                 }
