@@ -88,7 +88,7 @@ public class ShaderProgram {
         glUseProgram(this.programId);
     }
 
-    public static void unbind() {
+    public void unbind() {
         glUseProgram(0);
     }
 
@@ -107,7 +107,7 @@ public class ShaderProgram {
     }
 
     public void cleanup() {
-        ShaderProgram.unbind();
+        unbind();
         if (this.programId != 0) {
             glDeleteProgram(this.programId);
         }

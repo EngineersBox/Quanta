@@ -18,6 +18,7 @@ public class Scene {
     private final Camera camera;
     private IGUIInstance guiInstance;
     private SceneLights sceneLights;
+    private SkyBox skyBox;
 
     public Scene(final int width,
                  final int height) {
@@ -78,5 +79,13 @@ public class Scene {
 
     public void setSceneLights(final SceneLights sceneLights) {
         this.sceneLights = sceneLights;
+    }
+
+    public SkyBox getSkyBox() {
+        return this.skyBox;
+    }
+
+    public void setSkyBox(final SkyBox skyBox) {
+        this.skyBox = skyBox;
     }
 }

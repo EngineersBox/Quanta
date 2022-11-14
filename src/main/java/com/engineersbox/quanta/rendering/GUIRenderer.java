@@ -106,6 +106,7 @@ public class GUIRenderer {
             glEnable(GL_CULL_FACE);
         }
         glDisable(GL_BLEND);
+        this.shader.unbind();
     }
 
     public void resize(final int width,

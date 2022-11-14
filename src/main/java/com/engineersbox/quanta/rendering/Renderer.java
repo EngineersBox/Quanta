@@ -9,10 +9,12 @@ public class Renderer {
 
     private final SceneRenderer sceneRenderer;
     private final GUIRenderer guiRenderer;
+    private final SkyBoxRenderer skyBoxRenderer;
 
     public Renderer(final Window window) {
         this.sceneRenderer = new SceneRenderer();
         this.guiRenderer = new GUIRenderer(window);
+        this.skyBoxRenderer = new SkyBoxRenderer();
     }
 
     public void cleanup() {
@@ -24,6 +26,7 @@ public class Renderer {
                        final Scene scene) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, window.getWidth(), window.getHeight());
+        this.skyBoxRenderer.render(scene);
         this.sceneRenderer.render(window, scene);
         this.guiRenderer.render(scene);
     }

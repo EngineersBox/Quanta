@@ -11,9 +11,8 @@ import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
-import com.engineersbox.quanta.scene.lighting.PointLight;
+import com.engineersbox.quanta.scene.SkyBox;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
-import com.engineersbox.quanta.scene.lighting.SpotLight;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
@@ -35,6 +34,10 @@ public class Main implements IAppLogic {
         engine.start();
     }
 
+    private static final int NUM_CHUNKS = 4;
+
+    private Entity[][] terrainEntities;
+
     private Entity cubeEntity;
     private final Vector4f displInc = new Vector4f();
     private float rotation;
@@ -42,33 +45,33 @@ public class Main implements IAppLogic {
 
     @Override
     public void init(final Window window, final Scene scene, final Renderer renderer) {
-        final Model cubeModel = ModelLoader.loadModel(
-                "cube-model",
-                "assets/models/cube/cube.obj",
+        final String quadModelId = "quad-model";
+        final Model quadModel = ModelLoader.loadModel(
+                "quad-model",
+                "assets/models/quad/quad.obj",
                 scene.getTextureCache()
         );
-        scene.addModel(cubeModel);
-        this.cubeEntity = new Entity("cube-entity", cubeModel.getId());
-        this.cubeEntity.setPosition(0, 0, -2);
-        scene.addEntity(this.cubeEntity);
+        scene.addModel(quadModel);
+        final int numRows = Main.NUM_CHUNKS * 2 + 1;
+        this.terrainEntities = new Entity[numRows][numRows];
+        for (int j = 0; j < numRows; j++) {
+            for (int i = 0; i < numRows; i++) {
+                final Entity entity = new Entity("TERRAIN_" + j + "_" + i, quadModelId);
+                this.terrainEntities[j][i] = entity;
+                scene.addEntity(entity);
+            }
+        }
         final SceneLights sceneLights = new SceneLights();
-        sceneLights.getAmbientLight().setIntensity(0.3f);
+        sceneLights.getAmbientLight().setIntensity(0.2f);
         scene.setSceneLights(sceneLights);
-        sceneLights.getPointLights().add(new PointLight(
-                new Vector3f(1, 1, 1),
-                new Vector3f(0, 0, -1.4f),
-                1.0f
-        ));
-        final Vector3f coneDir = new Vector3f(0, 0, -1);
-        sceneLights.getSpotLights().add(new SpotLight(new PointLight(
-                new Vector3f(1, 1, 1),
-                new Vector3f(0, 0, -1.4f),
-                0.0f),
-                coneDir,
-                140.0f
-        ));
-        this.lightControls = new LightControls(scene);
-        scene.setGUIInstance(this.lightControls);
+        final SkyBox skyBox = new SkyBox(
+                "assets/models/skybox/skybox.obj",
+                scene.getTextureCache()
+        );
+        skyBox.getEntity().setScale(50);
+        scene.setSkyBox(skyBox);
+        scene.getCamera().moveUp(0.1f);
+        updateTerrain(scene);
     }
 
     @Override
@@ -106,12 +109,28 @@ public class Main implements IAppLogic {
 
     @Override
     public void update(final Window window, final Scene scene, final long diffTimeMillis) {
-        this.rotation += 1.5;
-        if (this.rotation > 360) {
-            this.rotation = 0;
+        updateTerrain(scene);
+    }
+
+    public void updateTerrain(final Scene scene) {
+        final int cellSize = 10;
+        final Vector3f cameraPos = scene.getCamera().getPosition();
+        final int cellCol = (int) (cameraPos.x / cellSize);
+        final int cellRow = (int) (cameraPos.z / cellSize);
+        final int numRows = Main.NUM_CHUNKS * 2 + 1;
+        int zOffset = -Main.NUM_CHUNKS;
+        final float scale = cellSize / 2.0f;
+        for (int j = 0; j < numRows; j++) {
+            int xOffset = -Main.NUM_CHUNKS;
+            for (int i = 0; i < numRows; i++) {
+                final Entity entity = this.terrainEntities[j][i];
+                entity.setScale(scale);
+                entity.setPosition((cellCol + xOffset) * 2.0f, 0, (cellRow + zOffset) * 2.0f);
+                entity.getModelMatrix().identity().scale(scale).translate(entity.getPosition());
+                xOffset++;
+            }
+            zOffset++;
         }
-        this.cubeEntity.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
-        this.cubeEntity.updateModelMatrix();
     }
 
     @Override

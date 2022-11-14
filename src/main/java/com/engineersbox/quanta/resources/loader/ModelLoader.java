@@ -55,8 +55,15 @@ public class ModelLoader {
         }
         final int numMaterials = aiScene.mNumMaterials();
         final List<Material> materialList = new ArrayList<>();
+        final PointerBuffer aiMaterials = aiScene.mMaterials();
+        if (aiMaterials == null) {
+            throw new IllegalStateException(String.format(
+                    "Expected %d materials in model, but none were found",
+                    numMaterials
+            ));
+        }
         for (int i = 0; i < numMaterials; i++) {
-            final AIMaterial aiMaterial = AIMaterial.create(aiScene.mMaterials().get(i));
+            final AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
             materialList.add(ModelLoader.processMaterial(aiMaterial, modelDir, textureCache));
         }
         final int numMeshes = aiScene.mNumMeshes();
@@ -141,7 +148,7 @@ public class ModelLoader {
     private static Mesh processMesh(final AIMesh aiMesh) {
         final float[] vertices = ModelLoader.processVertices(aiMesh);
         final float[] normals = ModelLoader.processNormals(aiMesh);
-        float[] textCoords = ModelLoader.processTextCoords(aiMesh);
+        float[] textCoords = ModelLoader.processTextureCoordinates(aiMesh);
         final int[] indices = ModelLoader.processIndices(aiMesh);
         // Texture coordinates may not have been populated. We need at least the empty slots
         if (textCoords.length == 0) {
@@ -164,7 +171,7 @@ public class ModelLoader {
         return data;
     }
 
-    private static float[] processTextCoords(final AIMesh aiMesh) {
+    private static float[] processTextureCoordinates(final AIMesh aiMesh) {
         final AIVector3D.Buffer buffer = aiMesh.mTextureCoords(0);
         if (buffer == null) {
             return new float[]{};

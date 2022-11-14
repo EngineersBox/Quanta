@@ -210,7 +210,7 @@ public class SceneRenderer {
             }
         }
         glBindVertexArray(0);
-        ShaderProgram.unbind();
+        this.shader.unbind();
     }
 
     public void cleanup() {

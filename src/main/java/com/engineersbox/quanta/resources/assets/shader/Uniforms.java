@@ -49,9 +49,8 @@ public class Uniforms {
     public void setUniform(final String name,
                            final Matrix4f value) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final int location = getUniformLocation(name);
             glUniformMatrix4fv(
-                    location,
+                    getUniformLocation(name),
                     false,
                     value.get(stack.mallocFloat(16))
             );
@@ -60,12 +59,10 @@ public class Uniforms {
 
     public void setUniform(final String name,
                            final int value) {
-        try (final MemoryStack stack = MemoryStack.stackPush()) {
-            final int location = getUniformLocation(name);
-            final IntBuffer intBuffer = stack.mallocInt(1);
-            intBuffer.put(value);
-            glUniform1iv(location, intBuffer);
-        }
+        glUniform1i(
+                getUniformLocation(name),
+                value
+        );
     }
 
     public void setUniform(final String name,
