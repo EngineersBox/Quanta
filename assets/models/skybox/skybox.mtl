@@ -1,5 +1,8 @@
 newmtl skyboxmtl
-Kd 1.00 1.00 1.00
-Ka 0.00 0.00 0.00
-Ks 0.00 0.00 0.00
-map_Kd skybox.png
+Kd 0.65 0.65 0.65
+Ka 0.65 0.65 0.65
+Ks 0.65 0.65 0.65
+# Kd 1.00 1.00 1.00
+# Ka 0.00 0.00 0.00
+# Ks 0.00 0.00 0.00
+# map_Kd skybox.png

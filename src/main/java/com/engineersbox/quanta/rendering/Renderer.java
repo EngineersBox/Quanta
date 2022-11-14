@@ -20,6 +20,7 @@ public class Renderer {
     public void cleanup() {
         this.sceneRenderer.cleanup();
         this.guiRenderer.cleanup();
+        this.skyBoxRenderer.cleanup();
     }
 
     public void render(final Window window,

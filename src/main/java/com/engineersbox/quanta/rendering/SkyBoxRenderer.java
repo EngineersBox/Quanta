@@ -90,4 +90,8 @@ public class SkyBoxRenderer {
         this.shader.unbind();
     }
 
+    public void cleanup() {
+        this.shader.cleanup();
+    }
+
 }
