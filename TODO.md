@@ -26,3 +26,4 @@
 * Fix shadow sampling and smoothing
 * Add debug input variables to shaders
   * Allow editing via console to enable and disable
+* Debug view for OpenGL and pipeline statistics with ImGui
