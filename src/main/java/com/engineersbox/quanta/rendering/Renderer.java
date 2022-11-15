@@ -80,7 +80,7 @@ public class Renderer {
         this.shadowRenderer.setupData(scene);
         new ArrayList<>(scene.getModels().values())
                 .stream()
-                .map(Model::getMeshDataList)
+                .map(Model::getMeshData)
                 .forEach(List::clear);
     }
 

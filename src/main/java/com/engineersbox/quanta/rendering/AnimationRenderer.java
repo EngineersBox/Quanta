@@ -52,38 +52,38 @@ public class AnimationRenderer {
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, renderBuffers.getBonesIndicesWeightsBuffer());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, renderBuffers.getBonesMatricesBuffer());
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, renderBuffers.getDestAnimationBuffer());
-
         int dstOffset = 0;
         for (final Model model : scene.getModels().values()) {
-            if (model.isAnimated()) {
-                for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
-                    final AnimMeshDrawData animMeshDrawData = meshDrawData.animMeshDrawData();
-                    final Entity entity = animMeshDrawData.entity();
-                    final AnimatedFrame frame = entity.getAnimationData().getCurrentFrame();
-                    final int groupSize = (int) Math.ceil((float) meshDrawData.sizeInBytes() / (14 * 4));
-                    this.uniforms.setUniform(
-                            "drawParameters.srcOffset",
-                            animMeshDrawData.bindingPoseOffset()
-                    );
-                    this.uniforms.setUniform(
-                            "drawParameters.srcSize",
-                            meshDrawData.sizeInBytes() / 4
-                    );
-                    this.uniforms.setUniform(
-                            "drawParameters.weightsOffset",
-                            animMeshDrawData.weightsOffset()
-                    );
-                    this.uniforms.setUniform(
-                            "drawParameters.bonesMatricesOffset",
-                            frame.getOffset()
-                    );
-                    this.uniforms.setUniform(
-                            "drawParameters.dstOffset",
-                            dstOffset
-                    );
-                    glDispatchCompute(groupSize, 1, 1);
-                    dstOffset += meshDrawData.sizeInBytes() / 4;
-                }
+            if (!model.isAnimated()) {
+                continue;
+            }
+            for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
+                final AnimMeshDrawData animMeshDrawData = meshDrawData.animMeshDrawData();
+                final Entity entity = animMeshDrawData.entity();
+                final AnimatedFrame frame = entity.getAnimationData().getCurrentFrame();
+                final int groupSize = (int) Math.ceil((float) meshDrawData.sizeInBytes() / (14 * 4));
+                this.uniforms.setUniform(
+                        "drawParameters.srcOffset",
+                        animMeshDrawData.bindingPoseOffset()
+                );
+                this.uniforms.setUniform(
+                        "drawParameters.srcSize",
+                        meshDrawData.sizeInBytes() / 4
+                );
+                this.uniforms.setUniform(
+                        "drawParameters.weightsOffset",
+                        animMeshDrawData.weightsOffset()
+                );
+                this.uniforms.setUniform(
+                        "drawParameters.bonesMatricesOffset",
+                        frame.getOffset()
+                );
+                this.uniforms.setUniform(
+                        "drawParameters.dstOffset",
+                        dstOffset
+                );
+                glDispatchCompute(groupSize, 1, 1);
+                dstOffset += meshDrawData.sizeInBytes() / 4;
             }
         }
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);

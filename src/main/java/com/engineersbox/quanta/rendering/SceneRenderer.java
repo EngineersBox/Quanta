@@ -144,7 +144,7 @@ public class SceneRenderer {
                 .toList();
         for (final Model model : modelList) {
             final List<Entity> entities = model.getEntities();
-            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+            for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
                 for (final Entity entity : entities) {
                     final String name = "drawElements[" + drawElement + "]";
                     this.uniforms.setUniform(
@@ -176,7 +176,7 @@ public class SceneRenderer {
                 .filter(Model::isAnimated)
                 .toList();
         for (final Model model : modelList) {
-            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+            for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
                 final AnimMeshDrawData animMeshDrawData = meshDrawData.animMeshDrawData();
                 final Entity entity = animMeshDrawData.entity();
                 final String name = "drawElements[" + drawElement + "]";
@@ -193,8 +193,13 @@ public class SceneRenderer {
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.animRenderBufferHandle);
         glBindVertexArray(renderBuffers.getAnimVaoId());
-        glMultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, 0, this.animDrawCount, 0);
-
+        glMultiDrawElementsIndirect(
+                GL_TRIANGLES,
+                GL_UNSIGNED_INT,
+                0,
+                this.animDrawCount,
+                0
+        );
         glBindVertexArray(0);
         glEnable(GL_BLEND);
         this.shader.unbind();
@@ -208,13 +213,13 @@ public class SceneRenderer {
                 .toList();
         int numMeshes = 0;
         for (final Model model : modelList) {
-            numMeshes += model.getMeshDrawDataList().size();
+            numMeshes += model.getMeshDrawData().size();
         }
         int firstIndex = 0;
         int baseInstance = 0;
         final ByteBuffer commandBuffer = MemoryUtil.memAlloc(numMeshes * SceneRenderer.COMMAND_SIZE);
         for (final Model model : modelList) {
-            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+            for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
                 // count
                 commandBuffer.putInt(meshDrawData.vertices());
                 // instanceCount
@@ -311,7 +316,7 @@ public class SceneRenderer {
                 .toList();
         int numMeshes = 0;
         for (final Model model : modelList) {
-            numMeshes += model.getMeshDrawDataList().size();
+            numMeshes += model.getMeshDrawData().size();
         }
         int firstIndex = 0;
         int baseInstance = 0;
@@ -319,7 +324,7 @@ public class SceneRenderer {
         for (final Model model : modelList) {
             final List<Entity> entities = model.getEntities();
             final int numEntities = entities.size();
-            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+            for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
                 // count
                 commandBuffer.putInt(meshDrawData.vertices());
                 // instanceCount
@@ -328,7 +333,6 @@ public class SceneRenderer {
                 // baseVertex
                 commandBuffer.putInt(meshDrawData.offset());
                 commandBuffer.putInt(baseInstance);
-
                 firstIndex += meshDrawData.vertices();
                 baseInstance += entities.size();
             }

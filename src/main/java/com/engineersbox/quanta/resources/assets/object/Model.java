@@ -10,43 +10,43 @@ import java.util.List;
 public class Model {
 
     private final String id;
-    private final List<Animation> animationList;
-    private final List<Entity> entitiesList;
+    private final List<Animation> animations;
+    private final List<Entity> entities;
     private final List<MeshData> meshData;
     private final List<MeshDrawData> meshDrawData;
 
     public Model(final String id,
                  final List<MeshData> meshData,
-                 final List<Animation> animationList) {
-        this.entitiesList = new ArrayList<>();
+                 final List<Animation> animations) {
+        this.entities = new ArrayList<>();
         this.id = id;
         this.meshData = meshData;
-        this.animationList = animationList;
+        this.animations = animations;
         this.meshDrawData = new ArrayList<>();
     }
 
-    public List<Animation> getAnimationList() {
-        return this.animationList;
+    public List<Animation> getAnimations() {
+        return this.animations;
     }
 
     public List<Entity> getEntities() {
-        return this.entitiesList;
+        return this.entities;
     }
 
     public String getId() {
         return this.id;
     }
 
-    public List<MeshData> getMeshDataList() {
+    public List<MeshData> getMeshData() {
         return this.meshData;
     }
 
-    public List<MeshDrawData> getMeshDrawDataList() {
+    public List<MeshDrawData> getMeshDrawData() {
         return this.meshDrawData;
     }
 
     public boolean isAnimated() {
-        return this.animationList != null && !this.animationList.isEmpty();
+        return this.animations != null && !this.animations.isEmpty();
     }
 
 }

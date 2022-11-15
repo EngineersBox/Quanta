@@ -25,10 +25,10 @@ public class SkyBox {
                 materialCache,
                 false
         );
-        final MeshData meshData = this.skyBoxModel.getMeshDataList().get(0);
+        final MeshData meshData = this.skyBoxModel.getMeshData().get(0);
         this.material = materialCache.getMaterial(meshData.getMaterialIdx());
         this.mesh = new Mesh(meshData);
-        this.skyBoxModel.getMeshDataList().clear();
+        this.skyBoxModel.getMeshData().clear();
         this.skyBoxEntity = new Entity("skyBoxEntity-entity", this.skyBoxModel.getId());
     }
 

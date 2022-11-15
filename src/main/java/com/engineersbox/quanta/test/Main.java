@@ -64,7 +64,7 @@ public class Main implements IAppLogic {
         final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
         bobEntity.setScale(0.05f);
         bobEntity.updateModelMatrix();
-        this.animationData1 = new AnimationData(bobModel.getAnimationList().get(0));
+        this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
         bobEntity.setAnimationData(this.animationData1);
         scene.addEntity(bobEntity);
 
@@ -72,7 +72,7 @@ public class Main implements IAppLogic {
         bobEntity2.setPosition(2, 0, 0);
         bobEntity2.setScale(0.025f);
         bobEntity2.updateModelMatrix();
-        this.animationData2 = new AnimationData(bobModel.getAnimationList().get(0));
+        this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
         bobEntity2.setAnimationData(this.animationData2);
         scene.addEntity(bobEntity2);
 

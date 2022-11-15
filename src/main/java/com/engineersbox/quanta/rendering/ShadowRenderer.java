@@ -113,7 +113,7 @@ public class ShadowRenderer {
                 .toList();
         for (final Model model : modelList) {
             final List<Entity> entities = model.getEntities();
-            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+            for (final MeshDrawData ignored : model.getMeshDrawData()) {
                 for (final Entity entity : entities) {
                     final String name = "drawElements[" + drawElement + "]";
                     this.uniformsMap.setUniform(
@@ -155,7 +155,7 @@ public class ShadowRenderer {
                 .filter(Model::isAnimated)
                 .toList();
         for (final Model model : modelList) {
-            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+            for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
                 final AnimMeshDrawData animMeshDrawData = meshDrawData.animMeshDrawData();
                 final Entity entity = animMeshDrawData.entity();
                 final String name = "drawElements[" + drawElement + "]";
@@ -202,13 +202,13 @@ public class ShadowRenderer {
                 .toList();
         int numMeshes = 0;
         for (final Model model : modelList) {
-            numMeshes += model.getMeshDrawDataList().size();
+            numMeshes += model.getMeshDrawData().size();
         }
         int firstIndex = 0;
         int baseInstance = 0;
         final ByteBuffer commandBuffer = MemoryUtil.memAlloc(numMeshes * ShadowRenderer.COMMAND_SIZE);
         for (final Model model : modelList) {
-            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+            for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
                 // count
                 commandBuffer.putInt(meshDrawData.vertices());
                 // instanceCount
@@ -256,7 +256,7 @@ public class ShadowRenderer {
                 .toList();
         int numMeshes = 0;
         for (final Model model : modelList) {
-            numMeshes += model.getMeshDrawDataList().size();
+            numMeshes += model.getMeshDrawData().size();
         }
         int firstIndex = 0;
         int baseInstance = 0;
@@ -264,7 +264,7 @@ public class ShadowRenderer {
         for (final Model model : modelList) {
             final List<Entity> entities = model.getEntities();
             final int numEntities = entities.size();
-            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+            for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
                 // count
                 commandBuffer.putInt(meshDrawData.vertices());
                 // instanceCount
