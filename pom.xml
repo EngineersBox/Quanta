@@ -27,6 +27,7 @@
         <typesafe.version>1.0.0</typesafe.version>
         <commons-collections.version>4.4</commons-collections.version>
         <imgui.version>1.86.4</imgui.version>
+        <reflections.version>0.10.2</reflections.version>
 
         <!-- Maven Compiler Version -->
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -230,6 +231,12 @@
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
             <version>${joml.version}</version>
+        </dependency>
+        <!-- Reflection Utils -->
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>${reflections.version}</version>
         </dependency>
     </dependencies>
 
