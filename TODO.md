@@ -22,3 +22,7 @@
   * Resolve renderer classes with reflection, order and categorise them
   * Invoke intialisers for each rendering handler
   * Invoke `void render(final Scene scene, final RenderingState state);` method on classes in order
+* Fix shadow acne and bias
+* Fix shadow sampling and smoothing
+* Add debug input variables to shaders
+  * Allow editing via console to enable and disable
