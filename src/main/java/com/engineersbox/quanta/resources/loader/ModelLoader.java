@@ -335,32 +335,64 @@ public class ModelLoader {
         final Material material = new Material();
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final AIColor4D color = AIColor4D.create();
-            int result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_AMBIENT, aiTextureType_NONE, 0,
-                    color);
+            int result = aiGetMaterialColor(
+                    aiMaterial,
+                    AI_MATKEY_COLOR_AMBIENT,
+                    aiTextureType_NONE,
+                    0,
+                    color
+            );
             if (result == aiReturn_SUCCESS) {
                 material.setAmbientColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
-            result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_DIFFUSE, aiTextureType_NONE, 0,
-                    color);
+            result = aiGetMaterialColor(
+                    aiMaterial,
+                    AI_MATKEY_COLOR_DIFFUSE,
+                    aiTextureType_NONE,
+                    0,
+                    color
+            );
             if (result == aiReturn_SUCCESS) {
                 material.setDiffuseColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
-            result = aiGetMaterialColor(aiMaterial, AI_MATKEY_COLOR_SPECULAR, aiTextureType_NONE, 0,
-                    color);
+            result = aiGetMaterialColor(
+                    aiMaterial,
+                    AI_MATKEY_COLOR_SPECULAR,
+                    aiTextureType_NONE,
+                    0,
+                    color
+            );
             if (result == aiReturn_SUCCESS) {
                 material.setSpecularColor(new Vector4f(color.r(), color.g(), color.b(), color.a()));
             }
             float reflectance = 0.0f;
             final float[] shininessFactor = new float[]{0.0f};
             final int[] pMax = new int[]{1};
-            result = aiGetMaterialFloatArray(aiMaterial, AI_MATKEY_SHININESS_STRENGTH, aiTextureType_NONE, 0, shininessFactor, pMax);
+            result = aiGetMaterialFloatArray(
+                    aiMaterial,
+                    AI_MATKEY_SHININESS_STRENGTH,
+                    aiTextureType_NONE,
+                    0,
+                    shininessFactor,
+                    pMax
+            );
             if (result != aiReturn_SUCCESS) {
                 reflectance = shininessFactor[0];
             }
             material.setReflectance(reflectance);
             final AIString aiTexturePath = AIString.calloc(stack);
-            aiGetMaterialTexture(aiMaterial, aiTextureType_DIFFUSE, 0, aiTexturePath, (IntBuffer) null,
-                    null, null, null, null, null);
+            aiGetMaterialTexture(
+                    aiMaterial,
+                    aiTextureType_DIFFUSE,
+                    0,
+                    aiTexturePath,
+                    (IntBuffer) null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
             final String texturePath = aiTexturePath.dataString();
             if (texturePath != null && texturePath.length() > 0) {
                 material.setTexturePath(modelDir + File.separator + new File(texturePath).getName());
@@ -368,8 +400,18 @@ public class ModelLoader {
                 material.setDiffuseColor(Material.DEFAULT_COLOR);
             }
             final AIString aiNormalMapPath = AIString.calloc(stack);
-            Assimp.aiGetMaterialTexture(aiMaterial, aiTextureType_NORMALS, 0, aiNormalMapPath, (IntBuffer) null,
-                    null, null, null, null, null);
+            Assimp.aiGetMaterialTexture(
+                    aiMaterial,
+                    aiTextureType_NORMALS,
+                    0,
+                    aiNormalMapPath,
+                    (IntBuffer) null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
             final String normalMapPath = aiNormalMapPath.dataString();
             if (normalMapPath != null && normalMapPath.length() > 0) {
                 material.setNormalMapPath(modelDir + File.separator + new File(normalMapPath).getName());
