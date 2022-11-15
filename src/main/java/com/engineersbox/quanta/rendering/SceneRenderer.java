@@ -299,7 +299,7 @@ public class SceneRenderer {
                     idx
             );
             final Texture texture = textureCache.getTexture(material.getTexturePath());
-            idx = texturePosMap.computeIfAbsent(texture.getPath(), k -> 0);
+            idx = texturePosMap.computeIfAbsent(texture.getPath(), (final String ignored) -> 0);
             this.uniforms.setUniform(
                     name + ".textureIdx",
                     idx
