@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.scene.element.object.composite.virtualisation;
+package com.engineersbox.quanta.virtualisation;
 
 /*
     Mesh Simplification
@@ -15,11 +15,12 @@ package com.engineersbox.yajge.scene.element.object.composite.virtualisation;
     Refactored to support decimation by rendered size by Jack Kilrain A.K.A EngineersBox in 2022
  */
 
-import com.engineersbox.yajge.scene.element.object.composite.Mesh;
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.primitive.Ref;
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.primitive.SymetricMatrix;
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.primitive.Triangle;
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.primitive.Vertex;
+import com.engineersbox.quanta.resources.assets.object.Mesh;
+import com.engineersbox.quanta.resources.assets.object.MeshData;
+import com.engineersbox.quanta.virtualisation.primitive.Ref;
+import com.engineersbox.quanta.virtualisation.primitive.SymetricMatrix;
+import com.engineersbox.quanta.virtualisation.primitive.Triangle;
+import com.engineersbox.quanta.virtualisation.primitive.Vertex;
 import org.apache.commons.collections4.iterators.ReverseListIterator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
@@ -86,9 +87,10 @@ public class QuadricErrorSimplifier {
         this.triangles.clear();
         this.vertices.clear();
         this.refs.clear();
-        this.meshInVertices = this.inMesh.getGroupedVertices().toArray(Vector3f[]::new);
-        this.meshInNormals = this.inMesh.getGroupedNormals().toArray(Vector3f[]::new);
-        final int[] meshIndices = this.inMesh.getIndices();
+        final MeshData meshData = this.inMesh.getMeshData();
+        this.meshInVertices = meshData.getGroupedVertices().toArray(Vector3f[]::new);
+        this.meshInNormals = meshData.getGroupedNormals().toArray(Vector3f[]::new);
+        final int[] meshIndices = meshData.getIndices();
         Arrays.stream(this.meshInVertices)
                 .map(Vertex::new)
                 .forEach(this.vertices::add);
@@ -566,19 +568,26 @@ public class QuadricErrorSimplifier {
             newNormals.add(normal.y);
             newNormals.add(normal.z);
         }
+        final MeshData meshData = this.inMesh.getMeshData();
         QuadricErrorSimplifier.LOGGER.info(
                 "[MESH QES] Simplified mesh [Vertices: {} -> {}] [Triangles: {} -> {}]",
-                this.inMesh.getVertexCount(),
+                meshData.vertexCount(),
                 newVertices.size(),
-                this.inMesh.triangleCount(),
+                meshData.triangleCount(),
                 indexList.size() / 3
         );
-        return new Mesh(
+        return new Mesh(new MeshData(
                 ArrayUtils.toPrimitive(newVertices.toArray(Float[]::new)),
-                new float[0],
                 ArrayUtils.toPrimitive(newNormals.toArray(Float[]::new)),
-                ArrayUtils.toPrimitive(indexList.toArray(Integer[]::new))
-        );
+                new float[0],
+                new float[0],
+                new float[0],
+                ArrayUtils.toPrimitive(indexList.toArray(Integer[]::new)),
+                new int[0],
+                new float[0],
+                new Vector3f(),
+                new Vector3f()
+        ));
     }
 
     private Vector3f[] normalizeMesh(final Vector<Triangle> triangles,

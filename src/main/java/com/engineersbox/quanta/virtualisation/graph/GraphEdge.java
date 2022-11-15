@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.scene.element.object.composite.virtualisation.graph;
+package com.engineersbox.quanta.virtualisation.graph;
 
 public record GraphEdge(GraphVertex v1, GraphVertex v2) {
     public float length() {

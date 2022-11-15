@@ -1,4 +1,4 @@
-package com.engineersbox.yajge.scene.element.object.composite.virtualisation.primitive;
+package com.engineersbox.quanta.virtualisation.primitive;
 
 import org.joml.Vector3f;
 

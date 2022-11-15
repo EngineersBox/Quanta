@@ -89,7 +89,7 @@ public class SkyBoxRenderer {
         );
         glDrawElements(
                 GL_TRIANGLES,
-                mesh.getNumVertices(),
+                mesh.vertexCount(),
                 GL_UNSIGNED_INT,
                 0
         );

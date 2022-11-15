@@ -2,6 +2,9 @@ package com.engineersbox.quanta.resources.assets.object;
 
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MeshData {
 
     private final Vector3f aabbMax;
@@ -85,6 +88,38 @@ public class MeshData {
 
     public void setMaterialIdx(final int materialIdx) {
         this.materialIdx = materialIdx;
+    }
+
+    public List<Vector3f> getGroupedVertices() {
+        final List<Vector3f> vertices = new ArrayList<>();
+        for (int i = 0; i < this.positions.length; i += 3) {
+            vertices.add(new Vector3f(
+                    this.positions[i],
+                    this.positions[i + 1],
+                    this.positions[i + 2]
+            ));
+        }
+        return vertices;
+    }
+
+    public List<Vector3f> getGroupedNormals() {
+        final List<Vector3f> groupedNormals = new ArrayList<>();
+        for (int i = 0; i < this.normals.length; i += 3) {
+            groupedNormals.add(new Vector3f(
+                    this.normals[i],
+                    this.normals[i + 1],
+                    this.normals[i + 2]
+            ));
+        }
+        return groupedNormals;
+    }
+
+    public int triangleCount() {
+        return this.indices.length / 3;
+    }
+
+    public int vertexCount() {
+        return this.indices.length;
     }
 
 }

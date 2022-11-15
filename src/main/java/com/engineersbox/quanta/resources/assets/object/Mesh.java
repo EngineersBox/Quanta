@@ -23,6 +23,7 @@ public class Mesh {
     private final int numVertices;
     private final int vaoId;
     private final List<Integer> vboIds;
+    private final MeshData meshData;
 
     public Mesh(final MeshData meshData) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
@@ -30,6 +31,7 @@ public class Mesh {
             this.aabbMax = meshData.getAabbMax();
             this.numVertices = meshData.getIndices().length;
             this.vboIds = new ArrayList<>();
+            this.meshData = meshData;
 
             this.vaoId = glGenVertexArrays();
             glBindVertexArray(this.vaoId);
@@ -130,12 +132,16 @@ public class Mesh {
         return this.aabbMin;
     }
 
-    public int getNumVertices() {
+    public int vertexCount() {
         return this.numVertices;
     }
 
     public final int getVaoId() {
         return this.vaoId;
+    }
+
+    public MeshData getMeshData() {
+        return this.meshData;
     }
 
 }

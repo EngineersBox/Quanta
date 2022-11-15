@@ -1,7 +1,7 @@
-package com.engineersbox.yajge.scene.element.object.composite.virtualisation;
+package com.engineersbox.quanta.virtualisation;
 
-import com.engineersbox.yajge.core.window.Window;
-import com.engineersbox.yajge.scene.element.object.composite.Mesh;
+import com.engineersbox.quanta.core.Window;
+import com.engineersbox.quanta.resources.assets.object.Mesh;
 
 import java.util.List;
 import java.util.Map;

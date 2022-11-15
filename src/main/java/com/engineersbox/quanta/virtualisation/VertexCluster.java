@@ -1,8 +1,8 @@
-package com.engineersbox.yajge.scene.element.object.composite.virtualisation;
+package com.engineersbox.quanta.virtualisation;
 
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.graph.Graph;
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.graph.GraphEdge;
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.graph.GraphVertex;
+import com.engineersbox.quanta.virtualisation.graph.Graph;
+import com.engineersbox.quanta.virtualisation.graph.GraphEdge;
+import com.engineersbox.quanta.virtualisation.graph.GraphVertex;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,8 +1,8 @@
-package com.engineersbox.yajge.scene.element.object.composite.virtualisation;
+package com.engineersbox.quanta.virtualisation;
 
-import com.engineersbox.yajge.core.window.Window;
-import com.engineersbox.yajge.scene.element.object.composite.Mesh;
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.graph.Graph;
+import com.engineersbox.quanta.core.Window;
+import com.engineersbox.quanta.resources.assets.object.Mesh;
+import com.engineersbox.quanta.virtualisation.graph.Graph;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.*;

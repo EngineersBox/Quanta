@@ -1,6 +1,6 @@
-package com.engineersbox.yajge.scene.element.object.composite.virtualisation.graph;
+package com.engineersbox.quanta.virtualisation.graph;
 
-import com.engineersbox.yajge.scene.element.object.composite.virtualisation.primitive.Vertex;
+import com.engineersbox.quanta.virtualisation.primitive.Vertex;
 
 public record GraphVertex(Vertex vertex, Graph parent) {
 

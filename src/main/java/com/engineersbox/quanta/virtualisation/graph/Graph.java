@@ -1,8 +1,10 @@
 package com.engineersbox.quanta.virtualisation.graph;
 
-import com.engineersbox.quanta.Mesh;
+import com.engineersbox.quanta.resources.assets.object.Mesh;
+import com.engineersbox.quanta.resources.assets.object.MeshData;
 import com.engineersbox.quanta.virtualisation.primitive.Triangle;
 import com.engineersbox.quanta.virtualisation.primitive.Vertex;
+import org.joml.Vector3f;
 
 import java.util.*;
 
@@ -17,11 +19,12 @@ public class Graph {
 
     public Graph(final Mesh mesh) {
         this();
-        final List<Vertex> vertices = mesh.getGroupedVertices()
+        final MeshData meshData = mesh.getMeshData();
+        final List<Vertex> vertices = meshData.getGroupedVertices()
                 .stream()
                 .map(Vertex::new)
                 .toList();
-        final int[] meshIndices = mesh.getIndices();
+        final int[] meshIndices = meshData.getIndices();
         int index = 0;
         for (int i = 0; i < meshIndices.length; i += 3) {
             final Triangle triangle = new Triangle(
@@ -48,12 +51,18 @@ public class Graph {
     }
 
     public static Mesh reconstructMesh() {
-        final Mesh mesh = new Mesh(
+        final Mesh mesh = new Mesh(new MeshData(
                 new float[0],
                 new float[0],
                 new float[0],
-                new int[0]
-        );
+                new float[0],
+                new float[0],
+                new int[0],
+                new int[0],
+                new float[0],
+                new Vector3f(),
+                new Vector3f()
+        ));
         // TODO: Finish this
         return mesh;
     }
