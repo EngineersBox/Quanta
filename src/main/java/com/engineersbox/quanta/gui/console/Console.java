@@ -199,13 +199,13 @@ public class Console implements IGUIInstance {
         ImGui.setNextWindowSize(450, 400);
         ImGui.begin("Console");
         ImGui.inputTextMultiline(
-                "Output",
+                "##",
                 this.rawCommandLog,
                 0,
                 ImGui.getTextLineHeight() * COMMAND_LOG_WINDOW_HEIGHT,
                 ImGuiInputTextFlags.ReadOnly
         );
-        if (ImGui.inputTextWithHint("Input", "Type \"help\" for help", this.rawConsoleInput, ImGuiInputTextFlags.EnterReturnsTrue)) {
+        if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, ImGuiInputTextFlags.EnterReturnsTrue)) {
             this.consoleInput = this.rawConsoleInput.get();
             this.rawConsoleInput.clear();
             LOGGER.info("COMMAND EXECUTED: {}", this.consoleInput);
