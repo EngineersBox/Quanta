@@ -11,8 +11,13 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -26,28 +31,70 @@ public class Console implements IGUIInstance {
             .forPackages("com.engineersbox.quanta")
     );
 
-    private static final Map<String, Pair<Field, Method>> VARIABLE_HOOKS;
+    private static final TreeModel HOOKS = new DefaultTreeModel(new DefaultMutableTreeNode());
 
     static {
         final Map<VariableHook, Field> variableHooks = resolveVariableHooks();
         final Map<String, Method> hookValidators = resolveHookValidators();
-        VARIABLE_HOOKS = variableHooks.entrySet()
-                .stream()
-                .collect(Collectors.toMap(
-                        (final Map.Entry<VariableHook, Field> entry) -> entry.getKey().name(),
-                        (final Map.Entry<VariableHook, Field> entry) -> {
-                            final String validatorName = entry.getKey().hookValidator();
-                            Method hookValidator = null;
-                            if (!Objects.equals(validatorName, "")) {
-                                hookValidator = hookValidators.get(validatorName);
-                            }
-                            return ImmutablePair.of(
-                                    entry.getValue(),
-                                    hookValidator
-                            );
-                        }
-                ));
-        LOGGER.debug("Resolved {} variable hooks", VARIABLE_HOOKS.size());
+        int count = 0;
+        for (final Map.Entry<VariableHook, Field> entry : variableHooks.entrySet()) {
+            final String name = entry.getKey().name();
+            if (name.isBlank()) {
+                LOGGER.warn("Invalid variable hook name for field [{}]", entry.getValue().getName());
+                continue;
+            }
+            final String[] path = entry.getKey().name().split("\\.");
+            final String validatorName = entry.getKey().hookValidator();
+            Method hookValidator = null;
+            if (!Objects.equals(validatorName, "")) {
+                hookValidator = hookValidators.get(validatorName);
+            }
+            if (hookValidator != null && validateValidatorArgs(
+                    name,
+                    validatorName,
+                    entry.getValue().getType(),
+                    hookValidator
+            )) {
+                continue;
+            }
+            HOOKS.valueForPathChanged(
+                    new TreePath(path),
+                    ImmutablePair.of(
+                            entry.getValue(),
+                            hookValidator
+                    )
+            );
+            count++;
+        }
+        LOGGER.debug("Resolved {} variable hooks", count);
+    }
+
+    private static boolean validateValidatorArgs(final String varHookName,
+                                              final String validatorName,
+                                              final Class<?> type,
+                                              final Method method) {
+        final int parameterCount = method.getParameterCount();
+        if (parameterCount != 1) {
+            LOGGER.error(
+                    "Invalid validator [{}] for variable hook [{}]: expected 1 parameter, got {}",
+                    validatorName,
+                    varHookName,
+                    parameterCount
+            );
+            return false;
+        }
+        final Class<?> parameterType = method.getParameterTypes()[0];
+        if (!parameterType.isAssignableFrom(type)) {
+            LOGGER.error(
+                    "Invalid validator [{}] for variable hook [{}]: expected parameter of type {}, got {}",
+                    validatorName,
+                    varHookName,
+                    type.getName(),
+                    parameterType.getName()
+            );
+            return false;
+        }
+        return true;
     }
 
     private static Map<VariableHook, Field> resolveVariableHooks() {
@@ -77,7 +124,8 @@ public class Console implements IGUIInstance {
     }
 
     @Override
-    public boolean handleGUIInput(final Scene scene, final Window window) {
+    public boolean handleGUIInput(final Scene scene,
+                                  final Window window) {
         return false;
     }
 }
