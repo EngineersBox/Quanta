@@ -49,8 +49,13 @@ public class Main implements IAppLogic {
                      final Scene scene,
                      final Renderer renderer) {
         final String terrainModelId = "terrain";
-        final Model terrainModel = ModelLoader.loadModel(terrainModelId, "assets/models/terrain/terrain.obj",
-                scene.getTextureCache(), scene.getMaterialCache(), false);
+        final Model terrainModel = ModelLoader.loadModel(
+                terrainModelId,
+                "assets/models/terrain/terrain.obj",
+                scene.getTextureCache(),
+                scene.getMaterialCache(),
+                false
+        );
         scene.addModel(terrainModel);
         final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
         terrainEntity.setScale(100.0f);
@@ -58,8 +63,13 @@ public class Main implements IAppLogic {
         scene.addEntity(terrainEntity);
 
         final String bobModelId = "bobModel";
-        final Model bobModel = ModelLoader.loadModel(bobModelId, "assets/models/bob/boblamp.md5mesh",
-                scene.getTextureCache(), scene.getMaterialCache(), true);
+        final Model bobModel = ModelLoader.loadModel(
+                bobModelId,
+                "assets/models/bob/boblamp.md5mesh",
+                scene.getTextureCache(),
+                scene.getMaterialCache(),
+                true
+        );
         scene.addModel(bobModel);
         final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
         bobEntity.setScale(0.05f);
@@ -76,8 +86,13 @@ public class Main implements IAppLogic {
         bobEntity2.setAnimationData(this.animationData2);
         scene.addEntity(bobEntity2);
 
-        final Model cubeModel = ModelLoader.loadModel("cube-model", "assets/models/cube/cube.obj",
-                scene.getTextureCache(), scene.getMaterialCache(), false);
+        final Model cubeModel = ModelLoader.loadModel(
+                "cube-model",
+                "assets/models/cube/cube.obj",
+                scene.getTextureCache(),
+                scene.getMaterialCache(),
+                false
+        );
         scene.addModel(cubeModel);
         this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
         this.cubeEntity1.setPosition(0, 2, -1);
@@ -101,13 +116,20 @@ public class Main implements IAppLogic {
         dirLight.setIntensity(1.0f);
         scene.setSceneLights(sceneLights);
 
-        final SkyBox skyBox = new SkyBox("assets/models/skybox/skybox.obj", scene.getTextureCache(),
-                scene.getMaterialCache());
+        final SkyBox skyBox = new SkyBox(
+                "assets/models/skybox/skybox.obj",
+                scene.getTextureCache(),
+                scene.getMaterialCache()
+        );
         skyBox.getEntity().setScale(100);
         skyBox.getEntity().updateModelMatrix();
         scene.setSkyBox(skyBox);
 
-        scene.setFog(new Fog(true, new Vector3f(0.5f, 0.5f, 0.5f), 0.02f));
+        scene.setFog(new Fog(
+                true,
+                new Vector3f(0.5f, 0.5f, 0.5f),
+                0.02f
+        ));
 
         final Camera camera = scene.getCamera();
         camera.setPosition(-1.5f, 3.0f, 4.5f);

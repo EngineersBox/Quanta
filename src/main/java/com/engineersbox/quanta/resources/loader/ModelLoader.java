@@ -140,7 +140,7 @@ public class ModelLoader {
                                   final String modelPath,
                                   final TextureCache textureCache,
                                   final MaterialCache materialCache,
-                                  final boolean animation) {
+                                  final boolean animated) {
         return ModelLoader.loadModel(
                 modelId,
                 modelPath,
@@ -153,7 +153,7 @@ public class ModelLoader {
                         | aiProcess_CalcTangentSpace
                         | aiProcess_LimitBoneWeights
                         | aiProcess_GenBoundingBoxes
-                        | (animation ? 0 : aiProcess_PreTransformVertices)
+                        | (animated ? 0 : aiProcess_PreTransformVertices)
         );
     }
 
@@ -172,15 +172,29 @@ public class ModelLoader {
             throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
         }
         final int numMaterials = aiScene.mNumMaterials();
+        final PointerBuffer aiMaterials = aiScene.mMaterials();
+        if (aiMaterials == null) {
+            throw new RuntimeException(String.format(
+                    "Expected materials for model [%s], got none",
+                    modelId
+            ));
+        }
         final List<Material> materialList = new ArrayList<>();
         for (int i = 0; i < numMaterials; i++) {
-            final AIMaterial aiMaterial = AIMaterial.create(aiScene.mMaterials().get(i));
+            final AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
             final Material material = ModelLoader.processMaterial(aiMaterial, modelDir, textureCache);
             materialCache.addMaterial(material);
             materialList.add(material);
         }
         final int numMeshes = aiScene.mNumMeshes();
         final PointerBuffer aiMeshes = aiScene.mMeshes();
+        if (aiMeshes == null) {
+            throw new RuntimeException(String.format(
+                    "Expected meshes to be present in scene, found none while loading model [%s] from [%s]",
+                    modelId,
+                    modelPath
+            ));
+        }
         final List<MeshData> meshDataList = new ArrayList<>();
         final List<Bone> boneList = new ArrayList<>();
         for (int i = 0; i < numMeshes; i++) {
@@ -198,8 +212,12 @@ public class ModelLoader {
         List<Animation> animations = new ArrayList<>();
         final int numAnimations = aiScene.mNumAnimations();
         if (numAnimations > 0) {
-            final Node rootNode = ModelLoader.buildNodesTree(aiScene.mRootNode(), null);
-            final Matrix4f globalInverseTransformation = ModelLoader.toMatrix(aiScene.mRootNode().mTransformation()).invert();
+            final AINode sceneRootNode = aiScene.mRootNode();
+            if (sceneRootNode == null) {
+                throw new NullPointerException("Unexpected null scene root node");
+            }
+            final Node rootNode = ModelLoader.buildNodesTree(sceneRootNode, null);
+            final Matrix4f globalInverseTransformation = ModelLoader.toMatrix(sceneRootNode.mTransformation()).invert();
             animations = ModelLoader.processAnimations(aiScene, boneList, rootNode, globalInverseTransformation);
         }
 
@@ -236,13 +254,16 @@ public class ModelLoader {
 
     private static float[] processBiTangents(final AIMesh aiMesh, final float[] normals) {
         final AIVector3D.Buffer buffer = aiMesh.mBitangents();
+        if (buffer == null) {
+            throw new RuntimeException("Expected bi-tangents in model, found none");
+        }
         float[] data = new float[buffer.remaining() * 3];
         int pos = 0;
         while (buffer.remaining() > 0) {
-            final AIVector3D aiBitangent = buffer.get();
-            data[pos++] = aiBitangent.x();
-            data[pos++] = aiBitangent.y();
-            data[pos++] = aiBitangent.z();
+            final AIVector3D aiBiTangent = buffer.get();
+            data[pos++] = aiBiTangent.x();
+            data[pos++] = aiBiTangent.y();
+            data[pos++] = aiBiTangent.z();
         }
         // Assimp may not calculate tangents with models that do not have texture coordinates. Just create empty values
         if (data.length == 0) {
@@ -269,11 +290,7 @@ public class ModelLoader {
                 final AIVertexWeight aiWeight = aiWeights.get(j);
                 final VertexWeight vw = new VertexWeight(bone.boneId(), aiWeight.mVertexId(),
                         aiWeight.mWeight());
-                List<VertexWeight> vertexWeightList = weightSet.get(vw.vertexId());
-                if (vertexWeightList == null) {
-                    vertexWeightList = new ArrayList<>();
-                    weightSet.put(vw.vertexId(), vertexWeightList);
-                }
+                final List<VertexWeight> vertexWeightList = weightSet.computeIfAbsent(vw.vertexId(), (final Integer ignored) -> new ArrayList<>());
                 vertexWeightList.add(vw);
             }
         }
@@ -292,7 +309,10 @@ public class ModelLoader {
                 }
             }
         }
-        return new AnimMeshData(ListUtils.listFloatToArray(weights), ListUtils.listIntToArray(boneIds));
+        return new AnimMeshData(
+                ListUtils.listFloatToArray(weights),
+                ListUtils.listIntToArray(boneIds)
+        );
     }
 
     private static int[] processIndices(final AIMesh aiMesh) {
@@ -392,6 +412,9 @@ public class ModelLoader {
 
     private static float[] processNormals(final AIMesh aiMesh) {
         final AIVector3D.Buffer buffer = aiMesh.mNormals();
+        if (buffer == null) {
+            throw new RuntimeException("Expected normals in model, found none");
+        }
         final float[] data = new float[buffer.remaining() * 3];
         int pos = 0;
         while (buffer.remaining() > 0) {

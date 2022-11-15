@@ -343,30 +343,31 @@ public class RenderBuffers {
             );
             BufferUtils.putFloats(
                     meshesBuffer,
-                    ArrayUtils.subarray(textCoords, startTextCoord, startPos + 2)
+                    ArrayUtils.subarray(textCoords, startTextCoord, startTextCoord + 2)
             );
         }
     }
 
     private void defineVertexAttribs() {
         final int stride = 3 * 4 * 4 + 2 * 4;
+        final int offset = 3 * 4;
         int pointer = 0;
         // Positions
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, false, stride, pointer);
-        pointer += 3 * 4;
+        pointer += offset;
         // Normals
         glEnableVertexAttribArray(1);
         glVertexAttribPointer(1, 3, GL_FLOAT, false, stride, pointer);
-        pointer += 3 * 4;
+        pointer += offset;
         // Tangents
         glEnableVertexAttribArray(2);
         glVertexAttribPointer(2, 3, GL_FLOAT, false, stride, pointer);
-        pointer += 3 * 4;
+        pointer += offset;
         // Bitangents
         glEnableVertexAttribArray(3);
         glVertexAttribPointer(3, 3, GL_FLOAT, false, stride, pointer);
-        pointer += 3 * 4;
+        pointer += offset;
         // Texture coordinates
         glEnableVertexAttribArray(4);
         glVertexAttribPointer(4, 2, GL_FLOAT, false, stride, pointer);
