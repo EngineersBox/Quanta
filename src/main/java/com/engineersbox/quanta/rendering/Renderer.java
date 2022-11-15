@@ -2,7 +2,7 @@ package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
-import com.engineersbox.quanta.rendering.indirect.RenderBuffer;
+import com.engineersbox.quanta.rendering.indirect.RenderBuffers;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.scene.Scene;
 
@@ -22,7 +22,8 @@ public class Renderer {
     private final ShadowRenderer shadowRenderer;
     private final GBuffer gBuffer;
     private final LightingRenderer lightingRenderer;
-    private final RenderBuffer renderBuffer;
+    private final RenderBuffers renderBuffers;
+    private final AnimationRenderer animationRenderer;
 
     public Renderer(final Window window) {
         this.sceneRenderer = new SceneRenderer();
@@ -31,7 +32,8 @@ public class Renderer {
         this.shadowRenderer = new ShadowRenderer();
         this.gBuffer = new GBuffer(window);
         this.lightingRenderer = new LightingRenderer();
-        this.renderBuffer = new RenderBuffer();
+        this.renderBuffers = new RenderBuffers();
+        this.animationRenderer = new AnimationRenderer();
     }
 
     public void cleanup() {
@@ -41,7 +43,8 @@ public class Renderer {
         this.shadowRenderer.cleanup();
         this.lightingRenderer.cleanup();
         this.gBuffer.cleanup();
-        this.renderBuffer.cleanup();
+        this.renderBuffers.cleanup();
+        this.animationRenderer.cleanup();
     }
 
     private void lightingRenderFinish() {
@@ -60,8 +63,9 @@ public class Renderer {
 
     public void render(final Window window,
                        final Scene scene) {
-        this.shadowRenderer.render(scene, this.renderBuffer);
-        this.sceneRenderer.render(scene, this.renderBuffer, this.gBuffer);
+        this.animationRenderer.render(scene, this.renderBuffers);
+        this.shadowRenderer.render(scene, this.renderBuffers);
+        this.sceneRenderer.render(scene, this.renderBuffers, this.gBuffer);
         lightingRenderStart(window);
         this.lightingRenderer.render(scene, this.shadowRenderer, this.gBuffer);
         this.skyBoxRenderer.render(scene);
@@ -70,8 +74,8 @@ public class Renderer {
     }
 
     public void setupData(final Scene scene) {
-        this.renderBuffer.loadStaticModels(scene);
-        this.renderBuffer.loadAnimatedModels(scene);
+        this.renderBuffers.loadStaticModels(scene);
+        this.renderBuffers.loadAnimatedModels(scene);
         this.sceneRenderer.setupData(scene);
         this.shadowRenderer.setupData(scene);
         new ArrayList<>(scene.getModels().values())

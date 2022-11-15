@@ -7,6 +7,7 @@ import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.assets.object.Model;
+import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
@@ -36,34 +37,47 @@ public class Main implements IAppLogic {
         engine.start();
     }
 
+    private AnimationData animationData1;
+    private AnimationData animationData2;
     private Entity cubeEntity1;
     private Entity cubeEntity2;
     private float lightAngle;
     private float rotation;
 
     @Override
-    public void init(final Window window, final Scene scene, final Renderer renderer) {
+    public void init(final Window window,
+                     final Scene scene,
+                     final Renderer renderer) {
         final String terrainModelId = "terrain";
-        final Model terrainModel = ModelLoader.loadModel(
-                terrainModelId,
-                "assets/models/terrain/terrain.obj",
-                scene.getTextureCache(),
-                scene.getMaterialCache(),
-                false
-        );
+        final Model terrainModel = ModelLoader.loadModel(terrainModelId, "assets/models/terrain/terrain.obj",
+                scene.getTextureCache(), scene.getMaterialCache(), false);
         scene.addModel(terrainModel);
         final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
         terrainEntity.setScale(100.0f);
         terrainEntity.updateModelMatrix();
         scene.addEntity(terrainEntity);
 
-        final Model cubeModel = ModelLoader.loadModel(
-                "cube-model",
-                "assets/models/cube/cube.obj",
-                scene.getTextureCache(),
-                scene.getMaterialCache(),
-                false
-        );
+        final String bobModelId = "bobModel";
+        final Model bobModel = ModelLoader.loadModel(bobModelId, "assets/models/bob/boblamp.md5mesh",
+                scene.getTextureCache(), scene.getMaterialCache(), true);
+        scene.addModel(bobModel);
+        final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
+        bobEntity.setScale(0.05f);
+        bobEntity.updateModelMatrix();
+        this.animationData1 = new AnimationData(bobModel.getAnimationList().get(0));
+        bobEntity.setAnimationData(this.animationData1);
+        scene.addEntity(bobEntity);
+
+        final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
+        bobEntity2.setPosition(2, 0, 0);
+        bobEntity2.setScale(0.025f);
+        bobEntity2.updateModelMatrix();
+        this.animationData2 = new AnimationData(bobModel.getAnimationList().get(0));
+        bobEntity2.setAnimationData(this.animationData2);
+        scene.addEntity(bobEntity2);
+
+        final Model cubeModel = ModelLoader.loadModel("cube-model", "assets/models/cube/cube.obj",
+                scene.getTextureCache(), scene.getMaterialCache(), false);
         scene.addModel(cubeModel);
         this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
         this.cubeEntity1.setPosition(0, 2, -1);
@@ -87,11 +101,8 @@ public class Main implements IAppLogic {
         dirLight.setIntensity(1.0f);
         scene.setSceneLights(sceneLights);
 
-        final SkyBox skyBox = new SkyBox(
-                "assets/models/skybox/skybox.obj",
-                scene.getTextureCache(),
-                scene.getMaterialCache()
-        );
+        final SkyBox skyBox = new SkyBox("assets/models/skybox/skybox.obj", scene.getTextureCache(),
+                scene.getMaterialCache());
         skyBox.getEntity().setScale(100);
         skyBox.getEntity().updateModelMatrix();
         scene.setSkyBox(skyBox);
@@ -157,6 +168,10 @@ public class Main implements IAppLogic {
     public void update(final Window window,
                        final Scene scene,
                        final long diffTimeMillis) {
+        animationData1.nextFrame();
+        if (diffTimeMillis % 2 == 0) {
+            animationData2.nextFrame();
+        }
         this.rotation += 1.5;
         if (this.rotation > 360) {
             this.rotation = 0;

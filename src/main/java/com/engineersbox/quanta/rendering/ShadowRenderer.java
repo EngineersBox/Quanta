@@ -1,7 +1,8 @@
 package com.engineersbox.quanta.rendering;
 
+import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
-import com.engineersbox.quanta.rendering.indirect.RenderBuffer;
+import com.engineersbox.quanta.rendering.indirect.RenderBuffers;
 import com.engineersbox.quanta.rendering.shadow.ShadowBuffer;
 import com.engineersbox.quanta.rendering.shadow.ShadowCascade;
 import com.engineersbox.quanta.resources.assets.object.Model;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import static org.lwjgl.opengl.GL11.GL_TRIANGLES;
 import static org.lwjgl.opengl.GL11.GL_UNSIGNED_INT;
@@ -34,6 +36,8 @@ public class ShadowRenderer {
     private final ShadowBuffer shadowBuffer;
     private int staticDrawCount;
     private int staticRenderBufferHandle;
+    private int animDrawCount;
+    private int animRenderBufferHandle;
     private Uniforms uniformsMap;
 
     public ShadowRenderer() {
@@ -54,6 +58,7 @@ public class ShadowRenderer {
         this.shaderProgram.cleanup();
         this.shadowBuffer.cleanup();
         glDeleteBuffers(this.staticRenderBufferHandle);
+        glDeleteBuffers(this.animRenderBufferHandle);
     }
 
     private void createUniforms() {
@@ -76,7 +81,7 @@ public class ShadowRenderer {
         return this.shadowBuffer;
     }
 
-    public void render(final Scene scene, final RenderBuffer renderBuffers) {
+    public void render(final Scene scene, final RenderBuffers renderBuffers) {
         ShadowCascade.updateCascadeShadows(this.shadowCascades, scene);
         glBindFramebuffer(GL_FRAMEBUFFER, this.shadowBuffer.getDepthMapFBO());
         glViewport(0, 0, ShadowBuffer.SHADOW_MAP_WIDTH, ShadowBuffer.SHADOW_MAP_HEIGHT);
@@ -101,10 +106,10 @@ public class ShadowRenderer {
         }
         // Static meshes
         int drawElement = 0;
-        final List<Model> modelList = scene.getModels()
+        List<Model> modelList = scene.getModels()
                 .values()
                 .stream()
-                .filter((final Model model) -> !model.isAnimated())
+                .filter(Predicate.not(Model::isAnimated))
                 .toList();
         for (final Model model : modelList) {
             final List<Entity> entities = model.getEntities();
@@ -142,13 +147,93 @@ public class ShadowRenderer {
                     0
             );
         }
+        // Animated meshes
+        drawElement = 0;
+        modelList = scene.getModels()
+                .values()
+                .stream()
+                .filter(Model::isAnimated)
+                .toList();
+        for (final Model model : modelList) {
+            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+                final AnimMeshDrawData animMeshDrawData = meshDrawData.animMeshDrawData();
+                final Entity entity = animMeshDrawData.entity();
+                final String name = "drawElements[" + drawElement + "]";
+                this.uniformsMap.setUniform(
+                        name + ".modelMatrixIdx",
+                        this.entitiesIdxMap.get(entity.getId())
+                );
+                drawElement++;
+            }
+        }
+        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.animRenderBufferHandle);
+        glBindVertexArray(renderBuffers.getAnimVaoId());
+        for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
+            glFramebufferTexture2D(
+                    GL_FRAMEBUFFER,
+                    GL_DEPTH_ATTACHMENT,
+                    GL_TEXTURE_2D,
+                    this.shadowBuffer.getDepthMapTexture().getIds()[i],
+                    0
+            );
+            final ShadowCascade shadowCascade = this.shadowCascades.get(i);
+            this.uniformsMap.setUniform(
+                    "projectionViewMatrix",
+                    shadowCascade.getProjectionViewMatrix()
+            );
+            glMultiDrawElementsIndirect(
+                    GL_TRIANGLES,
+                    GL_UNSIGNED_INT,
+                    0,
+                    this.animDrawCount,
+                    0
+            );
+        }
         glBindVertexArray(0);
         this.shaderProgram.unbind();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
+
+    private void setupAnimCommandBuffer(final Scene scene) {
+        final List<Model> modelList = scene.getModels()
+                .values()
+                .stream()
+                .filter(Model::isAnimated)
+                .toList();
+        int numMeshes = 0;
+        for (final Model model : modelList) {
+            numMeshes += model.getMeshDrawDataList().size();
+        }
+        int firstIndex = 0;
+        int baseInstance = 0;
+        final ByteBuffer commandBuffer = MemoryUtil.memAlloc(numMeshes * ShadowRenderer.COMMAND_SIZE);
+        for (final Model model : modelList) {
+            for (final MeshDrawData meshDrawData : model.getMeshDrawDataList()) {
+                // count
+                commandBuffer.putInt(meshDrawData.vertices());
+                // instanceCount
+                commandBuffer.putInt(1);
+                commandBuffer.putInt(firstIndex);
+                // baseVertex
+                commandBuffer.putInt(meshDrawData.offset());
+                commandBuffer.putInt(baseInstance);
+
+                firstIndex += meshDrawData.vertices();
+                baseInstance++;
+            }
+        }
+        commandBuffer.flip();
+        this.animDrawCount = commandBuffer.remaining() / ShadowRenderer.COMMAND_SIZE;
+        this.animRenderBufferHandle = glGenBuffers();
+        glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.animRenderBufferHandle);
+        glBufferData(GL_DRAW_INDIRECT_BUFFER, commandBuffer, GL_DYNAMIC_DRAW);
+        MemoryUtil.memFree(commandBuffer);
+    }
+
     public void setupData(final Scene scene) {
         setupEntitiesData(scene);
         setupStaticCommandBuffer(scene);
+        setupAnimCommandBuffer(scene);
     }
 
     private void setupEntitiesData(final Scene scene) {
