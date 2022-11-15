@@ -14,6 +14,7 @@ import imgui.ImDrawData;
 import imgui.ImFontAtlas;
 import imgui.ImGui;
 import imgui.ImGuiIO;
+import imgui.glfw.ImGuiImplGlfw;
 import imgui.type.ImInt;
 import org.joml.Vector2f;
 
@@ -32,6 +33,7 @@ public class GUIRenderer {
     private final ShaderProgram shader;
     private Texture texture;
     private Uniforms uniforms;
+    private ImGuiImplGlfw imGuiImplGlfw;
 
     public GUIRenderer(final Window window) {
         this.shader = new ShaderProgram(
@@ -51,6 +53,8 @@ public class GUIRenderer {
 
     private void createUIResources(final Window window) {
         ImGui.createContext();
+        this.imGuiImplGlfw = new ImGuiImplGlfw();
+        this.imGuiImplGlfw.init(window.getHandle(), true);
         final ImGuiIO imGuiIO = imgui.ImGui.getIO();
         imGuiIO.setIniFilename(null);
         imGuiIO.setDisplaySize(

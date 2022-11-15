@@ -26,6 +26,7 @@ public class Window {
     private final Callable<Void> resizeHandler;
     private final MouseInput mouseInput;
 
+
     public Window(final String title,
                   final Callable<Void> resizeHandler) {
         this.resizeHandler = resizeHandler;
@@ -100,6 +101,10 @@ public class Window {
         this.height = fbHeight[0];
 
         this.mouseInput = new MouseInput(this.windowHandle);
+    }
+
+    public long getHandle() {
+        return this.windowHandle;
     }
 
     public int getHeight() {

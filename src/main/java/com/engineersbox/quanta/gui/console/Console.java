@@ -2,11 +2,22 @@ package com.engineersbox.quanta.gui.console;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.gui.IGUIInstance;
+import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.scene.Scene;
+import imgui.ImGui;
+import imgui.ImGuiIO;
+import imgui.flag.ImGuiCond;
+import imgui.flag.ImGuiInputTextFlags;
+import imgui.flag.ImGuiKey;
+import imgui.glfw.ImGuiImplGlfw;
+import imgui.lwjgl3.glfw.ImGuiImplGlfwNative;
+import imgui.type.ImInt;
+import imgui.type.ImString;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.joml.Vector2f;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -18,10 +29,16 @@ import javax.swing.tree.TreePath;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.lwjgl.glfw.GLFW.*;
 
 public class Console implements IGUIInstance {
 
@@ -115,17 +132,106 @@ public class Console implements IGUIInstance {
                 ));
     }
 
+    private static final int COMMAND_LOG_SIZE = 100;
+    private static final int COMMAND_LOG_WINDOW_HEIGHT = 10;
+
+    private final ImString rawConsoleInput;
+    private String consoleInput;
+    private final ImString rawCommandLog;
+    private final LinkedBlockingDeque<ExecutedCommand> commandLog;
+    private boolean show;
+
     public Console() {
+        this.rawConsoleInput = new ImString();
+        this.rawCommandLog = new ImString();
+        this.consoleInput = "";
+        this.commandLog = new LinkedBlockingDeque<>(COMMAND_LOG_SIZE);
+        this.show = false;
+    }
+
+    private void submitCommand(final ExecutedCommand executedCommand) {
+        if (this.commandLog.size() >= COMMAND_LOG_SIZE) {
+            this.commandLog.pop();
+        }
+        this.commandLog.addLast(executedCommand);
+    }
+
+    private void handleCommand() {
+        if (this.consoleInput.isBlank()) {
+            return;
+        }
+        final String[] splitCommand = this.consoleInput.split("\\s");
+        if (splitCommand.length < 1) {
+            return;
+        }
+        switch (splitCommand[0]) {
+            case "set" -> {
+                LOGGER.info("Set invoked with args: {}", Arrays.toString(ArrayUtils.subarray(splitCommand, 1, splitCommand.length)));
+                submitCommand(new ExecutedCommand(
+                        String.join(" ", splitCommand),
+                        "set stuff!"
+                ));
+            }
+            case "get" -> {
+                LOGGER.info("Get invoked with args: {}", Arrays.toString(ArrayUtils.subarray(splitCommand, 1, splitCommand.length)));
+                submitCommand(new ExecutedCommand(
+                        String.join(" ", splitCommand),
+                        "get stuff!"
+                ));
+            }
+        }
     }
 
     @Override
     public void drawGUI() {
-
+        if (!this.show) {
+            ImGui.newFrame();
+            ImGui.endFrame();
+            ImGui.render();
+            return;
+        }
+        final String items = this.commandLog.stream()
+                .flatMap((final ExecutedCommand command) -> Stream.of(command.command(), command.result()))
+                .collect(Collectors.joining("\n"));
+        this.rawCommandLog.set(items, true);
+        ImGui.newFrame();
+        ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
+        ImGui.setNextWindowSize(450, 400);
+        ImGui.begin("Console");
+        ImGui.inputTextMultiline(
+                "Output",
+                this.rawCommandLog,
+                0,
+                ImGui.getTextLineHeight() * COMMAND_LOG_WINDOW_HEIGHT,
+                ImGuiInputTextFlags.ReadOnly
+        );
+        if (ImGui.inputTextWithHint("Input", "Type \"help\" for help", this.rawConsoleInput, ImGuiInputTextFlags.EnterReturnsTrue)) {
+            this.consoleInput = this.rawConsoleInput.get();
+            this.rawConsoleInput.clear();
+            LOGGER.info("COMMAND EXECUTED: {}", this.consoleInput);
+            handleCommand();
+        }
+        ImGui.end();
+        ImGui.endFrame();
+        ImGui.render();
     }
 
     @Override
     public boolean handleGUIInput(final Scene scene,
                                   final Window window) {
-        return false;
+        if (window.isKeyPressed(GLFW_KEY_GRAVE_ACCENT)) {
+            this.show = !this.show;
+        }
+        final ImGuiIO imGuiIO = ImGui.getIO();
+        final MouseInput mouseInput = window.getMouseInput();
+        final Vector2f mousePos = mouseInput.getCurrentPos();
+        imGuiIO.setMousePos(mousePos.x, mousePos.y);
+        imGuiIO.setMouseDown(0, mouseInput.isLeftButtonPressed());
+        imGuiIO.setMouseDown(1, mouseInput.isRightButtonPressed());
+        final boolean consumed = imGuiIO.getWantCaptureMouse() || imGuiIO.getWantCaptureKeyboard();
+        if (consumed) {
+           // TODO: DO STUFF
+        }
+        return consumed;
     }
 }
