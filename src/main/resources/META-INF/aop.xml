@@ -1,0 +1,8 @@
+<aspectj>
+    <aspects>
+        <aspect name="com.engineersbox.quanta.gui.console.VariableHookRegistrationAspect"/>
+        <weaver options="-verbose -showWeaveInfo">
+            <include within="*"/>
+        </weaver>
+    </aspects>
+</aspectj>

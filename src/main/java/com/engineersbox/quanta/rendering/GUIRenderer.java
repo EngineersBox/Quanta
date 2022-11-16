@@ -2,6 +2,8 @@ package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.gui.IGUIInstance;
+import com.engineersbox.quanta.gui.console.RegisterVariableMembers;
+import com.engineersbox.quanta.gui.console.VariableHook;
 import com.engineersbox.quanta.resources.assets.gui.GUIMesh;
 import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
@@ -29,12 +31,17 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 public class GUIRenderer {
 
     private GUIMesh guiMesh;
+    @VariableHook(
+            name = "test",
+            isStatic = false
+    )
     private Vector2f scale;
     private final ShaderProgram shader;
     private Texture texture;
     private Uniforms uniforms;
     private ImGuiImplGlfw imGuiImplGlfw;
 
+    @RegisterVariableMembers
     public GUIRenderer(final Window window) {
         this.shader = new ShaderProgram(
                 new ShaderModuleData("assets/shaders/gui/gui.vert", ShaderType.VERTEX),

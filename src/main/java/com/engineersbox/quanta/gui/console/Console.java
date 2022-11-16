@@ -17,7 +17,12 @@ import imgui.lwjgl3.glfw.ImGuiImplGlfwNative;
 import imgui.type.ImInt;
 import imgui.type.ImString;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
@@ -27,9 +32,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import javax.swing.*;
 import javax.swing.tree.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -50,18 +53,20 @@ public class Console implements IGUIInstance {
             .forPackages("com.engineersbox.quanta")
     );
 
+    public static final Map<Field, List<Object>> FIELD_INSTANCE_MAPPINGS = new HashMap<>();
     private static final DefaultTreeModel HOOKS = new DefaultTreeModel(new DefaultMutableTreeNode());
     private static final JTree TREE = new JTree();
 
     static {
         TREE.setModel(HOOKS);
-        final Map<VariableHook, Field> variableHooks = resolveVariableHooks();
+        final Map<VariableHook, Pair<Field, Boolean>> variableHooks = resolveVariableHooks();
         final Map<String, Method> hookValidators = resolveHookValidators();
         int count = 0;
-        for (final Map.Entry<VariableHook, Field> entry : variableHooks.entrySet()) {
+        for (final Map.Entry<VariableHook, Pair<Field, Boolean>> entry : variableHooks.entrySet()) {
             final String name = entry.getKey().name();
+            final Pair<Field, Boolean> hookValue = entry.getValue();
             if (name.isBlank()) {
-                LOGGER.warn("Invalid variable hook name for field [{}]", entry.getValue().getName());
+                LOGGER.warn("Invalid variable hook name for field [{}]", hookValue.getLeft().getName());
                 continue;
             }
             final String[] path = entry.getKey().name().split("\\.");
@@ -73,7 +78,7 @@ public class Console implements IGUIInstance {
             if (hookValidator != null && validateValidatorArgs(
                     name,
                     validatorName,
-                    entry.getValue().getType(),
+                    hookValue.getLeft().getType(),
                     hookValidator
             )) {
                 continue;
@@ -81,7 +86,7 @@ public class Console implements IGUIInstance {
             HOOKS.valueForPathChanged(
                     new TreePath(path),
                     ImmutablePair.of(
-                            entry.getValue(),
+                            hookValue,
                             hookValidator
                     )
             );
@@ -91,9 +96,9 @@ public class Console implements IGUIInstance {
     }
 
     private static boolean validateValidatorArgs(final String varHookName,
-                                              final String validatorName,
-                                              final Class<?> type,
-                                              final Method method) {
+                                                 final String validatorName,
+                                                 final Class<?> type,
+                                                 final Method method) {
         final int parameterCount = method.getParameterCount();
         if (parameterCount != 1) {
             LOGGER.error(
@@ -118,19 +123,61 @@ public class Console implements IGUIInstance {
         return true;
     }
 
-    private static Map<VariableHook, Field> resolveVariableHooks() {
+    private static Map<VariableHook, Pair<Field, Boolean>> resolveVariableHooks() {
         return REFLECTIONS.getFieldsAnnotatedWith(VariableHook.class)
                 .stream()
-                .collect(Collectors.toMap(
+                .filter((final Field field) -> {
+                    final VariableHook annotation = field.getAnnotation(VariableHook.class);
+                    if (annotation.isStatic() && !Modifier.isStatic(field.getModifiers())) {
+                        return false;
+                    }
+                    return hasConstructionWithRegistrationWrapper(field);
+                }).collect(Collectors.toMap(
                         (final Field field) -> field.getAnnotation(VariableHook.class),
-                        Function.identity()
+                        (final Field field) -> ImmutablePair.of(
+                                field,
+                                !Modifier.isStatic(field.getModifiers()) && hasConstructionWithRegistrationWrapper(field)
+                        )
                 ));
+    }
+
+    private static boolean hasConstructionWithRegistrationWrapper(final Field field) {
+        final Constructor<?>[] constructors = field.getDeclaringClass().getDeclaredConstructors();
+        if (constructors.length < 1) {
+            return false;
+        }
+        return Arrays.stream(constructors)
+                .anyMatch((final Constructor<?> constructor) -> constructor.isAnnotationPresent(RegisterVariableMembers.class));
     }
 
     private static Map<String, Method> resolveHookValidators() {
         return REFLECTIONS.getMethodsAnnotatedWith(HookValidator.class)
                 .stream()
-                .collect(Collectors.toMap(
+                .filter((final Method method) -> {
+                    final StringBuilder errorBuilder = new StringBuilder();
+                    final boolean isStatic = Modifier.isStatic(method.getModifiers());
+                    if (!isStatic) {
+                        errorBuilder.append("\n\t- Not declared static");
+                    }
+                    final boolean isBooleanReturn = method.getReturnType().isAssignableFrom(Object.class);
+                    if (!isBooleanReturn) {
+                        errorBuilder.append("\n\t- Does not return an object");
+                    }
+                    final boolean acceptsSingleObjectArgument = method.getParameterTypes().length == 1
+                            || method.getParameterTypes()[0].isAssignableFrom(String.class);
+                    if (!acceptsSingleObjectArgument) {
+                        errorBuilder.append("\n\t- Does not accept single string argument");
+                    }
+                    if (!isStatic || !isBooleanReturn || !acceptsSingleObjectArgument) {
+                        LOGGER.error(
+                                "Invalid hook validator [{}]:{}",
+                                method.getName(),
+                                errorBuilder
+                        );
+                        return false;
+                    }
+                    return true;
+                }).collect(Collectors.toMap(
                         (final Method method) -> method.getAnnotation(HookValidator.class).name(),
                         Function.identity()
                 ));
@@ -139,6 +186,8 @@ public class Console implements IGUIInstance {
     private static final int COMMAND_LOG_SIZE = 100;
     private static final boolean COMMAND_LOG_AUTO_SCROLL = true;
     private static final boolean SHOW_TIMESTAMP = true;
+    private static final String VARIABLE_INSTANCE_TARGET_DELIMITER = "::";
+    private static final String VARIABLE_PATH_DELIMITER = "\\.";
     private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("hh:mm:ss.SSSS");
     private static final int INPUT_FIELD_FLAGS = ImGuiInputTextFlags.CallbackHistory
             | ImGuiInputTextFlags.CallbackCharFilter
@@ -173,18 +222,122 @@ public class Console implements IGUIInstance {
         this.commandLog.addLast(executedCommand);
     }
 
-    private Object traverseTree(final TreeNode node, final TreePath path) {
+    @SuppressWarnings({"java:S3011"})
+    private Pair<ValidationState, Object> invokeValidator(final Method method,
+                                                          final String value) {
+        if (method == null) {
+            return ImmutablePair.of(
+                    null,
+                    value
+            );
+        }
+        method.setAccessible(true);
+        Object result = null;
+        try {
+            if ((result = method.invoke(null, value)) == null) {
+                return ImmutablePair.of(
+                        new ValidationState(
+                                false,
+                                new ColouredString[]{
+                                        new ColouredString(ConsoleColour.RED, "Invalid variable value: "),
+                                        new ColouredString(ConsoleColour.NORMAL, value)
+                                }
+                        ), null
+                );
+            }
+        } catch (final InvocationTargetException | IllegalAccessException e) {
+            LOGGER.error("Unable to invoke validator {}", method.getName(), e);
+        }
+        return ImmutablePair.of(null, result);
     }
 
-    @SuppressWarnings({"java:S1854"})
-    private boolean updateVariableValue(final String path,
-                                        final Object value) {
+    @SuppressWarnings({"java:S1854","unchecked"})
+    private ValidationState updateVariableValue(final String path,
+                                                final String value) {
+        final String[] instanceTarget = path.split(VARIABLE_INSTANCE_TARGET_DELIMITER);
+        final Object[] splitPath = instanceTarget[0].split(VARIABLE_PATH_DELIMITER);
         synchronized (this) {
-            final TreeNode rootNode = (TreeNode) HOOKS.getRoot();
-            if (rootNode == null) {
-                return false;
+            TREE.setSelectionPath(new TreePath(splitPath));
+            final Object selectedComponent = TREE.getLastSelectedPathComponent();
+            if (selectedComponent == null) {
+                return new ValidationState(
+                        false,
+                        new ColouredString[]{
+                                new ColouredString(ConsoleColour.RED, "Unknown variable: "),
+                                new ColouredString(ConsoleColour.YELLOW, path)
+                        }
+                );
+            }
+            final Pair<Pair<Field, Boolean>, Method> hook = (Pair<Pair<Field, Boolean>, Method>) selectedComponent;
+            final Pair<ValidationState, Object> state = invokeValidator(hook.getValue(), value);
+            if (state.getKey() != null) {
+                return state.getKey();
+            }
+            final Pair<Field, Boolean> hookField = hook.getKey();
+            try {
+                final boolean requiresInstance = Boolean.TRUE.equals(hookField.getRight());
+                Object matchingInstance = null;
+                if (requiresInstance) {
+                    if (instanceTarget.length != 2) {
+                        return new ValidationState(
+                                false,
+                                new ColouredString[]{
+                                        new ColouredString(ConsoleColour.RED, "Instance ID is required to update variable: "),
+                                        new ColouredString(ConsoleColour.YELLOW, path)
+                                }
+                        );
+                    }
+                    final Optional<Object> potentialMatchingInstance = getFieldParentInstance(hookField.getLeft(), instanceTarget[1]);
+                    if (potentialMatchingInstance.isEmpty()) {
+                        return new ValidationState(
+                                false,
+                                new ColouredString[]{
+                                        new ColouredString(ConsoleColour.RED, "Variable "),
+                                        new ColouredString(ConsoleColour.YELLOW, path),
+                                        new ColouredString(ConsoleColour.RED, " is not registered to an instance with ID "),
+                                        new ColouredString(ConsoleColour.YELLOW, instanceTarget[1]),
+                                }
+                        );
+                    }
+                    matchingInstance = potentialMatchingInstance.get();
+                }
+                FieldUtils.writeField(
+                        hookField.getLeft(),
+                        requiresInstance ? FieldUtils.readField(
+                                hookField.getLeft(),
+                                matchingInstance,
+                                true
+                        ) : null,
+                        state.getRight(),
+                        true
+                );
+            } catch (IllegalAccessException e) {
+                return new ValidationState(
+                        false,
+                        new ColouredString[]{
+                                new ColouredString(ConsoleColour.RED, "Unable to update variable: "),
+                                new ColouredString(ConsoleColour.YELLOW, path)
+                        }
+                );
             }
         }
+        return new ValidationState(
+                true,
+                new ColouredString[]{
+                        new ColouredString(ConsoleColour.NORMAL, "Variable "),
+                        new ColouredString(ConsoleColour.GREEN, path),
+                        new ColouredString(ConsoleColour.NORMAL, " updated to "),
+                        new ColouredString(ConsoleColour.YELLOW, value)
+                }
+        );
+    }
+
+    private Optional<Object> getFieldParentInstance(final Field field,
+                                          final String target) {
+        final List<Object> instances = FIELD_INSTANCE_MAPPINGS.get(field);
+        return instances.stream()
+                .filter((final Object instance) -> instance.toString().equals(target))
+                .findFirst();
     }
 
     private void handleCommand() {
