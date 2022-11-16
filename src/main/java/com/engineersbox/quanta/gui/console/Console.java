@@ -25,10 +25,8 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
+import javax.swing.*;
+import javax.swing.tree.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -52,9 +50,11 @@ public class Console implements IGUIInstance {
             .forPackages("com.engineersbox.quanta")
     );
 
-    private static final TreeModel HOOKS = new DefaultTreeModel(new DefaultMutableTreeNode());
+    private static final DefaultTreeModel HOOKS = new DefaultTreeModel(new DefaultMutableTreeNode());
+    private static final JTree TREE = new JTree();
 
     static {
+        TREE.setModel(HOOKS);
         final Map<VariableHook, Field> variableHooks = resolveVariableHooks();
         final Map<String, Method> hookValidators = resolveHookValidators();
         int count = 0;
@@ -137,20 +137,33 @@ public class Console implements IGUIInstance {
     }
 
     private static final int COMMAND_LOG_SIZE = 100;
-    private static final int COMMAND_LOG_WINDOW_HEIGHT = 10;
+    private static final boolean COMMAND_LOG_AUTO_SCROLL = true;
+    private static final boolean SHOW_TIMESTAMP = true;
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("hh:mm:ss.SSSS");
+    private static final int INPUT_FIELD_FLAGS = ImGuiInputTextFlags.CallbackHistory
+            | ImGuiInputTextFlags.CallbackCharFilter
+            | ImGuiInputTextFlags.CallbackCompletion
+            | ImGuiInputTextFlags.EnterReturnsTrue
+            | ImGuiInputTextFlags.CallbackAlways;
 
     private final ImString rawConsoleInput;
     private String consoleInput;
-    private final ImString rawCommandLog;
     private final LinkedBlockingDeque<ExecutedCommand> commandLog;
     private boolean show;
+    private boolean tildePressed;
+    private boolean scrollToBottom;
+    private boolean wasPrevFrameTabCompletion;
+    private List<String> commandSuggestions;
 
     public Console() {
         this.rawConsoleInput = new ImString();
-        this.rawCommandLog = new ImString();
         this.consoleInput = "";
         this.commandLog = new LinkedBlockingDeque<>(COMMAND_LOG_SIZE);
         this.show = false;
+        this.wasPrevFrameTabCompletion = false;
+        this.scrollToBottom = false;
+        this.tildePressed = false;
+        this.commandSuggestions = new ArrayList<>();
     }
 
     private void submitCommand(final ExecutedCommand executedCommand) {
@@ -158,6 +171,20 @@ public class Console implements IGUIInstance {
             this.commandLog.pop();
         }
         this.commandLog.addLast(executedCommand);
+    }
+
+    private Object traverseTree(final TreeNode node, final TreePath path) {
+    }
+
+    @SuppressWarnings({"java:S1854"})
+    private boolean updateVariableValue(final String path,
+                                        final Object value) {
+        synchronized (this) {
+            final TreeNode rootNode = (TreeNode) HOOKS.getRoot();
+            if (rootNode == null) {
+                return false;
+            }
+        }
     }
 
     private void handleCommand() {
@@ -191,9 +218,6 @@ public class Console implements IGUIInstance {
             ));
         }
     }
-
-    private static final boolean SHOW_TIMESTAMP = true;
-    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("hh:mm:ss.SSSS");
 
     private void renderFormattedString(final ColouredString[] colouredStrings) {
         boolean notFirst = false;
@@ -247,7 +271,35 @@ public class Console implements IGUIInstance {
             renderFormattedString(command.result());
         }
         ImGui.popTextWrapPos();
+        if (this.scrollToBottom && (ImGui.getScrollY() >= ImGui.getScrollMaxY() || COMMAND_LOG_AUTO_SCROLL)) {
+            ImGui.setScrollHereY(1.0f);
+        }
+        this.scrollToBottom = false;
         ImGui.endChild();
+    }
+
+    private void inputField() {
+        boolean reclaimFocus = false;
+        ImGui.pushItemWidth(-ImGui.getStyle().getItemSpacingX() * 7);
+        if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, INPUT_FIELD_FLAGS)) {
+            if (!this.rawConsoleInput.isEmpty()) {
+                this.consoleInput = this.rawConsoleInput.get();
+                LOGGER.info("COMMAND EXECUTED: {}", this.consoleInput);
+                handleCommand();
+                this.scrollToBottom = true;
+            }
+            reclaimFocus = true;
+            this.rawConsoleInput.clear();
+        }
+        ImGui.popItemWidth();
+        if (ImGui.isItemEdited() && !this.wasPrevFrameTabCompletion) {
+            this.commandSuggestions.clear();
+        }
+        wasPrevFrameTabCompletion = false;
+        ImGui.setItemDefaultFocus();
+        if (reclaimFocus) {
+            ImGui.setKeyboardFocusHere(-1);
+        }
     }
 
     @Override
@@ -258,34 +310,22 @@ public class Console implements IGUIInstance {
             ImGui.render();
             return;
         }
-//        final String items = this.commandLog.stream()
-//                .flatMap((final ExecutedCommand command) -> Stream.of(command.command(), command.result()))
-//                .collect(Collectors.joining("\n"));
-//        this.rawCommandLog.set(items, true);
         ImGui.newFrame();
         ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
         ImGui.setNextWindowSize(450, 400);
         ImGui.begin("Console");
-//        ImGui.inputTextMultiline(
-//                "##",
-//                this.rawCommandLog,
-//                0,
-//                ImGui.getTextLineHeight() * COMMAND_LOG_WINDOW_HEIGHT,
-//                ImGuiInputTextFlags.ReadOnly | ImGuiInputTextFlags.CallbackHistory
-//        );
         executedCommandLog();
-        if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, ImGuiInputTextFlags.EnterReturnsTrue)) {
-            this.consoleInput = this.rawConsoleInput.get();
-            this.rawConsoleInput.clear();
-            LOGGER.info("COMMAND EXECUTED: {}", this.consoleInput);
-            handleCommand();
-        }
+        ImGui.separator();
+        inputField();
         ImGui.end();
         ImGui.endFrame();
         ImGui.render();
     }
 
-    private boolean tildePressed = false;
+    private int inputCallback() {
+        // TODO: Figure out how to register callbacks to inputs
+        return 0;
+    }
 
     @Override
     public boolean handleGUIInput(final Scene scene,
