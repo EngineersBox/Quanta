@@ -119,6 +119,10 @@ public class Window {
         return glfwGetKey(this.windowHandle, keyCode) == GLFW_PRESS;
     }
 
+    public boolean isKeyReleased(final int keyCode) {
+        return glfwGetKey(this.windowHandle, keyCode) == GLFW_RELEASE;
+    }
+
     public void pollEvents() {
         glfwPollEvents();
         this.mouseInput.input();

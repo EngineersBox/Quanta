@@ -4,8 +4,11 @@ import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.scene.Scene;
+import imgui.ImColor;
 import imgui.ImGui;
 import imgui.ImGuiIO;
+import imgui.ImVec2;
+import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.flag.ImGuiKey;
@@ -29,12 +32,13 @@ import javax.swing.tree.TreePath;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -164,22 +168,100 @@ public class Console implements IGUIInstance {
         if (splitCommand.length < 1) {
             return;
         }
-        switch (splitCommand[0]) {
+        final String command = splitCommand[0];
+        final String[] args = ArrayUtils.subarray(splitCommand, 1, splitCommand.length);
+        switch (command) {
             case "set" -> {
-                LOGGER.info("Set invoked with args: {}", Arrays.toString(ArrayUtils.subarray(splitCommand, 1, splitCommand.length)));
+                LOGGER.info("Set invoked with args: {}", Arrays.toString(args));
                 submitCommand(new ExecutedCommand(
-                        String.join(" ", splitCommand),
+                        new Date(),
+                        String.format(
+                                "${RED}%s ${NORMAL}%s",
+                                command,
+                                String.join(" ", args)
+                        ),
                         "set stuff!"
                 ));
             }
             case "get" -> {
-                LOGGER.info("Get invoked with args: {}", Arrays.toString(ArrayUtils.subarray(splitCommand, 1, splitCommand.length)));
+                LOGGER.info("Get invoked with args: {}", Arrays.toString(args));
                 submitCommand(new ExecutedCommand(
-                        String.join(" ", splitCommand),
+                        new Date(),
+                        String.format(
+                                "${BLUE}%s ${NORMAL}%s",
+                                command,
+                                String.join(" ", args)
+                        ),
                         "get stuff!"
                 ));
             }
         }
+    }
+
+    private static final boolean SHOW_TIMESTAMP = true;
+    private static final boolean COLOURED_OUTPUT = false;
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("hh:mm:ss.SSSS");
+    private static final Pattern COLOUR_FORMAT_PATTERN = Pattern.compile("\\$\\{\\w+\\}|[\\w\\s]*");
+
+    private void renderFormattedString(final String value) {
+        final Matcher matcher = COLOUR_FORMAT_PATTERN.matcher(value);
+        boolean notFirst = false;
+        boolean pushed = false;
+        while (matcher.find()) {
+            if (notFirst) {
+                ImGui.sameLine();
+            }
+            final String match = matcher.group();
+            if (match.startsWith("${") && match.endsWith("}")) {
+                if (pushed) {
+                    ImGui.popStyleColor();
+                    pushed = false;
+                }
+                ImGui.pushStyleColor(
+                        ImGuiCol.Text,
+                        ConsoleColour.valueOf(match.substring(2, match.length() - 1)).getColour()
+                );
+                pushed = true;
+            } else {
+                ImGui.text(match);
+            }
+            notFirst = true;
+        }
+        if (pushed) {
+            ImGui.popStyleColor();
+        }
+    }
+
+    private void executedCommandLog() {
+        final float footerHeightToReserve = ImGui.getStyle().getItemSpacingY() + ImGui.getFrameHeightWithSpacing();
+        if (!ImGui.beginChild("ScrollRegion##", 0, -footerHeightToReserve, false, 0)) {
+            return;
+        }
+        int count = 0;
+        ImGui.pushTextWrapPos();
+        for (final ExecutedCommand command : this.commandLog) {
+            final ImVec2 dimensions = new ImVec2();
+            ImGui.calcTextSize(dimensions, "00:00:00:0000");
+            final float timestampWidth = dimensions.x;
+            ImGui.pushTextWrapPos(ImGui.getColumnWidth() - timestampWidth);
+            if (count++ != 0) ImGui.dummy(-1, ImGui.getFontSize());
+            if (COLOURED_OUTPUT) {
+                // TODO
+            } else {
+                renderFormattedString("${CYAN}>${NORMAL}" + command.command());
+//                ImGui.textUnformatted("> " + command.command());
+                ImGui.textUnformatted(command.result());
+            }
+            if (SHOW_TIMESTAMP) {
+                ImGui.popTextWrapPos();
+                ImGui.sameLine(ImGui.getColumnWidth(-1) - timestampWidth);
+                ImGui.pushStyleColor(ImGuiCol.Text, ImColor.floatToColor(0f, 0.5f, 0.5f));
+                ImGui.text(DATE_FORMATTER.format(command.date()));
+                ImGui.popStyleColor();
+            }
+        }
+        ImGui.popTextWrapPos();
+        ImGui.endChild();
     }
 
     @Override
@@ -190,21 +272,22 @@ public class Console implements IGUIInstance {
             ImGui.render();
             return;
         }
-        final String items = this.commandLog.stream()
-                .flatMap((final ExecutedCommand command) -> Stream.of(command.command(), command.result()))
-                .collect(Collectors.joining("\n"));
-        this.rawCommandLog.set(items, true);
+//        final String items = this.commandLog.stream()
+//                .flatMap((final ExecutedCommand command) -> Stream.of(command.command(), command.result()))
+//                .collect(Collectors.joining("\n"));
+//        this.rawCommandLog.set(items, true);
         ImGui.newFrame();
         ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
         ImGui.setNextWindowSize(450, 400);
         ImGui.begin("Console");
-        ImGui.inputTextMultiline(
-                "##",
-                this.rawCommandLog,
-                0,
-                ImGui.getTextLineHeight() * COMMAND_LOG_WINDOW_HEIGHT,
-                ImGuiInputTextFlags.ReadOnly
-        );
+//        ImGui.inputTextMultiline(
+//                "##",
+//                this.rawCommandLog,
+//                0,
+//                ImGui.getTextLineHeight() * COMMAND_LOG_WINDOW_HEIGHT,
+//                ImGuiInputTextFlags.ReadOnly | ImGuiInputTextFlags.CallbackHistory
+//        );
+        executedCommandLog();
         if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, ImGuiInputTextFlags.EnterReturnsTrue)) {
             this.consoleInput = this.rawConsoleInput.get();
             this.rawConsoleInput.clear();
@@ -216,11 +299,17 @@ public class Console implements IGUIInstance {
         ImGui.render();
     }
 
+    private boolean tildePressed = false;
+
     @Override
     public boolean handleGUIInput(final Scene scene,
                                   final Window window) {
-        if (window.isKeyPressed(GLFW_KEY_GRAVE_ACCENT)) {
+        if (window.isKeyPressed(GLFW_KEY_GRAVE_ACCENT) && !this.tildePressed) {
             this.show = !this.show;
+            this.tildePressed = true;
+        }
+        if (window.isKeyReleased(GLFW_KEY_GRAVE_ACCENT) && this.tildePressed) {
+            this.tildePressed = false;
         }
         final ImGuiIO imGuiIO = ImGui.getIO();
         final MouseInput mouseInput = window.getMouseInput();

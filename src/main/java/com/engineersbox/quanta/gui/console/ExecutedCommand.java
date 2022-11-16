@@ -1,5 +1,8 @@
 package com.engineersbox.quanta.gui.console;
 
-public record ExecutedCommand(String command,
+import java.util.Date;
+
+public record ExecutedCommand(Date date,
+                              String command,
                               String result) {
 }
