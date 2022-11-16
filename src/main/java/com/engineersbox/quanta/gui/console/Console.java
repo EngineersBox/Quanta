@@ -83,12 +83,17 @@ public class Console implements IGUIInstance {
             )) {
                 continue;
             }
+            final Object[] treePath = new Object[path.length + 1];
+            for (int i = 0; i < path.length; i++) {
+                treePath[i] = path[i];
+            }
+            treePath[treePath.length - 1] = new DefaultMutableTreeNode();
             HOOKS.valueForPathChanged(
-                    new TreePath(path),
-                    ImmutablePair.of(
+                    new TreePath(treePath),
+                    new DefaultMutableTreeNode(ImmutablePair.of(
                             hookValue,
                             hookValidator
-                    )
+                    ))
             );
             count++;
         }
