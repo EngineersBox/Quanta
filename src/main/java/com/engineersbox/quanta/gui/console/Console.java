@@ -19,6 +19,7 @@ import imgui.type.ImString;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.commons.lang3.stream.Streams;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,7 +36,9 @@ import javax.swing.tree.*;
 import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -345,6 +348,36 @@ public class Console implements IGUIInstance {
                 .findFirst();
     }
 
+    private ColouredString[] listAllVars() {
+        return REFLECTIONS.getFieldsAnnotatedWith(VariableHook.class)
+                .stream()
+                .filter((final Field field) -> {
+                    final VariableHook annotation = field.getAnnotation(VariableHook.class);
+                    if (annotation.isStatic() && !Modifier.isStatic(field.getModifiers())) {
+                        return false;
+                    }
+                    return hasConstructionWithRegistrationWrapper(field);
+                }).flatMap((final Field field) -> {
+                    final VariableHook annotation = field.getAnnotation(VariableHook.class);
+                    if (annotation.isStatic()) {
+                        return Stream.of(new ColouredString(
+                                ConsoleColour.NORMAL,
+                                annotation.name()
+                        ));
+                    }
+                    return FIELD_INSTANCE_MAPPINGS.get(field)
+                            .stream()
+                            .map((final Object instance) -> new ColouredString(
+                                    ConsoleColour.NORMAL,
+                                    String.format(
+                                            "%s::%s",
+                                            annotation.name(),
+                                            instance
+                                    )
+                            ));
+                }).toArray(ColouredString[]::new);
+    }
+
     private void handleCommand() {
         if (this.consoleInput.isBlank()) {
             return;
@@ -355,25 +388,35 @@ public class Console implements IGUIInstance {
         }
         final String command = splitCommand[0];
         final String[] args = ArrayUtils.subarray(splitCommand, 1, splitCommand.length);
+        final Runnable invalidAction = () -> submitCommand(ExecutedCommand.from(
+                ConsoleColour.NORMAL.with(this.consoleInput),
+                ConsoleColour.RED.with("Unknown command: " + this.consoleInput)
+        ));
         switch (command) {
             case "set" -> submitCommand(ExecutedCommand.from(
                     new ColouredString[]{
-                            ConsoleColour.RED.with(command + " "),
+                            ConsoleColour.GREEN.with(command + " "),
                             ConsoleColour.NORMAL.with(String.join(" ", args))
                     },
                     ConsoleColour.NORMAL.with("set stuff!")
             ));
             case "get" -> submitCommand(ExecutedCommand.from(
                     new ColouredString[]{
-                            ConsoleColour.BLUE.with(command + " "),
+                            ConsoleColour.GREEN.with(command + " "),
                             ConsoleColour.NORMAL.with(String.join(" ", args))
                     },
                     ConsoleColour.NORMAL.with("get stuff!")
             ));
-            default -> submitCommand(ExecutedCommand.from(
-                    ConsoleColour.NORMAL.with(this.consoleInput),
-                    ConsoleColour.RED.with("Unknown command: " + command)
-            ));
+            case "listvars" -> {
+                if (args.length > 1) {
+                    invalidAction.run();
+                }
+                submitCommand(ExecutedCommand.from(
+                        ConsoleColour.GREEN.with(command),
+                        listAllVars()
+                ));
+            }
+            default -> invalidAction.run();
         }
     }
 
