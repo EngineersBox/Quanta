@@ -23,4 +23,8 @@ public enum ConsoleColour {
         return this.colour;
     }
 
+    public ColouredString with(final String value) {
+        return new ColouredString(this, value);
+    }
+
 }

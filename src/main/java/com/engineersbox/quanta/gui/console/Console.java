@@ -171,59 +171,50 @@ public class Console implements IGUIInstance {
         final String command = splitCommand[0];
         final String[] args = ArrayUtils.subarray(splitCommand, 1, splitCommand.length);
         switch (command) {
-            case "set" -> {
-                LOGGER.info("Set invoked with args: {}", Arrays.toString(args));
-                submitCommand(new ExecutedCommand(
-                        new Date(),
-                        String.format(
-                                "${RED}%s ${NORMAL}%s",
-                                command,
-                                String.join(" ", args)
-                        ),
-                        "set stuff!"
-                ));
-            }
-            case "get" -> {
-                LOGGER.info("Get invoked with args: {}", Arrays.toString(args));
-                submitCommand(new ExecutedCommand(
-                        new Date(),
-                        String.format(
-                                "${BLUE}%s ${NORMAL}%s",
-                                command,
-                                String.join(" ", args)
-                        ),
-                        "get stuff!"
-                ));
-            }
+            case "set" -> submitCommand(ExecutedCommand.from(
+                    new ColouredString[]{
+                            ConsoleColour.RED.with(command + " "),
+                            ConsoleColour.NORMAL.with(String.join(" ", args))
+                    },
+                    ConsoleColour.NORMAL.with("set stuff!")
+            ));
+            case "get" -> submitCommand(ExecutedCommand.from(
+                    new ColouredString[]{
+                            ConsoleColour.BLUE.with(command + " "),
+                            ConsoleColour.NORMAL.with(String.join(" ", args))
+                    },
+                    ConsoleColour.NORMAL.with("get stuff!")
+            ));
+            default -> submitCommand(ExecutedCommand.from(
+                    ConsoleColour.NORMAL.with(this.consoleInput),
+                    ConsoleColour.RED.with("Unknown command: " + command)
+            ));
         }
     }
 
     private static final boolean SHOW_TIMESTAMP = true;
-    private static final boolean COLOURED_OUTPUT = false;
     private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("hh:mm:ss.SSSS");
-    private static final Pattern COLOUR_FORMAT_PATTERN = Pattern.compile("\\$\\{\\w+\\}|[\\w\\s]*");
 
-    private void renderFormattedString(final String value) {
-        final Matcher matcher = COLOUR_FORMAT_PATTERN.matcher(value);
+    private void renderFormattedString(final ColouredString[] colouredStrings) {
         boolean notFirst = false;
         boolean pushed = false;
-        while (matcher.find()) {
+        for (final ColouredString colouredString : colouredStrings) {
             if (notFirst) {
                 ImGui.sameLine();
             }
-            final String match = matcher.group();
-            if (match.startsWith("${") && match.endsWith("}")) {
+            if (colouredString.colour() != null) {
                 if (pushed) {
                     ImGui.popStyleColor();
                     pushed = false;
                 }
                 ImGui.pushStyleColor(
                         ImGuiCol.Text,
-                        ConsoleColour.valueOf(match.substring(2, match.length() - 1)).getColour()
+                        colouredString.colour().getColour()
                 );
                 pushed = true;
-            } else {
-                ImGui.text(match);
+            }
+            if (colouredString.value() != null) {
+                ImGui.text(colouredString.value());
             }
             notFirst = true;
         }
@@ -245,13 +236,7 @@ public class Console implements IGUIInstance {
             final float timestampWidth = dimensions.x;
             ImGui.pushTextWrapPos(ImGui.getColumnWidth() - timestampWidth);
             if (count++ != 0) ImGui.dummy(-1, ImGui.getFontSize());
-            if (COLOURED_OUTPUT) {
-                // TODO
-            } else {
-                renderFormattedString("${CYAN}>${NORMAL}" + command.command());
-//                ImGui.textUnformatted("> " + command.command());
-                ImGui.textUnformatted(command.result());
-            }
+            renderFormattedString(ArrayUtils.addFirst(command.command(), ConsoleColour.CYAN.with(">")));
             if (SHOW_TIMESTAMP) {
                 ImGui.popTextWrapPos();
                 ImGui.sameLine(ImGui.getColumnWidth(-1) - timestampWidth);
@@ -259,6 +244,7 @@ public class Console implements IGUIInstance {
                 ImGui.text(DATE_FORMATTER.format(command.date()));
                 ImGui.popStyleColor();
             }
+            renderFormattedString(command.result());
         }
         ImGui.popTextWrapPos();
         ImGui.endChild();
