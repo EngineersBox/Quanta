@@ -14,7 +14,7 @@ public final aspect VariableHookRegistrationAspect {
             Console.FIELD_INSTANCE_MAPPINGS.computeIfAbsent(
                     field,
                     (final Field k) -> new ArrayList<>()
-            ).add(instance.toString());
+            ).add(instance);
         }
     }
 

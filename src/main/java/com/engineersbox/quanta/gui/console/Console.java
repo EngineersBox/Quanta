@@ -11,19 +11,11 @@ import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiInputTextFlags;
-import imgui.flag.ImGuiKey;
-import imgui.glfw.ImGuiImplGlfw;
-import imgui.lwjgl3.glfw.ImGuiImplGlfwNative;
-import imgui.type.ImInt;
 import imgui.type.ImString;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.commons.lang3.reflect.MethodUtils;
-import org.apache.commons.lang3.stream.Streams;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
@@ -32,21 +24,18 @@ import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 
 import javax.swing.*;
-import javax.swing.tree.*;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_GRAVE_ACCENT;
 
 public class Console implements IGUIInstance {
 
@@ -61,15 +50,15 @@ public class Console implements IGUIInstance {
     private static final JTree TREE = new JTree();
 
     static {
-        TREE.setModel(HOOKS);
-        final Map<VariableHook, Pair<Field, Boolean>> variableHooks = resolveVariableHooks();
-        final Map<String, Method> hookValidators = resolveHookValidators();
+        Console.TREE.setModel(Console.HOOKS);
+        final Map<VariableHook, Pair<Field, Boolean>> variableHooks = Console.resolveVariableHooks();
+        final Map<String, Method> hookValidators = Console.resolveHookValidators();
         int count = 0;
         for (final Map.Entry<VariableHook, Pair<Field, Boolean>> entry : variableHooks.entrySet()) {
             final String name = entry.getKey().name();
             final Pair<Field, Boolean> hookValue = entry.getValue();
             if (name.isBlank()) {
-                LOGGER.warn("Invalid variable hook name for field [{}]", hookValue.getLeft().getName());
+                Console.LOGGER.warn("Invalid variable hook name for field [{}]", hookValue.getLeft().getName());
                 continue;
             }
             final String[] path = entry.getKey().name().split("\\.");
@@ -78,7 +67,7 @@ public class Console implements IGUIInstance {
             if (!Objects.equals(validatorName, "")) {
                 hookValidator = hookValidators.get(validatorName);
             }
-            if (hookValidator != null && validateValidatorArgs(
+            if (hookValidator != null && Console.validateValidatorArgs(
                     name,
                     validatorName,
                     hookValue.getLeft().getType(),
@@ -91,7 +80,7 @@ public class Console implements IGUIInstance {
                 treePath[i] = path[i];
             }
             treePath[treePath.length - 1] = new DefaultMutableTreeNode();
-            HOOKS.valueForPathChanged(
+            Console.HOOKS.valueForPathChanged(
                     new TreePath(treePath),
                     new DefaultMutableTreeNode(ImmutablePair.of(
                             hookValue,
@@ -100,7 +89,7 @@ public class Console implements IGUIInstance {
             );
             count++;
         }
-        LOGGER.debug("Resolved {} variable hooks", count);
+        Console.LOGGER.debug("Resolved {} variable hooks", count);
     }
 
     private static boolean validateValidatorArgs(final String varHookName,
@@ -109,7 +98,7 @@ public class Console implements IGUIInstance {
                                                  final Method method) {
         final int parameterCount = method.getParameterCount();
         if (parameterCount != 1) {
-            LOGGER.error(
+            Console.LOGGER.error(
                     "Invalid validator [{}] for variable hook [{}]: expected 1 parameter, got {}",
                     validatorName,
                     varHookName,
@@ -119,7 +108,7 @@ public class Console implements IGUIInstance {
         }
         final Class<?> parameterType = method.getParameterTypes()[0];
         if (!parameterType.isAssignableFrom(type)) {
-            LOGGER.error(
+            Console.LOGGER.error(
                     "Invalid validator [{}] for variable hook [{}]: expected parameter of type {}, got {}",
                     validatorName,
                     varHookName,
@@ -132,24 +121,24 @@ public class Console implements IGUIInstance {
     }
 
     private static Map<VariableHook, Pair<Field, Boolean>> resolveVariableHooks() {
-        return REFLECTIONS.getFieldsAnnotatedWith(VariableHook.class)
+        return Console.REFLECTIONS.getFieldsAnnotatedWith(VariableHook.class)
                 .stream()
                 .filter((final Field field) -> {
                     final VariableHook annotation = field.getAnnotation(VariableHook.class);
                     if (annotation.isStatic() && !Modifier.isStatic(field.getModifiers())) {
                         return false;
                     }
-                    return hasConstructionWithRegistrationWrapper(field);
+                    return Console.hasConstructorWithRegistrationWrapper(field);
                 }).collect(Collectors.toMap(
                         (final Field field) -> field.getAnnotation(VariableHook.class),
                         (final Field field) -> ImmutablePair.of(
                                 field,
-                                !Modifier.isStatic(field.getModifiers()) && hasConstructionWithRegistrationWrapper(field)
+                                !Modifier.isStatic(field.getModifiers()) && Console.hasConstructorWithRegistrationWrapper(field)
                         )
                 ));
     }
 
-    private static boolean hasConstructionWithRegistrationWrapper(final Field field) {
+    private static boolean hasConstructorWithRegistrationWrapper(final Field field) {
         final Constructor<?>[] constructors = field.getDeclaringClass().getDeclaredConstructors();
         if (constructors.length < 1) {
             return false;
@@ -159,7 +148,7 @@ public class Console implements IGUIInstance {
     }
 
     private static Map<String, Method> resolveHookValidators() {
-        return REFLECTIONS.getMethodsAnnotatedWith(HookValidator.class)
+        return Console.REFLECTIONS.getMethodsAnnotatedWith(HookValidator.class)
                 .stream()
                 .filter((final Method method) -> {
                     final StringBuilder errorBuilder = new StringBuilder();
@@ -177,7 +166,7 @@ public class Console implements IGUIInstance {
                         errorBuilder.append("\n\t- Does not accept single string argument");
                     }
                     if (!isStatic || !isBooleanReturn || !acceptsSingleObjectArgument) {
-                        LOGGER.error(
+                        Console.LOGGER.error(
                                 "Invalid hook validator [{}]:{}",
                                 method.getName(),
                                 errorBuilder
@@ -189,6 +178,14 @@ public class Console implements IGUIInstance {
                         (final Method method) -> method.getAnnotation(HookValidator.class).name(),
                         Function.identity()
                 ));
+    }
+
+    public static String deriveInstanceID(final Object instance) {
+        return String.format(
+                "%s@%s",
+                instance.getClass().getSimpleName(),
+                Integer.toHexString(instance.hashCode())
+        );
     }
 
     private static final int COMMAND_LOG_SIZE = 100;
@@ -210,12 +207,12 @@ public class Console implements IGUIInstance {
     private boolean tildePressed;
     private boolean scrollToBottom;
     private boolean wasPrevFrameTabCompletion;
-    private List<String> commandSuggestions;
+    private final List<String> commandSuggestions;
 
     public Console() {
         this.rawConsoleInput = new ImString();
         this.consoleInput = "";
-        this.commandLog = new LinkedBlockingDeque<>(COMMAND_LOG_SIZE);
+        this.commandLog = new LinkedBlockingDeque<>(Console.COMMAND_LOG_SIZE);
         this.show = false;
         this.wasPrevFrameTabCompletion = false;
         this.scrollToBottom = false;
@@ -224,13 +221,13 @@ public class Console implements IGUIInstance {
     }
 
     private void submitCommand(final ExecutedCommand executedCommand) {
-        if (this.commandLog.size() >= COMMAND_LOG_SIZE) {
+        if (this.commandLog.size() >= Console.COMMAND_LOG_SIZE) {
             this.commandLog.pop();
         }
         this.commandLog.addLast(executedCommand);
     }
 
-    @SuppressWarnings({"java:S3011"})
+    @SuppressWarnings("java:S3011")
     private Pair<ValidationState, Object> invokeValidator(final Method method,
                                                           final String value) {
         if (method == null) {
@@ -254,19 +251,18 @@ public class Console implements IGUIInstance {
                 );
             }
         } catch (final InvocationTargetException | IllegalAccessException e) {
-            LOGGER.error("Unable to invoke validator {}", method.getName(), e);
+            Console.LOGGER.error("Unable to invoke validator {}", method.getName(), e);
         }
         return ImmutablePair.of(null, result);
     }
 
-    @SuppressWarnings({"java:S1854","unchecked"})
     private ValidationState updateVariableValue(final String path,
                                                 final String value) {
-        final String[] instanceTarget = path.split(VARIABLE_INSTANCE_TARGET_DELIMITER);
-        final Object[] splitPath = instanceTarget[0].split(VARIABLE_PATH_DELIMITER);
+        final String[] instanceTarget = path.split(Console.VARIABLE_INSTANCE_TARGET_DELIMITER);
+        final Object[] splitPath = instanceTarget[0].split(Console.VARIABLE_PATH_DELIMITER);
         synchronized (this) {
-            TREE.setSelectionPath(new TreePath(splitPath));
-            final Object selectedComponent = TREE.getLastSelectedPathComponent();
+            Console.TREE.setSelectionPath(new TreePath(splitPath));
+            final Object selectedComponent = Console.TREE.getLastSelectedPathComponent();
             if (selectedComponent == null) {
                 return new ValidationState(
                         false,
@@ -319,7 +315,7 @@ public class Console implements IGUIInstance {
                         state.getRight(),
                         true
                 );
-            } catch (IllegalAccessException e) {
+            } catch (final IllegalAccessException e) {
                 return new ValidationState(
                         false,
                         new ColouredString[]{
@@ -341,22 +337,22 @@ public class Console implements IGUIInstance {
     }
 
     private Optional<Object> getFieldParentInstance(final Field field,
-                                          final String target) {
-        final List<Object> instances = FIELD_INSTANCE_MAPPINGS.get(field);
+                                                    final String target) {
+        final List<Object> instances = Console.FIELD_INSTANCE_MAPPINGS.get(field);
         return instances.stream()
-                .filter((final Object instance) -> instance.toString().equals(target))
+                .filter((final Object instance) -> Console.deriveInstanceID(instance).equals(target))
                 .findFirst();
     }
 
     private ColouredString[] listAllVars() {
-        return REFLECTIONS.getFieldsAnnotatedWith(VariableHook.class)
+        return Console.REFLECTIONS.getFieldsAnnotatedWith(VariableHook.class)
                 .stream()
                 .filter((final Field field) -> {
                     final VariableHook annotation = field.getAnnotation(VariableHook.class);
                     if (annotation.isStatic() && !Modifier.isStatic(field.getModifiers())) {
                         return false;
                     }
-                    return hasConstructionWithRegistrationWrapper(field);
+                    return Console.hasConstructorWithRegistrationWrapper(field);
                 }).flatMap((final Field field) -> {
                     final VariableHook annotation = field.getAnnotation(VariableHook.class);
                     if (annotation.isStatic()) {
@@ -365,14 +361,14 @@ public class Console implements IGUIInstance {
                                 annotation.name()
                         ));
                     }
-                    return FIELD_INSTANCE_MAPPINGS.get(field)
+                    return Console.FIELD_INSTANCE_MAPPINGS.get(field)
                             .stream()
                             .map((final Object instance) -> new ColouredString(
                                     ConsoleColour.NORMAL,
                                     String.format(
                                             "%s::%s",
                                             annotation.name(),
-                                            instance
+                                            Console.deriveInstanceID(instance)
                                     )
                             ));
                 }).toArray(ColouredString[]::new);
@@ -460,19 +456,21 @@ public class Console implements IGUIInstance {
             ImGui.calcTextSize(dimensions, "00:00:00:0000");
             final float timestampWidth = dimensions.x;
             ImGui.pushTextWrapPos(ImGui.getColumnWidth() - timestampWidth);
-            if (count++ != 0) ImGui.dummy(-1, ImGui.getFontSize());
+            if (count++ != 0) {
+                ImGui.dummy(-1, ImGui.getFontSize());
+            }
             renderFormattedString(ArrayUtils.addFirst(command.command(), ConsoleColour.CYAN.with(">")));
-            if (SHOW_TIMESTAMP) {
+            if (Console.SHOW_TIMESTAMP) {
                 ImGui.popTextWrapPos();
                 ImGui.sameLine(ImGui.getColumnWidth(-1) - timestampWidth);
                 ImGui.pushStyleColor(ImGuiCol.Text, ImColor.floatToColor(0f, 0.5f, 0.5f));
-                ImGui.text(DATE_FORMATTER.format(command.date()));
+                ImGui.text(Console.DATE_FORMATTER.format(command.date()));
                 ImGui.popStyleColor();
             }
             renderFormattedString(command.result());
         }
         ImGui.popTextWrapPos();
-        if (this.scrollToBottom && (ImGui.getScrollY() >= ImGui.getScrollMaxY() || COMMAND_LOG_AUTO_SCROLL)) {
+        if (this.scrollToBottom && (ImGui.getScrollY() >= ImGui.getScrollMaxY() || Console.COMMAND_LOG_AUTO_SCROLL)) {
             ImGui.setScrollHereY(1.0f);
         }
         this.scrollToBottom = false;
@@ -482,10 +480,10 @@ public class Console implements IGUIInstance {
     private void inputField() {
         boolean reclaimFocus = false;
         ImGui.pushItemWidth(-ImGui.getStyle().getItemSpacingX() * 7);
-        if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, INPUT_FIELD_FLAGS)) {
+        if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, Console.INPUT_FIELD_FLAGS)) {
             if (!this.rawConsoleInput.isEmpty()) {
                 this.consoleInput = this.rawConsoleInput.get();
-                LOGGER.info("COMMAND EXECUTED: {}", this.consoleInput);
+                Console.LOGGER.info("COMMAND EXECUTED: {}", this.consoleInput);
                 handleCommand();
                 this.scrollToBottom = true;
             }
@@ -496,7 +494,7 @@ public class Console implements IGUIInstance {
         if (ImGui.isItemEdited() && !this.wasPrevFrameTabCompletion) {
             this.commandSuggestions.clear();
         }
-        wasPrevFrameTabCompletion = false;
+        this.wasPrevFrameTabCompletion = false;
         ImGui.setItemDefaultFocus();
         if (reclaimFocus) {
             ImGui.setKeyboardFocusHere(-1);
@@ -546,7 +544,7 @@ public class Console implements IGUIInstance {
         imGuiIO.setMouseDown(1, mouseInput.isRightButtonPressed());
         final boolean consumed = imGuiIO.getWantCaptureMouse() || imGuiIO.getWantCaptureKeyboard();
         if (consumed) {
-           // TODO: DO STUFF
+            // TODO: DO STUFF
         }
         return consumed;
     }
