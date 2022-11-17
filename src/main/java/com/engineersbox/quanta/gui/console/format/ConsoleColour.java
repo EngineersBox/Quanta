@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.gui.console;
+package com.engineersbox.quanta.gui.console.format;
 
 import imgui.ImColor;
 

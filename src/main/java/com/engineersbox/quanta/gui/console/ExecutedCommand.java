@@ -1,5 +1,7 @@
 package com.engineersbox.quanta.gui.console;
 
+import com.engineersbox.quanta.gui.console.format.ColouredString;
+
 import java.util.Date;
 
 public record ExecutedCommand(Date date,

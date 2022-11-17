@@ -2,6 +2,14 @@ package com.engineersbox.quanta.gui.console;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.gui.IGUIInstance;
+import com.engineersbox.quanta.gui.console.hooks.HookValidator;
+import com.engineersbox.quanta.gui.console.hooks.InstanceIdentifierProvider;
+import com.engineersbox.quanta.gui.console.hooks.RegisterVariableMembers;
+import com.engineersbox.quanta.gui.console.hooks.VariableHook;
+import com.engineersbox.quanta.gui.console.format.ColouredString;
+import com.engineersbox.quanta.gui.console.format.ConsoleColour;
+import com.engineersbox.quanta.gui.console.tree.TreeNodeLabel;
+import com.engineersbox.quanta.gui.console.tree.TreeUtils;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.scene.Scene;
 import imgui.ImColor;
@@ -24,9 +32,7 @@ import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.*;
 import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -46,11 +52,10 @@ public class Console implements IGUIInstance {
     );
 
     public static final Map<Field, List<Object>> FIELD_INSTANCE_MAPPINGS = new HashMap<>();
-    private static final DefaultTreeModel HOOKS = new DefaultTreeModel(new DefaultMutableTreeNode());
-    private static final JTree TREE = new JTree();
+    private static final String ROOT_NODE_VALUE = "@__INTERNAL_TREE_ROOT__";
+    private static final DefaultTreeModel HOOKS = new DefaultTreeModel(new DefaultMutableTreeNode(ROOT_NODE_VALUE));
 
     static {
-        Console.TREE.setModel(Console.HOOKS);
         final Map<VariableHook, Pair<Field, Boolean>> variableHooks = Console.resolveVariableHooks();
         final Map<String, Method> hookValidators = Console.resolveHookValidators();
         int count = 0;
@@ -67,26 +72,24 @@ public class Console implements IGUIInstance {
             if (!Objects.equals(validatorName, "")) {
                 hookValidator = hookValidators.get(validatorName);
             }
-            if (hookValidator != null && Console.validateValidatorArgs(
+            if (hookValidator != null && !Console.validateValidatorArgs(
                     name,
                     validatorName,
-                    hookValue.getLeft().getType(),
                     hookValidator
             )) {
                 continue;
             }
-            final Object[] treePath = new Object[path.length + 1];
-            for (int i = 0; i < path.length; i++) {
-                treePath[i] = path[i];
+            DefaultMutableTreeNode current = (DefaultMutableTreeNode) Console.HOOKS.getRoot();
+            for (final String pathNode : path) {
+                final TreeNodeLabel label = new TreeNodeLabel(pathNode);
+                final DefaultMutableTreeNode next = new DefaultMutableTreeNode(label);
+                current.add(next);
+                current = next;
             }
-            treePath[treePath.length - 1] = new DefaultMutableTreeNode();
-            Console.HOOKS.valueForPathChanged(
-                    new TreePath(treePath),
-                    new DefaultMutableTreeNode(ImmutablePair.of(
-                            hookValue,
-                            hookValidator
-                    ))
-            );
+            current.add(new DefaultMutableTreeNode(ImmutablePair.of(
+                    hookValue,
+                    hookValidator
+            )));
             count++;
         }
         Console.LOGGER.debug("Resolved {} variable hooks", count);
@@ -94,7 +97,6 @@ public class Console implements IGUIInstance {
 
     private static boolean validateValidatorArgs(final String varHookName,
                                                  final String validatorName,
-                                                 final Class<?> type,
                                                  final Method method) {
         final int parameterCount = method.getParameterCount();
         if (parameterCount != 1) {
@@ -107,12 +109,12 @@ public class Console implements IGUIInstance {
             return false;
         }
         final Class<?> parameterType = method.getParameterTypes()[0];
-        if (!parameterType.isAssignableFrom(type)) {
+        if (!parameterType.isAssignableFrom(String.class)) {
             Console.LOGGER.error(
                     "Invalid validator [{}] for variable hook [{}]: expected parameter of type {}, got {}",
                     validatorName,
                     varHookName,
-                    type.getName(),
+                    String.class.getName(),
                     parameterType.getName()
             );
             return false;
@@ -180,26 +182,18 @@ public class Console implements IGUIInstance {
                 ));
     }
 
-    public static String deriveInstanceID(final Object instance) {
-        return String.format(
-                "%s@%s",
-                instance.getClass().getSimpleName(),
-                Integer.toHexString(instance.hashCode())
-        );
-    }
-
     private static final int COMMAND_LOG_SIZE = 100;
     private static final boolean COMMAND_LOG_AUTO_SCROLL = true;
     private static final boolean SHOW_TIMESTAMP = true;
     private static final String VARIABLE_INSTANCE_TARGET_DELIMITER = "::";
-    private static final String VARIABLE_PATH_DELIMITER = "\\.";
-    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("hh:mm:ss.SSSS");
+    private static final String VARIABLE_PATH_DELIMITER = ".";
     private static final int INPUT_FIELD_FLAGS = ImGuiInputTextFlags.CallbackHistory
             | ImGuiInputTextFlags.CallbackCharFilter
             | ImGuiInputTextFlags.CallbackCompletion
             | ImGuiInputTextFlags.EnterReturnsTrue
             | ImGuiInputTextFlags.CallbackAlways;
 
+    private final SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm:ss.SSSS");
     private final ImString rawConsoleInput;
     private String consoleInput;
     private final LinkedBlockingDeque<ExecutedCommand> commandLog;
@@ -256,62 +250,76 @@ public class Console implements IGUIInstance {
         return ImmutablePair.of(null, result);
     }
 
+    private String formatPathString(final String corePath) {
+        return ROOT_NODE_VALUE + VARIABLE_PATH_DELIMITER + corePath;
+    }
+
+    @SuppressWarnings({"unchecked"})
     private ValidationState updateVariableValue(final String path,
                                                 final String value) {
         final String[] instanceTarget = path.split(Console.VARIABLE_INSTANCE_TARGET_DELIMITER);
-        final Object[] splitPath = instanceTarget[0].split(Console.VARIABLE_PATH_DELIMITER);
-        synchronized (this) {
-            Console.TREE.setSelectionPath(new TreePath(splitPath));
-            final Object selectedComponent = Console.TREE.getLastSelectedPathComponent();
-            if (selectedComponent == null) {
+        final ValidationState invalidState = new ValidationState(
+                false,
+                new ColouredString[]{
+                        new ColouredString(ConsoleColour.RED, "Unknown variable: "),
+                        new ColouredString(ConsoleColour.YELLOW, path)
+                }
+        );
+        final TreePath treePath = TreeUtils.getTreePath(
+                Console.HOOKS,
+                formatPathString(instanceTarget[0]),
+                VARIABLE_PATH_DELIMITER
+        );
+        if (treePath == null) {
+            return invalidState;
+        }
+        final DefaultMutableTreeNode selectedComponent = (DefaultMutableTreeNode) treePath.getLastPathComponent();
+        if (selectedComponent.isLeaf()) {
+            return invalidState;
+        }
+        final DefaultMutableTreeNode child;
+        try {
+            child = (DefaultMutableTreeNode) selectedComponent.getFirstChild();
+        } catch (final NoSuchElementException e) {
+            return invalidState;
+        }
+        final Pair<Pair<Field, Boolean>, Method> hook = (Pair<Pair<Field, Boolean>, Method>) child.getUserObject();
+        final Pair<ValidationState, Object> state = invokeValidator(hook.getValue(), value);
+        if (state.getKey() != null) {
+            return state.getKey();
+        }
+        final Pair<Field, Boolean> hookField = hook.getKey();
+        final boolean requiresInstance = Boolean.TRUE.equals(hookField.getRight());
+        Object matchingInstance = null;
+        if (requiresInstance) {
+            if (instanceTarget.length != 2) {
                 return new ValidationState(
                         false,
                         new ColouredString[]{
-                                new ColouredString(ConsoleColour.RED, "Unknown variable: "),
+                                new ColouredString(ConsoleColour.RED, "Instance ID is required to update variable: "),
                                 new ColouredString(ConsoleColour.YELLOW, path)
                         }
                 );
             }
-            final Pair<Pair<Field, Boolean>, Method> hook = (Pair<Pair<Field, Boolean>, Method>) selectedComponent;
-            final Pair<ValidationState, Object> state = invokeValidator(hook.getValue(), value);
-            if (state.getKey() != null) {
-                return state.getKey();
+            final Optional<Object> potentialMatchingInstance = getFieldParentInstance(hookField.getLeft(), instanceTarget[1]);
+            if (potentialMatchingInstance.isEmpty()) {
+                return new ValidationState(
+                        false,
+                        new ColouredString[]{
+                                new ColouredString(ConsoleColour.RED, "Variable "),
+                                new ColouredString(ConsoleColour.YELLOW, path),
+                                new ColouredString(ConsoleColour.RED, " is not registered to an instance with ID "),
+                                new ColouredString(ConsoleColour.YELLOW, instanceTarget[1]),
+                        }
+                );
             }
-            final Pair<Field, Boolean> hookField = hook.getKey();
+            matchingInstance = potentialMatchingInstance.get();
+        }
+        synchronized (this) {
             try {
-                final boolean requiresInstance = Boolean.TRUE.equals(hookField.getRight());
-                Object matchingInstance = null;
-                if (requiresInstance) {
-                    if (instanceTarget.length != 2) {
-                        return new ValidationState(
-                                false,
-                                new ColouredString[]{
-                                        new ColouredString(ConsoleColour.RED, "Instance ID is required to update variable: "),
-                                        new ColouredString(ConsoleColour.YELLOW, path)
-                                }
-                        );
-                    }
-                    final Optional<Object> potentialMatchingInstance = getFieldParentInstance(hookField.getLeft(), instanceTarget[1]);
-                    if (potentialMatchingInstance.isEmpty()) {
-                        return new ValidationState(
-                                false,
-                                new ColouredString[]{
-                                        new ColouredString(ConsoleColour.RED, "Variable "),
-                                        new ColouredString(ConsoleColour.YELLOW, path),
-                                        new ColouredString(ConsoleColour.RED, " is not registered to an instance with ID "),
-                                        new ColouredString(ConsoleColour.YELLOW, instanceTarget[1]),
-                                }
-                        );
-                    }
-                    matchingInstance = potentialMatchingInstance.get();
-                }
                 FieldUtils.writeField(
                         hookField.getLeft(),
-                        requiresInstance ? FieldUtils.readField(
-                                hookField.getLeft(),
-                                matchingInstance,
-                                true
-                        ) : null,
+                        requiresInstance ? matchingInstance : null,
                         state.getRight(),
                         true
                 );
@@ -340,7 +348,7 @@ public class Console implements IGUIInstance {
                                                     final String target) {
         final List<Object> instances = Console.FIELD_INSTANCE_MAPPINGS.get(field);
         return instances.stream()
-                .filter((final Object instance) -> Console.deriveInstanceID(instance).equals(target))
+                .filter((final Object instance) -> InstanceIdentifierProvider.deriveInstanceID(instance).equals(target))
                 .findFirst();
     }
 
@@ -368,7 +376,7 @@ public class Console implements IGUIInstance {
                                     String.format(
                                             "%s::%s",
                                             annotation.name(),
-                                            Console.deriveInstanceID(instance)
+                                            InstanceIdentifierProvider.deriveInstanceID(instance)
                                     )
                             ));
                 }).toArray(ColouredString[]::new);
@@ -389,13 +397,16 @@ public class Console implements IGUIInstance {
                 ConsoleColour.RED.with("Unknown command: " + this.consoleInput)
         ));
         switch (command) {
-            case "set" -> submitCommand(ExecutedCommand.from(
-                    new ColouredString[]{
-                            ConsoleColour.GREEN.with(command + " "),
-                            ConsoleColour.NORMAL.with(String.join(" ", args))
-                    },
-                    ConsoleColour.NORMAL.with("set stuff!")
-            ));
+            case "set" -> {
+                final ValidationState state = updateVariableValue(args[0], args[1]);
+                submitCommand(ExecutedCommand.from(
+                        new ColouredString[]{
+                                ConsoleColour.GREEN.with(command + " "),
+                                ConsoleColour.NORMAL.with(String.join(" ", args))
+                        },
+                        state.message()
+                ));
+            }
             case "get" -> submitCommand(ExecutedCommand.from(
                     new ColouredString[]{
                             ConsoleColour.GREEN.with(command + " "),
@@ -421,7 +432,7 @@ public class Console implements IGUIInstance {
         boolean pushed = false;
         for (final ColouredString colouredString : colouredStrings) {
             if (notFirst) {
-                ImGui.sameLine();
+                ImGui.sameLine(0, 0);
             }
             if (colouredString.colour() != null) {
                 if (pushed) {
@@ -459,12 +470,12 @@ public class Console implements IGUIInstance {
             if (count++ != 0) {
                 ImGui.dummy(-1, ImGui.getFontSize());
             }
-            renderFormattedString(ArrayUtils.addFirst(command.command(), ConsoleColour.CYAN.with(">")));
+            renderFormattedString(ArrayUtils.addFirst(command.command(), ConsoleColour.CYAN.with("> ")));
             if (Console.SHOW_TIMESTAMP) {
                 ImGui.popTextWrapPos();
                 ImGui.sameLine(ImGui.getColumnWidth(-1) - timestampWidth);
                 ImGui.pushStyleColor(ImGuiCol.Text, ImColor.floatToColor(0f, 0.5f, 0.5f));
-                ImGui.text(Console.DATE_FORMATTER.format(command.date()));
+                ImGui.text(this.dateFormatter.format(command.date()));
                 ImGui.popStyleColor();
             }
             renderFormattedString(command.result());

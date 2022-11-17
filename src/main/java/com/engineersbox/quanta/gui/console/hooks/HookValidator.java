@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.gui.console;
+package com.engineersbox.quanta.gui.console.hooks;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,9 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
-public @interface VariableHook {
+@Target({ElementType.METHOD})
+public @interface HookValidator {
     String name();
-    boolean isStatic() default true;
-    String hookValidator() default "";
 }

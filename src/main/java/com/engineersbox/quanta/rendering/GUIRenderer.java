@@ -2,8 +2,9 @@ package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.gui.IGUIInstance;
-import com.engineersbox.quanta.gui.console.RegisterVariableMembers;
-import com.engineersbox.quanta.gui.console.VariableHook;
+import com.engineersbox.quanta.gui.console.hooks.HookValidator;
+import com.engineersbox.quanta.gui.console.hooks.RegisterVariableMembers;
+import com.engineersbox.quanta.gui.console.hooks.VariableHook;
 import com.engineersbox.quanta.resources.assets.gui.GUIMesh;
 import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
@@ -33,7 +34,8 @@ public class GUIRenderer {
     private GUIMesh guiMesh;
     @VariableHook(
             name = "test",
-            isStatic = false
+            isStatic = false,
+            hookValidator = "scaleHookValidator"
     )
     private Vector2f scale;
     private final ShaderProgram shader;
@@ -50,6 +52,15 @@ public class GUIRenderer {
         this.shader.validate();
         createUniforms();
         createUIResources(window);
+    }
+
+    @HookValidator(name = "scaleHookValidator")
+    public static Object scaleHookValidator(final String value) {
+        final String[] splitValue = value.split(",");
+        return new Vector2f(
+                Float.parseFloat(splitValue[0]),
+                Float.parseFloat(splitValue[1])
+        );
     }
 
     private void createUniforms() {
