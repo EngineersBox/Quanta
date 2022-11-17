@@ -3,7 +3,6 @@ package com.engineersbox.quanta.test;
 import com.engineersbox.quanta.core.Engine;
 import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
-import com.engineersbox.quanta.gui.console.Console;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.rendering.view.Camera;
@@ -44,13 +43,13 @@ public class Main implements IAppLogic {
     private Entity cubeEntity2;
     private float lightAngle;
     private float rotation;
-    private Console console;
+    private TestConsole console;
 
     @Override
     public void init(final Window window,
                      final Scene scene,
                      final Renderer renderer) {
-        this.console = new Console();
+        this.console = new TestConsole();
         scene.setGUIInstance(this.console);
         final String terrainModelId = "terrain";
         final Model terrainModel = ModelLoader.loadModel(

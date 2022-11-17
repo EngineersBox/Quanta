@@ -141,5 +141,4 @@ public class GUIRenderer {
         this.shader.cleanup();
         this.texture.cleanup();
     }
-
 }

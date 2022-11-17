@@ -13,7 +13,7 @@ public final aspect VariableHookRegistrationAspect {
 
     after(final Object instance): constructorVisit(instance) {
         for (final Field field : getAnnotatedFields(instance)) {
-            Console.FIELD_INSTANCE_MAPPINGS.computeIfAbsent(
+            ConsoleWidget.FIELD_INSTANCE_MAPPINGS.computeIfAbsent(
                     field,
                     (final Field k) -> new ArrayList<>()
             ).add(instance);

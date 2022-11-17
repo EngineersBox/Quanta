@@ -9,11 +9,12 @@ public enum ConsoleColour {
     CYAN(ImColor.rgbToColor("#78dce8")),
     BLUE(ImColor.rgbToColor("#4763d6")),
     GRAY(ImColor.rgbToColor("#939293")),
+    DARK_GRAY(ImColor.rgbToColor("#636263")),
     GREEN(ImColor.rgbToColor("#a9dc76")),
     MAGENTA(ImColor.rgbToColor("#ab9df2")),
     NORMAL(ImColor.rgbToColor("#fcfcfa"));
 
-    private int colour;
+    private final int colour;
 
     ConsoleColour(final int colour) {
         this.colour = colour;
