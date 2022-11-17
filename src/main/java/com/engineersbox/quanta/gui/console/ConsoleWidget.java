@@ -22,10 +22,7 @@ import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -132,7 +129,7 @@ public class ConsoleWidget implements IGUIInstance {
             return false;
         }
         return Arrays.stream(constructors)
-                .anyMatch((final Constructor<?> constructor) -> constructor.isAnnotationPresent(RegisterVariableMembers.class));
+                .anyMatch((final Constructor<?> constructor) -> constructor.isAnnotationPresent(RegisterInstanceVariableHooks.class));
     }
 
     private static Map<String, Method> resolveHookValidators() {
@@ -214,28 +211,7 @@ public class ConsoleWidget implements IGUIInstance {
             );
         }
         method.setAccessible(true);
-        try {
-            final Object result = method.invoke(null, value);
-            return ImmutablePair.of(
-                    new ValidationState(true, new ColouredString[0]),
-                    result
-            );
-        } catch (final HookValidationException e) {
-            ColouredString[] formattedMessage = e.getFormattedMessage();
-            if (formattedMessage == null || formattedMessage.length < 1) {
-                formattedMessage = new ColouredString[]{ConsoleWidget.DEFAULT_NONE_ERROR_MESSAGE};
-            }
-            return ImmutablePair.of(
-                    new ValidationState(
-                            false,
-                            ArrayUtils.addFirst(
-                                    formattedMessage,
-                                    ConsoleWidget.ERROR_MESSAGE_PREFIX
-                            )
-                    ),
-                    null
-            );
-        } catch (final Exception e) {
+        final Function<Exception, Pair<ValidationState, Object>> exceptionHandler = (final Exception e) -> {
             ConsoleWidget.LOGGER.error("Unable to invoke validator {}", method.getName(), e);
             String message = e.getMessage();
             if (message == null && e.getCause() != null) {
@@ -251,6 +227,33 @@ public class ConsoleWidget implements IGUIInstance {
                     ),
                     null
             );
+        };
+        try {
+            final Object result = method.invoke(null, value);
+            return ImmutablePair.of(
+                    new ValidationState(true, new ColouredString[0]),
+                    result
+            );
+        } catch (final InvocationTargetException e) {
+            if (e.getCause() == null || !(e.getCause() instanceof HookValidationException hookValidationException)) {
+                return exceptionHandler.apply(e);
+            }
+            ColouredString[] formattedMessage = hookValidationException.getFormattedMessage();
+            if (formattedMessage == null || formattedMessage.length < 1) {
+                formattedMessage = new ColouredString[]{ConsoleWidget.DEFAULT_NONE_ERROR_MESSAGE};
+            }
+            return ImmutablePair.of(
+                    new ValidationState(
+                            false,
+                            ArrayUtils.addFirst(
+                                    formattedMessage,
+                                    ConsoleWidget.ERROR_MESSAGE_PREFIX
+                            )
+                    ),
+                    null
+            );
+        } catch (final Exception e) {
+            return exceptionHandler.apply(e);
         }
     }
 

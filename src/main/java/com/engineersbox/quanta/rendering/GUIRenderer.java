@@ -2,8 +2,9 @@ package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.gui.IGUIInstance;
+import com.engineersbox.quanta.gui.console.hooks.HookValidationException;
 import com.engineersbox.quanta.gui.console.hooks.HookValidator;
-import com.engineersbox.quanta.gui.console.hooks.RegisterVariableMembers;
+import com.engineersbox.quanta.gui.console.hooks.RegisterInstanceVariableHooks;
 import com.engineersbox.quanta.gui.console.hooks.VariableHook;
 import com.engineersbox.quanta.resources.assets.gui.GUIMesh;
 import com.engineersbox.quanta.resources.assets.material.Texture;
@@ -43,7 +44,7 @@ public class GUIRenderer {
     private Uniforms uniforms;
     private ImGuiImplGlfw imGuiImplGlfw;
 
-    @RegisterVariableMembers
+    @RegisterInstanceVariableHooks
     public GUIRenderer(final Window window) {
         this.shader = new ShaderProgram(
                 new ShaderModuleData("assets/shaders/gui/gui.vert", ShaderType.VERTEX),
@@ -55,8 +56,14 @@ public class GUIRenderer {
     }
 
     @HookValidator(name = "scaleHookValidator")
-    public static Object scaleHookValidator(final String value) {
+    public static Object scaleHookValidator(final String value) throws HookValidationException {
+        if (value == null) {
+            throw new HookValidationException("Expected non-null value");
+        }
         final String[] splitValue = value.split(",");
+        if (splitValue.length < 2) {
+            throw new HookValidationException("Invalid vector values, expected format: <int>,<int>");
+        }
         return new Vector2f(
                 Float.parseFloat(splitValue[0]),
                 Float.parseFloat(splitValue[1])
