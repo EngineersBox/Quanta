@@ -179,12 +179,12 @@ public class ConsoleWidget implements IGUIInstance {
     private static final ColouredString DEFAULT_NONE_ERROR_MESSAGE = new ColouredString(ConsoleColour.NORMAL, "<NONE>");
 
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm:ss.SSSS");
-    private final ImString rawConsoleInput;
+    private final ImString rawConsoleInput; // TODO: Implement usage of up/down arrow keys to access previously executed commands
     private String consoleInput;
     private final LinkedBlockingDeque<ExecutedCommand> commandLog;
     private boolean scrollToBottom;
     private boolean wasPrevFrameTabCompletion;
-    private final List<String> commandSuggestions;
+    private final List<String> commandSuggestions; // TODO: Implement suggestions
 
     public ConsoleWidget() {
         this.rawConsoleInput = new ImString();
