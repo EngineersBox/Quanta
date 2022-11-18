@@ -35,7 +35,6 @@ public class GUIRenderer {
     private GUIMesh guiMesh;
     @VariableHook(
             name = "test",
-            isStatic = false,
             hookValidator = "scaleHookValidator"
     )
     private Vector2f scale;

@@ -69,6 +69,8 @@ uniform sampler2D shadowMap_0;
 uniform sampler2D shadowMap_1;
 uniform sampler2D shadowMap_2;
 
+uniform int showCascades;
+
 vec4 calcAmbient(AmbientLight ambientLight, vec4 ambient) {
     return vec4(ambientLight.factor * ambientLight.color, 1) * ambient;
 }
@@ -208,5 +210,14 @@ void main() {
 
     if (fog.activeFog == 1) {
         fragColor = calcFog(view_pos, fragColor, fog, ambientLight.color, directionalLight);
+    }
+#define RENDER_CASCADE(r,g,b) fragColor.rgb *= vec3(r,g,b); break;
+    if (showCascades == 1) {
+        switch (cascadeIndex) {
+            case 0:  RENDER_CASCADE( 1.0f, 0.25f, 0.25f)
+            case 1:  RENDER_CASCADE(0.25f,  1.0f, 0.25f)
+            case 2:  RENDER_CASCADE(0.25f, 0.25f,  1.0f)
+            default: RENDER_CASCADE( 1.0f,  1.0f, 0.25f)
+        }
     }
 }

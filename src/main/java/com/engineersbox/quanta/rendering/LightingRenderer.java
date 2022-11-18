@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.rendering;
 
+import com.engineersbox.quanta.gui.console.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
 import com.engineersbox.quanta.rendering.shadow.ShadowCascade;
 import com.engineersbox.quanta.resources.assets.object.QuadMesh;
@@ -26,6 +27,8 @@ public class LightingRenderer {
 
     private static final int MAX_POINT_LIGHTS = 5;
     private static final int MAX_SPOT_LIGHTS = 5;
+    @VariableHook(name = "renderer.show_cascades")
+    private static boolean showCascades = false;
 
     private final ShaderProgram shader;
 
@@ -57,7 +60,8 @@ public class LightingRenderer {
                 "directionalLight.intensity",
                 "fog.activeFog",
                 "fog.color",
-                "fog.density"
+                "fog.density",
+                "showCascades"
         ).forEach(this.uniforms::createUniform);
 
         for (int i = 0; i < LightingRenderer.MAX_POINT_LIGHTS; i++) {
@@ -105,6 +109,10 @@ public class LightingRenderer {
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D, textureIds[i]);
         }
+        this.uniforms.setUniform(
+                "showCascades",
+                this.showCascades
+        );
         this.uniforms.setUniform(
                 "albedoSampler",
                 0

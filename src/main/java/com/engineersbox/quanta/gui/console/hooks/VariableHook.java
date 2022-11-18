@@ -9,6 +9,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD})
 public @interface VariableHook {
     String name();
-    boolean isStatic() default true;
     String hookValidator() default "";
 }

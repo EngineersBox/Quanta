@@ -7,6 +7,7 @@ import com.engineersbox.quanta.gui.console.format.ConsoleColour;
 import com.engineersbox.quanta.gui.console.hooks.*;
 import com.engineersbox.quanta.gui.console.tree.VariableTree;
 import com.engineersbox.quanta.scene.Scene;
+import com.engineersbox.quanta.utils.TypeConversionUtils;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.ImGuiStorage;
@@ -23,7 +24,11 @@ import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
+import sun.misc.Unsafe;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -109,20 +114,33 @@ public class ConsoleWidget implements IGUIInstance {
         return true;
     }
 
-    private static Map<VariableHook, Pair<Field, Boolean>> resolveVariableHooks() {
+    private static Stream<Field> resolveVariableHooksFields(final boolean logBadState) {
         return ConsoleWidget.REFLECTIONS.getFieldsAnnotatedWith(VariableHook.class)
                 .stream()
                 .filter((final Field field) -> {
-                    final VariableHook annotation = field.getAnnotation(VariableHook.class);
-                    if (annotation.isStatic() && !Modifier.isStatic(field.getModifiers())) {
+                    if (!HookBinding.validateField(field)) {
+                        if (logBadState) {
+                            ConsoleWidget.LOGGER.error(
+                                    "Invalid @VariableHook usage. Field [{}] is primitive [{}] and marked as [static final] which is inlined during compilation. Field cannot be altered at runtime, skipping.",
+                                    field,
+                                    field.getType().getSimpleName()
+                            );
+                        }
                         return false;
+                    } else if (Modifier.isStatic(field.getModifiers())) {
+                        return true;
                     }
                     return ConsoleWidget.hasConstructorWithRegistrationWrapper(field);
-                }).collect(Collectors.toMap(
+                });
+    }
+
+    private static Map<VariableHook, Pair<Field, Boolean>> resolveVariableHooks() {
+        return ConsoleWidget.resolveVariableHooksFields(true)
+                .collect(Collectors.toMap(
                         (final Field field) -> field.getAnnotation(VariableHook.class),
                         (final Field field) -> ImmutablePair.of(
                                 field,
-                                !Modifier.isStatic(field.getModifiers()) && ConsoleWidget.hasConstructorWithRegistrationWrapper(field)
+                                !Modifier.isStatic(field.getModifiers())
                         )
                 ));
     }
@@ -179,6 +197,7 @@ public class ConsoleWidget implements IGUIInstance {
 
     private static final ColouredString ERROR_MESSAGE_PREFIX = new ColouredString(ConsoleColour.RED, "Variable validation failed: ");
     private static final ColouredString DEFAULT_NONE_ERROR_MESSAGE = new ColouredString(ConsoleColour.NORMAL, "<NONE>");
+    private static final String NEWLINE_CHARACTER = System.getProperty("line.separator");
 
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm:ss.SSSS");
     private final ImString rawConsoleInput; // TODO: Implement usage of up/down arrow keys to access previously executed commands
@@ -271,6 +290,7 @@ public class ConsoleWidget implements IGUIInstance {
         }
     }
 
+    @SuppressWarnings({"java:S3011"})
     private ValidationState updateVariableValue(final String path,
                                                 final String value) {
         final String[] instanceTarget = path.split(ConsoleWidget.VARIABLE_INSTANCE_TARGET_DELIMITER);
@@ -314,18 +334,42 @@ public class ConsoleWidget implements IGUIInstance {
             matchingInstance = potentialMatchingInstance.get();
         }
         final Pair<ValidationState, Object> state = invokeValidator(hookBinding.validator(), value);
-        if (!state.getKey().state()) {
+        final boolean isError = state.getKey().message().length != 0;
+        if (!state.getKey().state() && isError) {
             return state.getKey();
+        }
+        final Field field = hookBinding.field();
+        final Object valueToWrite;
+        if (isError) {
+            valueToWrite = state.getValue();
+        } else {
+            try {
+                valueToWrite = TypeConversionUtils.tryCoercePrimitive(
+                        field.getType(),
+                        state.getValue()
+                );
+            } catch (final IllegalArgumentException e) {
+                return new ValidationState(
+                        false,
+                        new ColouredString[]{
+                                new ColouredString(ConsoleColour.RED, "Invalid variable value \""),
+                                new ColouredString(ConsoleColour.YELLOW, state.getValue().toString()),
+                                new ColouredString(ConsoleColour.RED, "\", expected type "),
+                                new ColouredString(ConsoleColour.CYAN, field.getType().getSimpleName()),
+                        }
+                );
+            }
         }
         synchronized (this) {
             try {
-                FieldUtils.writeField(
-                        hookBinding.field(),
-                        requiresInstance ? matchingInstance : null,
-                        state.getValue(),
-                        true
+                lookupAndSetVariable(
+                        field,
+                        matchingInstance,
+                        valueToWrite,
+                        requiresInstance
                 );
-            } catch (final IllegalAccessException e) {
+            } catch (final IllegalAccessException | NoSuchFieldException e) {
+                ConsoleWidget.LOGGER.error("Unable to update variable", e);
                 return new ValidationState(
                         false,
                         new ColouredString[]{
@@ -346,6 +390,34 @@ public class ConsoleWidget implements IGUIInstance {
         );
     }
 
+    private synchronized void lookupAndSetVariable(final Field field,
+                                                   final Object instance,
+                                                   final Object value,
+                                                   final boolean requiresInstance) throws IllegalAccessException, NoSuchFieldException {
+        final MethodHandles.Lookup lookup;
+        if (Modifier.isPrivate(field.getModifiers())) {
+            lookup = MethodHandles.privateLookupIn(
+                    field.getDeclaringClass(),
+                    MethodHandles.lookup()
+            );
+        } else {
+            lookup = MethodHandles.lookup().in(field.getDeclaringClass());
+        }
+        if (requiresInstance) {
+            lookup.findVarHandle(
+                    field.getDeclaringClass(),
+                    field.getName(),
+                    field.getType()
+            ).set(instance, value);
+        } else {
+            lookup.findStaticVarHandle(
+                    field.getDeclaringClass(),
+                    field.getName(),
+                    field.getType()
+            ).set(value);
+        }
+    }
+
     private Optional<Object> getFieldParentInstance(final Field field,
                                                     final String target) {
         final List<Object> instances = ConsoleWidget.FIELD_INSTANCE_MAPPINGS.get(field);
@@ -355,20 +427,16 @@ public class ConsoleWidget implements IGUIInstance {
     }
 
     private ColouredString[] listAllVars() {
-        return ConsoleWidget.REFLECTIONS.getFieldsAnnotatedWith(VariableHook.class)
-                .stream()
-                .filter((final Field field) -> {
+        return ConsoleWidget.resolveVariableHooksFields(false).flatMap((final Field field) -> {
                     final VariableHook annotation = field.getAnnotation(VariableHook.class);
-                    if (annotation.isStatic() && !Modifier.isStatic(field.getModifiers())) {
-                        return false;
-                    }
-                    return ConsoleWidget.hasConstructorWithRegistrationWrapper(field);
-                }).flatMap((final Field field) -> {
-                    final VariableHook annotation = field.getAnnotation(VariableHook.class);
-                    if (annotation.isStatic()) {
+                    if (Modifier.isStatic(field.getModifiers())) {
                         return Stream.of(new ColouredString(
                                 ConsoleColour.NORMAL,
-                                annotation.name()
+                                String.format(
+                                        " - [%s] %s%n",
+                                        field.getType().getSimpleName(),
+                                        annotation.name()
+                                )
                         ));
                     }
                     return ConsoleWidget.FIELD_INSTANCE_MAPPINGS.get(field)
@@ -376,12 +444,23 @@ public class ConsoleWidget implements IGUIInstance {
                             .map((final Object instance) -> new ColouredString(
                                     ConsoleColour.NORMAL,
                                     String.format(
-                                            "%s::%s",
+                                            " - [%s] %s::%s%n",
+                                            field.getType().getSimpleName(),
                                             annotation.name(),
                                             InstanceIdentifierProvider.deriveInstanceID(instance)
                                     )
                             ));
                 }).toArray(ColouredString[]::new);
+    }
+
+    private void handleUnknownCommand() {
+        submitCommand(ExecutedCommand.from(
+                ConsoleColour.NORMAL.with(this.consoleInput),
+                new ColouredString[]{
+                        ConsoleColour.RED.with("Unknown command: "),
+                        ConsoleColour.NORMAL.with(this.consoleInput)
+                }
+        ));
     }
 
     private void handleCommand() {
@@ -394,10 +473,6 @@ public class ConsoleWidget implements IGUIInstance {
         }
         final String command = splitCommand[0];
         final String[] args = ArrayUtils.subarray(splitCommand, 1, splitCommand.length);
-        final Runnable invalidAction = () -> submitCommand(ExecutedCommand.from(
-                ConsoleColour.NORMAL.with(this.consoleInput),
-                ConsoleColour.RED.with("Unknown command: " + this.consoleInput)
-        ));
         switch (command) {
             case "set" -> {
                 final ValidationState state = updateVariableValue(args[0], args[1]);
@@ -418,22 +493,22 @@ public class ConsoleWidget implements IGUIInstance {
             ));
             case "listvars" -> {
                 if (args.length > 1) {
-                    invalidAction.run();
+                    handleUnknownCommand();
                 }
                 submitCommand(ExecutedCommand.from(
                         ConsoleColour.GREEN.with(command),
                         listAllVars()
                 ));
             }
-            default -> invalidAction.run();
+            default -> handleUnknownCommand();
         }
     }
 
     private void renderFormattedString(final ColouredString[] colouredStrings) {
-        boolean notFirst = false;
+        boolean onSameLine = false;
         boolean pushed = false;
         for (final ColouredString colouredString : colouredStrings) {
-            if (notFirst) {
+            if (onSameLine) {
                 ImGui.sameLine(0, 0);
             }
             if (colouredString.colour() != null) {
@@ -449,8 +524,10 @@ public class ConsoleWidget implements IGUIInstance {
             }
             if (colouredString.value() != null) {
                 ImGui.text(colouredString.value());
+                onSameLine = !colouredString.value().endsWith(NEWLINE_CHARACTER);
+            } else {
+                onSameLine = true;
             }
-            notFirst = true;
         }
         if (pushed) {
             ImGui.popStyleColor();
