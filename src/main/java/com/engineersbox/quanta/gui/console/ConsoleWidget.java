@@ -10,13 +10,11 @@ import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.utils.TypeConversionUtils;
 import imgui.ImGui;
 import imgui.ImGuiIO;
-import imgui.ImGuiStorage;
 import imgui.ImVec2;
-import imgui.flag.*;
-import imgui.internal.flag.ImGuiItemFlags;
+import imgui.flag.ImGuiCol;
+import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
@@ -24,11 +22,8 @@ import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
-import sun.misc.Unsafe;
 
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -37,7 +32,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 
 public class ConsoleWidget implements IGUIInstance {
 
@@ -207,8 +203,7 @@ public class ConsoleWidget implements IGUIInstance {
     private boolean historyTraversable;
     private int previousCommandSelection;
     /**
-     * TRUE = forward
-     * FALSE = backward
+     * TRUE = forward FALSE = backward
      */
     private boolean previousCommandSelectionDirection;
     private boolean scrollToBottom;
@@ -290,7 +285,6 @@ public class ConsoleWidget implements IGUIInstance {
         }
     }
 
-    @SuppressWarnings({"java:S3011"})
     private ValidationState updateVariableValue(final String path,
                                                 final String value) {
         final String[] instanceTarget = path.split(ConsoleWidget.VARIABLE_INSTANCE_TARGET_DELIMITER);
@@ -428,29 +422,29 @@ public class ConsoleWidget implements IGUIInstance {
 
     private ColouredString[] listAllVars() {
         return ConsoleWidget.resolveVariableHooksFields(false).flatMap((final Field field) -> {
-                    final VariableHook annotation = field.getAnnotation(VariableHook.class);
-                    if (Modifier.isStatic(field.getModifiers())) {
-                        return Stream.of(new ColouredString(
-                                ConsoleColour.NORMAL,
-                                String.format(
-                                        " - [%s] %s%n",
-                                        field.getType().getSimpleName(),
-                                        annotation.name()
-                                )
-                        ));
-                    }
-                    return ConsoleWidget.FIELD_INSTANCE_MAPPINGS.get(field)
-                            .stream()
-                            .map((final Object instance) -> new ColouredString(
-                                    ConsoleColour.NORMAL,
-                                    String.format(
-                                            " - [%s] %s::%s%n",
-                                            field.getType().getSimpleName(),
-                                            annotation.name(),
-                                            InstanceIdentifierProvider.deriveInstanceID(instance)
-                                    )
-                            ));
-                }).toArray(ColouredString[]::new);
+            final VariableHook annotation = field.getAnnotation(VariableHook.class);
+            if (Modifier.isStatic(field.getModifiers())) {
+                return Stream.of(new ColouredString(
+                        ConsoleColour.NORMAL,
+                        String.format(
+                                " - [%s] %s%n",
+                                field.getType().getSimpleName(),
+                                annotation.name()
+                        )
+                ));
+            }
+            return ConsoleWidget.FIELD_INSTANCE_MAPPINGS.get(field)
+                    .stream()
+                    .map((final Object instance) -> new ColouredString(
+                            ConsoleColour.NORMAL,
+                            String.format(
+                                    " - [%s] %s::%s%n",
+                                    field.getType().getSimpleName(),
+                                    annotation.name(),
+                                    InstanceIdentifierProvider.deriveInstanceID(instance)
+                            )
+                    ));
+        }).toArray(ColouredString[]::new);
     }
 
     private void handleUnknownCommand() {
@@ -524,7 +518,7 @@ public class ConsoleWidget implements IGUIInstance {
             }
             if (colouredString.value() != null) {
                 ImGui.text(colouredString.value());
-                onSameLine = !colouredString.value().endsWith(NEWLINE_CHARACTER);
+                onSameLine = !colouredString.value().endsWith(ConsoleWidget.NEWLINE_CHARACTER);
             } else {
                 onSameLine = true;
             }
@@ -581,7 +575,7 @@ public class ConsoleWidget implements IGUIInstance {
     private void inputField() {
         boolean reclaimFocus = false;
         ImGui.pushItemWidth(-ImGui.getStyle().getItemSpacingX() * 7);
-        if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, ConsoleWidget.INPUT_FIELD_FLAGS | (updateReadOnlyFlag ? ImGuiInputTextFlags.ReadOnly : 0))) {
+        if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, ConsoleWidget.INPUT_FIELD_FLAGS | (this.updateReadOnlyFlag ? ImGuiInputTextFlags.ReadOnly : 0))) {
             if (!this.rawConsoleInput.isEmpty()) {
                 this.consoleInput = this.rawConsoleInput.get();
                 handleCommand();
