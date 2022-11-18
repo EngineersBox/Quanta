@@ -8,9 +8,10 @@ import com.engineersbox.quanta.gui.console.hooks.*;
 import com.engineersbox.quanta.gui.console.tree.VariableTree;
 import com.engineersbox.quanta.scene.Scene;
 import imgui.ImGui;
+import imgui.ImGuiStorage;
 import imgui.ImVec2;
-import imgui.flag.ImGuiCol;
-import imgui.flag.ImGuiInputTextFlags;
+import imgui.flag.*;
+import imgui.internal.flag.ImGuiItemFlags;
 import imgui.type.ImString;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -29,6 +30,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.lwjgl.glfw.GLFW.*;
 
 public class ConsoleWidget implements IGUIInstance {
 
@@ -170,10 +173,9 @@ public class ConsoleWidget implements IGUIInstance {
     private static final boolean SHOW_TIMESTAMP = true;
     private static final String VARIABLE_INSTANCE_TARGET_DELIMITER = "::";
     private static final int INPUT_FIELD_FLAGS = ImGuiInputTextFlags.CallbackHistory
-            | ImGuiInputTextFlags.CallbackCharFilter
+            | ImGuiInputTextFlags.CallbackAlways
             | ImGuiInputTextFlags.CallbackCompletion
-            | ImGuiInputTextFlags.EnterReturnsTrue
-            | ImGuiInputTextFlags.CallbackAlways;
+            | ImGuiInputTextFlags.EnterReturnsTrue;
 
     private static final ColouredString ERROR_MESSAGE_PREFIX = new ColouredString(ConsoleColour.RED, "Variable validation failed: ");
     private static final ColouredString DEFAULT_NONE_ERROR_MESSAGE = new ColouredString(ConsoleColour.NORMAL, "<NONE>");
@@ -182,6 +184,14 @@ public class ConsoleWidget implements IGUIInstance {
     private final ImString rawConsoleInput; // TODO: Implement usage of up/down arrow keys to access previously executed commands
     private String consoleInput;
     private final LinkedBlockingDeque<ExecutedCommand> commandLog;
+    private List<String> previousCommands;
+    private boolean historyTraversable;
+    private int previousCommandSelection;
+    /**
+     * TRUE = forward
+     * FALSE = backward
+     */
+    private boolean previousCommandSelectionDirection;
     private boolean scrollToBottom;
     private boolean wasPrevFrameTabCompletion;
     private final List<String> commandSuggestions; // TODO: Implement suggestions
@@ -193,6 +203,10 @@ public class ConsoleWidget implements IGUIInstance {
         this.wasPrevFrameTabCompletion = false;
         this.scrollToBottom = false;
         this.commandSuggestions = new ArrayList<>();
+        this.previousCommands = null;
+        this.historyTraversable = false;
+        this.previousCommandSelection = -1;
+        this.previousCommandSelectionDirection = true;
     }
 
     private void submitCommand(final ExecutedCommand executedCommand) {
@@ -485,8 +499,24 @@ public class ConsoleWidget implements IGUIInstance {
                 handleCommand();
                 this.scrollToBottom = true;
             }
+            this.previousCommandSelection = -1;
             reclaimFocus = true;
             this.rawConsoleInput.clear();
+        }
+        // Previous command selection
+        if (ImGui.isItemActive() && (!ImGui.isItemEdited() || this.previousCommandSelection != -1)) {
+            this.historyTraversable = true;
+            if (this.previousCommandSelection != -1
+                    && !this.previousCommands.isEmpty()
+                    && this.previousCommandSelection < this.previousCommands.size()) {
+                // TODO: Fix this set not updating in input
+                this.rawConsoleInput.set(this.previousCommands.get(this.previousCommandSelection));
+                LOGGER.info("Set input to: {}", this.rawConsoleInput.get());
+            }
+        } else {
+            this.previousCommands = null;
+            this.historyTraversable = false;
+            this.previousCommandSelectionDirection = true;
         }
         ImGui.popItemWidth();
         if (ImGui.isItemEdited() && !this.wasPrevFrameTabCompletion) {
@@ -508,14 +538,45 @@ public class ConsoleWidget implements IGUIInstance {
         ImGui.end();
     }
 
-    private int inputCallback() {
-        // TODO: Figure out how to register callbacks to inputs
-        return 0;
-    }
+    private int keyCode = -1;
+    private boolean pressed = false;
 
     @Override
     public boolean handleGUIInput(final Scene scene,
                                   final Window window) {
+        if (this.pressed) {
+            if (window.isKeyReleased(GLFW_KEY_UP) || window.isKeyReleased(GLFW_KEY_DOWN)) {
+                this.keyCode = -1;
+                this.pressed = false;
+            }
+        } else {
+            if (window.isKeyPressed(GLFW_KEY_UP)) {
+                this.keyCode = GLFW_KEY_UP;
+                this.pressed = true;
+                this.previousCommandSelectionDirection = true;
+                updatePreviousCommandSelection();
+            } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
+                this.keyCode = GLFW_KEY_DOWN;
+                this.pressed = true;
+                this.previousCommandSelectionDirection = false;
+                updatePreviousCommandSelection();
+            }
+        }
         return false;
+    }
+
+    private void updatePreviousCommandSelection() {
+        if (!this.historyTraversable) {
+            return;
+        }
+        if (this.previousCommands == null) {
+            this.previousCommands = this.commandLog.stream()
+                    .map(ExecutedCommand::joinedCommand)
+                    .toList();
+        }
+        this.previousCommandSelection = Math.max(Math.min(
+                this.previousCommandSelection + (this.previousCommandSelectionDirection ? 1 : -1),
+                this.previousCommands.size() - 1
+        ), 0);
     }
 }

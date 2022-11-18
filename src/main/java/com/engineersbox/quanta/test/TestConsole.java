@@ -43,6 +43,7 @@ public class TestConsole implements IGUIInstance {
     @Override
     public boolean handleGUIInput(final Scene scene,
                                   final Window window) {
+        this.console.handleGUIInput(scene, window);
         if (window.isKeyPressed(GLFW_KEY_GRAVE_ACCENT) && !this.tildePressed) {
             this.show = !this.show;
             this.tildePressed = true;
