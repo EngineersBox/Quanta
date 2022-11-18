@@ -8,6 +8,7 @@ import com.engineersbox.quanta.gui.console.hooks.*;
 import com.engineersbox.quanta.gui.console.tree.VariableTree;
 import com.engineersbox.quanta.scene.Scene;
 import imgui.ImGui;
+import imgui.ImGuiIO;
 import imgui.ImGuiStorage;
 import imgui.ImVec2;
 import imgui.flag.*;
@@ -173,7 +174,6 @@ public class ConsoleWidget implements IGUIInstance {
     private static final boolean SHOW_TIMESTAMP = true;
     private static final String VARIABLE_INSTANCE_TARGET_DELIMITER = "::";
     private static final int INPUT_FIELD_FLAGS = ImGuiInputTextFlags.CallbackHistory
-            | ImGuiInputTextFlags.CallbackAlways
             | ImGuiInputTextFlags.CallbackCompletion
             | ImGuiInputTextFlags.EnterReturnsTrue;
 
@@ -490,30 +490,36 @@ public class ConsoleWidget implements IGUIInstance {
         ImGui.endChild();
     }
 
+    private boolean updateReadOnlyFlag = false;
+
+    private void setHistoryInInput() {
+        if (this.previousCommands != null
+                && !this.previousCommands.isEmpty()
+                && this.previousCommandSelection < this.previousCommands.size()) {
+            this.updateReadOnlyFlag = true;
+            this.rawConsoleInput.set(this.previousCommands.get(this.previousCommands.size() - 1 - this.previousCommandSelection));
+        }
+    }
+
     private void inputField() {
         boolean reclaimFocus = false;
         ImGui.pushItemWidth(-ImGui.getStyle().getItemSpacingX() * 7);
-        if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, ConsoleWidget.INPUT_FIELD_FLAGS)) {
+        if (ImGui.inputTextWithHint("##", "Type \"help\" for help", this.rawConsoleInput, ConsoleWidget.INPUT_FIELD_FLAGS | (updateReadOnlyFlag ? ImGuiInputTextFlags.ReadOnly : 0))) {
             if (!this.rawConsoleInput.isEmpty()) {
                 this.consoleInput = this.rawConsoleInput.get();
                 handleCommand();
                 this.scrollToBottom = true;
             }
             this.previousCommandSelection = -1;
+            this.historyTraversable = false;
             reclaimFocus = true;
             this.rawConsoleInput.clear();
         }
         // Previous command selection
-        if (ImGui.isItemActive() && (!ImGui.isItemEdited() || this.previousCommandSelection != -1)) {
-            this.historyTraversable = true;
-            if (this.previousCommandSelection != -1
-                    && !this.previousCommands.isEmpty()
-                    && this.previousCommandSelection < this.previousCommands.size()) {
-                // TODO: Fix this set not updating in input
-                this.rawConsoleInput.set(this.previousCommands.get(this.previousCommandSelection));
-                LOGGER.info("Set input to: {}", this.rawConsoleInput.get());
-            }
+        if (ImGui.isItemActive() && this.historyTraversable && this.previousCommands != null) {
+            setHistoryInInput();
         } else {
+            this.updateReadOnlyFlag = false;
             this.previousCommands = null;
             this.historyTraversable = false;
             this.previousCommandSelectionDirection = true;
@@ -538,37 +544,37 @@ public class ConsoleWidget implements IGUIInstance {
         ImGui.end();
     }
 
-    private int keyCode = -1;
-    private boolean pressed = false;
+    private boolean upKeyPressed = false;
+    private boolean downKeyPressed = false;
 
     @Override
     public boolean handleGUIInput(final Scene scene,
                                   final Window window) {
-        if (this.pressed) {
-            if (window.isKeyReleased(GLFW_KEY_UP) || window.isKeyReleased(GLFW_KEY_DOWN)) {
-                this.keyCode = -1;
-                this.pressed = false;
-            }
-        } else {
-            if (window.isKeyPressed(GLFW_KEY_UP)) {
-                this.keyCode = GLFW_KEY_UP;
-                this.pressed = true;
-                this.previousCommandSelectionDirection = true;
-                updatePreviousCommandSelection();
-            } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
-                this.keyCode = GLFW_KEY_DOWN;
-                this.pressed = true;
-                this.previousCommandSelectionDirection = false;
-                updatePreviousCommandSelection();
-            }
+        final ImGuiIO imGuiIO = ImGui.getIO();
+        if (!imGuiIO.getWantCaptureMouse() && !imGuiIO.getWantCaptureKeyboard()) {
+            return false;
         }
-        return false;
+        if (window.isKeyPressed(GLFW_KEY_UP) && !this.upKeyPressed) {
+            this.upKeyPressed = true;
+            this.previousCommandSelectionDirection = true;
+            updatePreviousCommandSelection();
+        } else if (window.isKeyPressed(GLFW_KEY_DOWN) && !this.downKeyPressed) {
+            this.downKeyPressed = true;
+            this.previousCommandSelectionDirection = false;
+            updatePreviousCommandSelection();
+        } else if (this.updateReadOnlyFlag) {
+            this.updateReadOnlyFlag = false;
+        }
+        if (window.isKeyReleased(GLFW_KEY_UP) && this.upKeyPressed) {
+            this.upKeyPressed = false;
+        } else if (window.isKeyReleased(GLFW_KEY_DOWN) && this.downKeyPressed) {
+            this.downKeyPressed = false;
+        }
+        return true;
     }
 
     private void updatePreviousCommandSelection() {
-        if (!this.historyTraversable) {
-            return;
-        }
+        this.historyTraversable = true;
         if (this.previousCommands == null) {
             this.previousCommands = this.commandLog.stream()
                     .map(ExecutedCommand::joinedCommand)
@@ -578,5 +584,6 @@ public class ConsoleWidget implements IGUIInstance {
                 this.previousCommandSelection + (this.previousCommandSelectionDirection ? 1 : -1),
                 this.previousCommands.size() - 1
         ), 0);
+        setHistoryInInput();
     }
 }
