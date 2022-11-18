@@ -70,6 +70,8 @@ uniform sampler2D shadowMap_1;
 uniform sampler2D shadowMap_2;
 
 uniform int showCascades;
+uniform int showDepth;
+uniform int showShadows;
 
 vec4 calcAmbient(AmbientLight ambientLight, vec4 ambient) {
     return vec4(ambientLight.factor * ambientLight.color, 1) * ambient;
@@ -173,7 +175,12 @@ void main() {
     vec4 specular = texture(specularSampler, outTextCoord);
 
     // Retrieve position from depth
-    float depth = texture(depthSampler, outTextCoord).x * 2.0 - 1.0;
+    float rawDepth = texture(depthSampler, outTextCoord).x;
+    if (showDepth == 1) {
+        fragColor.rgb = vec3(rawDepth, rawDepth, rawDepth);
+        return;
+    }
+    float depth = rawDepth * 2.0 - 1.0;
     if (depth == 1) {
         discard;
     }
@@ -192,6 +199,10 @@ void main() {
         }
     }
     float shadowFactor = calcShadow(world_pos, cascadeIndex);
+    if (showShadows == 1) {
+        fragColor.rgb = vec3(shadowFactor, shadowFactor, shadowFactor);
+        return;
+    }
 
     for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
         if (pointLights[i].intensity > 0) {

@@ -28,8 +28,11 @@ public class LightingRenderer {
     private static final int MAX_POINT_LIGHTS = 5;
     private static final int MAX_SPOT_LIGHTS = 5;
     @VariableHook(name = "renderer.show_cascades")
-    private static boolean showCascades = false;
-
+    private static boolean SHOW_CASCADES = false;
+    @VariableHook(name = "renderer.show_depth")
+    private static boolean SHOW_DEPTH = false;
+    @VariableHook(name = "renderer.show_shadows")
+    private static boolean SHOW_SHADOWS = false;
     private final ShaderProgram shader;
 
     private final QuadMesh quadMesh;
@@ -61,7 +64,9 @@ public class LightingRenderer {
                 "fog.activeFog",
                 "fog.color",
                 "fog.density",
-                "showCascades"
+                "showCascades",
+                "showDepth",
+                "showShadows"
         ).forEach(this.uniforms::createUniform);
 
         for (int i = 0; i < LightingRenderer.MAX_POINT_LIGHTS; i++) {
@@ -111,7 +116,15 @@ public class LightingRenderer {
         }
         this.uniforms.setUniform(
                 "showCascades",
-                this.showCascades
+                this.SHOW_CASCADES
+        );
+        this.uniforms.setUniform(
+                "showDepth",
+                this.SHOW_DEPTH
+        );
+        this.uniforms.setUniform(
+                "showShadows",
+                this.SHOW_SHADOWS
         );
         this.uniforms.setUniform(
                 "albedoSampler",

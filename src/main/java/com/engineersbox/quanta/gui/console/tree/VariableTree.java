@@ -2,7 +2,9 @@ package com.engineersbox.quanta.gui.console.tree;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import java.util.Enumeration;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 
@@ -12,12 +14,12 @@ public class VariableTree<T> extends DefaultTreeModel {
     private final String pathDelimiter;
 
     public VariableTree(final String pathDelimiter) {
-        super(new DefaultMutableTreeNode(ROOT_NODE_VALUE));
+        super(new DefaultMutableTreeNode(VariableTree.ROOT_NODE_VALUE));
         this.pathDelimiter = pathDelimiter;
     }
 
     private String formatPathString(final String path) {
-        return ROOT_NODE_VALUE + this.pathDelimiter + path;
+        return VariableTree.ROOT_NODE_VALUE + this.pathDelimiter + path;
     }
 
     public void insert(final String path,
@@ -25,12 +27,34 @@ public class VariableTree<T> extends DefaultTreeModel {
         final StringTokenizer tokenizer = new StringTokenizer(path, this.pathDelimiter);
         DefaultMutableTreeNode current = (DefaultMutableTreeNode) super.getRoot();
         while (tokenizer.hasMoreTokens()) {
-            final TreeNodeLabel label = new TreeNodeLabel(tokenizer.nextToken());
-            final DefaultMutableTreeNode next = new DefaultMutableTreeNode(label);
+            final String label = tokenizer.nextToken();
+            final DefaultMutableTreeNode existing = findMatchingChild(current, label);
+            if (existing != null) {
+                current = existing;
+                continue;
+            }
+            final TreeNodeLabel treeNodeLabel = new TreeNodeLabel(label);
+            final DefaultMutableTreeNode next = new DefaultMutableTreeNode(treeNodeLabel);
             current.add(next);
             current = next;
         }
         current.add(new DefaultMutableTreeNode(value));
+    }
+
+    private DefaultMutableTreeNode findMatchingChild(final DefaultMutableTreeNode current,
+                                                     final String label) {
+        if (current == null || current.isLeaf()) {
+            return null;
+        }
+        final Enumeration<TreeNode> children = current.children();
+        while (children.hasMoreElements()) {
+            final DefaultMutableTreeNode child = (DefaultMutableTreeNode) children.nextElement();
+            final Object userObject = child.getUserObject();
+            if (userObject instanceof TreeNodeLabel nodeLabel && nodeLabel.value().equals(label)) {
+                return child;
+            }
+        }
+        return null;
     }
 
     public TreePath getPath(final String pathString) {

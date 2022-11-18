@@ -292,7 +292,7 @@ public class ConsoleWidget implements IGUIInstance {
                 false,
                 new ColouredString[]{
                         new ColouredString(ConsoleColour.RED, "Unknown variable: "),
-                        new ColouredString(ConsoleColour.YELLOW, path)
+                        new ColouredString(ConsoleColour.NORMAL, path)
                 }
         );
         final HookBinding hookBinding;
@@ -469,6 +469,19 @@ public class ConsoleWidget implements IGUIInstance {
         final String[] args = ArrayUtils.subarray(splitCommand, 1, splitCommand.length);
         switch (command) {
             case "set" -> {
+                if (args.length != 2) {
+                    submitCommand(ExecutedCommand.from(
+                            new ColouredString[]{
+                                    ConsoleColour.GREEN.with(command + " "),
+                                    ConsoleColour.NORMAL.with(String.join(" ", args))
+                            },
+                            new ColouredString[]{
+                                    ConsoleColour.RED.with("Expected 2 arguments, got " + args.length + ": "),
+                                    ConsoleColour.YELLOW.with(Arrays.toString(args))
+                            }
+                    ));
+                    return;
+                }
                 final ValidationState state = updateVariableValue(args[0], args[1]);
                 submitCommand(ExecutedCommand.from(
                         new ColouredString[]{
