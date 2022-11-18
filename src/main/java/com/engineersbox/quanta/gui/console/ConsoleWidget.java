@@ -196,7 +196,7 @@ public class ConsoleWidget implements IGUIInstance {
     private static final String NEWLINE_CHARACTER = System.getProperty("line.separator");
 
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm:ss.SSSS");
-    private final ImString rawConsoleInput; // TODO: Implement usage of up/down arrow keys to access previously executed commands
+    private final ImString rawConsoleInput;
     private String consoleInput;
     private final LinkedBlockingDeque<ExecutedCommand> commandLog;
     private List<String> previousCommands;
