@@ -7,7 +7,8 @@ import com.engineersbox.quanta.gui.console.format.ConsoleColour;
 import com.engineersbox.quanta.gui.console.hooks.*;
 import com.engineersbox.quanta.gui.console.tree.VariableTree;
 import com.engineersbox.quanta.scene.Scene;
-import com.engineersbox.quanta.utils.TypeConversionUtils;
+import com.engineersbox.quanta.utils.reflect.TypeConversionUtils;
+import com.engineersbox.quanta.utils.reflect.VarHandleUtils;
 import imgui.ImGui;
 import imgui.ImGuiIO;
 import imgui.ImVec2;
@@ -16,14 +17,16 @@ import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
 
-import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -48,14 +51,14 @@ public class ConsoleWidget implements IGUIInstance {
     private static final VariableTree<HookBinding> HOOKS = new VariableTree<>(ConsoleWidget.VARIABLE_PATH_DELIMITER);
 
     static {
-        final Map<VariableHook, Pair<Field, Boolean>> variableHooks = ConsoleWidget.resolveVariableHooks();
+        final Map<VariableHook, Triple<Field, VarHandle, Boolean>> variableHooks = ConsoleWidget.resolveVariableHooks();
         final Map<String, Method> hookValidators = ConsoleWidget.resolveHookValidators();
         int count = 0;
-        for (final Map.Entry<VariableHook, Pair<Field, Boolean>> entry : variableHooks.entrySet()) {
+        for (final Map.Entry<VariableHook, Triple<Field, VarHandle, Boolean>> entry : variableHooks.entrySet()) {
             final String name = entry.getKey().name();
-            final Pair<Field, Boolean> hookValue = entry.getValue();
+            final Triple<Field, VarHandle, Boolean> hookValue = entry.getValue();
             if (name.isBlank()) {
-                ConsoleWidget.LOGGER.warn("Invalid variable hook name for field [{}]", hookValue.getLeft().getName());
+                ConsoleWidget.LOGGER.warn("Invalid variable hook name for varHandle [{}]", hookValue.getLeft());
                 continue;
             }
             final String validatorName = entry.getKey().hookValidator();
@@ -73,8 +76,9 @@ public class ConsoleWidget implements IGUIInstance {
             ConsoleWidget.HOOKS.insert(
                     entry.getKey().name(),
                     new HookBinding(
-                            hookValue.getKey(),
-                            hookValue.getValue(),
+                            hookValue.getLeft(),
+                            hookValue.getMiddle(),
+                            hookValue.getRight(),
                             hookValidator
                     )
             );
@@ -130,14 +134,30 @@ public class ConsoleWidget implements IGUIInstance {
                 });
     }
 
-    private static Map<VariableHook, Pair<Field, Boolean>> resolveVariableHooks() {
+    private static Map<VariableHook, Triple<Field, VarHandle, Boolean>> resolveVariableHooks() {
         return ConsoleWidget.resolveVariableHooksFields(true)
                 .collect(Collectors.toMap(
                         (final Field field) -> field.getAnnotation(VariableHook.class),
-                        (final Field field) -> ImmutablePair.of(
-                                field,
-                                !Modifier.isStatic(field.getModifiers())
-                        )
+                        (final Field field) -> {
+                            final boolean isNotStatic = !Modifier.isStatic(field.getModifiers());
+                            final VarHandle varHandle;
+                            try {
+                                varHandle = VarHandleUtils.resolveVarHandle(
+                                        field,
+                                        isNotStatic
+                                );
+                            } catch (IllegalAccessException | NoSuchFieldException e) {
+                                throw new RuntimeException(String.format(
+                                        "Cannot resolve varhandle for varHandle [%s]:",
+                                        field
+                                ), e);
+                            }
+                            return ImmutableTriple.of(
+                                    field,
+                                    varHandle,
+                                    isNotStatic
+                            );
+                        }
                 ));
     }
 
@@ -332,14 +352,14 @@ public class ConsoleWidget implements IGUIInstance {
         if (!state.getKey().state() && isError) {
             return state.getKey();
         }
-        final Field field = hookBinding.field();
+        final VarHandle varHandle = hookBinding.varHandle();
         final Object valueToWrite;
         if (isError) {
             valueToWrite = state.getValue();
         } else {
             try {
                 valueToWrite = TypeConversionUtils.tryCoercePrimitive(
-                        field.getType(),
+                        varHandle.varType(),
                         state.getValue()
                 );
             } catch (final IllegalArgumentException e) {
@@ -349,29 +369,29 @@ public class ConsoleWidget implements IGUIInstance {
                                 new ColouredString(ConsoleColour.RED, "Invalid variable value \""),
                                 new ColouredString(ConsoleColour.YELLOW, state.getValue().toString()),
                                 new ColouredString(ConsoleColour.RED, "\", expected type "),
-                                new ColouredString(ConsoleColour.CYAN, field.getType().getSimpleName()),
+                                new ColouredString(ConsoleColour.CYAN, hookBinding.field().getName()),
                         }
                 );
             }
         }
         synchronized (this) {
-            try {
-                lookupAndSetVariable(
-                        field,
+//            try {
+                VarHandleUtils.setValue(
+                        varHandle,
                         matchingInstance,
                         valueToWrite,
                         requiresInstance
                 );
-            } catch (final IllegalAccessException | NoSuchFieldException e) {
-                ConsoleWidget.LOGGER.error("Unable to update variable", e);
-                return new ValidationState(
-                        false,
-                        new ColouredString[]{
-                                new ColouredString(ConsoleColour.RED, "Unable to update variable: "),
-                                new ColouredString(ConsoleColour.YELLOW, path)
-                        }
-                );
-            }
+//            } catch (final IllegalAccessException | NoSuchFieldException e) {
+//                ConsoleWidget.LOGGER.error("Unable to update variable", e);
+//                return new ValidationState(
+//                        false,
+//                        new ColouredString[]{
+//                                new ColouredString(ConsoleColour.RED, "Unable to update variable: "),
+//                                new ColouredString(ConsoleColour.YELLOW, path)
+//                        }
+//                );
+//            }
         }
         return new ValidationState(
                 true,
@@ -388,27 +408,14 @@ public class ConsoleWidget implements IGUIInstance {
                                                    final Object instance,
                                                    final Object value,
                                                    final boolean requiresInstance) throws IllegalAccessException, NoSuchFieldException {
-        final MethodHandles.Lookup lookup;
-        if (Modifier.isPrivate(field.getModifiers())) {
-            lookup = MethodHandles.privateLookupIn(
-                    field.getDeclaringClass(),
-                    MethodHandles.lookup()
-            );
-        } else {
-            lookup = MethodHandles.lookup().in(field.getDeclaringClass());
-        }
+        final VarHandle varHandle = VarHandleUtils.resolveVarHandle(
+                field,
+                requiresInstance
+        );
         if (requiresInstance) {
-            lookup.findVarHandle(
-                    field.getDeclaringClass(),
-                    field.getName(),
-                    field.getType()
-            ).set(instance, value);
+            varHandle.set(instance, value);
         } else {
-            lookup.findStaticVarHandle(
-                    field.getDeclaringClass(),
-                    field.getName(),
-                    field.getType()
-            ).set(value);
+            varHandle.set(value);
         }
     }
 

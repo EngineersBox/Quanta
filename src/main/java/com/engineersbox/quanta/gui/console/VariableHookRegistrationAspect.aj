@@ -1,6 +1,5 @@
 package com.engineersbox.quanta.gui.console;
 
-import com.engineersbox.quanta.gui.console.hooks.HookBinding;
 import com.engineersbox.quanta.gui.console.hooks.VariableHook;
 
 import java.lang.reflect.Field;
@@ -17,7 +16,7 @@ public final aspect VariableHookRegistrationAspect {
         for (final Field field : getAnnotatedFields(instance)) {
             ConsoleWidget.FIELD_INSTANCE_MAPPINGS.computeIfAbsent(
                     field,
-                    (final Field k) -> new ArrayList<>()
+                    (final Field ignored) -> new ArrayList<>()
             ).add(instance);
         }
     }

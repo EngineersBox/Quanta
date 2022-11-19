@@ -4,11 +4,14 @@ import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.PointerBuffer;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWVidMode;
 import org.lwjgl.system.MemoryUtil;
 
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -55,12 +58,15 @@ public class Window {
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         }
 
+        final long monitorId = ConfigHandler.CONFIG.video.monitor < 0
+                ? glfwGetPrimaryMonitor()
+                : findMonitorByIndex(ConfigHandler.CONFIG.video.monitor);
         if (ConfigHandler.CONFIG.video.width > 0 && ConfigHandler.CONFIG.video.height > 0) {
             this.width = ConfigHandler.CONFIG.video.width;
             this.height = ConfigHandler.CONFIG.video.height;
         } else {
             glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-            final GLFWVidMode videoMode = glfwGetVideoMode(glfwGetPrimaryMonitor());
+            final GLFWVidMode videoMode = glfwGetVideoMode(monitorId);
             if (videoMode == null) {
                 throw new RuntimeException("Unable to get video mode of primary monitor");
             }
@@ -72,7 +78,7 @@ public class Window {
                 this.width,
                 this.height,
                 title,
-                NULL,
+                ConfigHandler.CONFIG.video.fullscreen ? monitorId : NULL,
                 NULL
         );
         if (this.windowHandle == NULL) {
@@ -101,6 +107,24 @@ public class Window {
         this.height = fbHeight[0];
 
         this.mouseInput = new MouseInput(this.windowHandle);
+    }
+
+    private long findMonitorByIndex(final int idx) {
+        final PointerBuffer monitors = glfwGetMonitors();
+        if (monitors == null || !monitors.hasRemaining()) {
+            throw new RuntimeException("No monitors connected");
+        }
+        final int monitorsCount = monitors.limit();
+        if (idx < 0 || idx >= monitorsCount) {
+            throw new RuntimeException(String.format(
+                    "Invalid monitor %d, must be one of [%s]",
+                    idx,
+                    IntStream.range(0, monitorsCount)
+                            .mapToObj(String::valueOf)
+                            .collect(Collectors.joining(","))
+            ));
+        }
+        return monitors.get(idx);
     }
 
     public long getHandle() {

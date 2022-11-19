@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.utils;
+package com.engineersbox.quanta.utils.reflect;
 
 import org.apache.commons.lang3.ClassUtils;
 
