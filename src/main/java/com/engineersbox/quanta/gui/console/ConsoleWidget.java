@@ -15,6 +15,7 @@ import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -22,6 +23,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.util.TriConsumer;
+import org.eclipse.collections.api.map.ImmutableMap;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -31,6 +34,8 @@ import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -404,21 +409,6 @@ public class ConsoleWidget implements IGUIInstance {
         );
     }
 
-    private synchronized void lookupAndSetVariable(final Field field,
-                                                   final Object instance,
-                                                   final Object value,
-                                                   final boolean requiresInstance) throws IllegalAccessException, NoSuchFieldException {
-        final VarHandle varHandle = VarHandleUtils.resolveVarHandle(
-                field,
-                requiresInstance
-        );
-        if (requiresInstance) {
-            varHandle.set(instance, value);
-        } else {
-            varHandle.set(value);
-        }
-    }
-
     private Optional<Object> getFieldParentInstance(final Field field,
                                                     final String target) {
         final List<Object> instances = ConsoleWidget.FIELD_INSTANCE_MAPPINGS.get(field);
@@ -464,6 +454,66 @@ public class ConsoleWidget implements IGUIInstance {
         ));
     }
 
+    private static final Map<String, Pair<String, TriConsumer<ConsoleWidget, String, String[]>>> COMMAND_HANDLERS = new HashMap<>();
+
+    static {
+        // TODO: Improve this to accept arbitrary command registration
+        ConsoleWidget.COMMAND_HANDLERS.put("set", ImmutablePair.of("set <variable> <value>", (final ConsoleWidget widget, final String command, final String[] args) -> {
+            if (args.length != 2) {
+                widget.submitCommand(ExecutedCommand.from(
+                        new ColouredString[]{
+                                ConsoleColour.GREEN.with(command + " "),
+                                ConsoleColour.NORMAL.with(String.join(" ", args))
+                        },
+                        new ColouredString[]{
+                                ConsoleColour.RED.with("Expected 2 arguments, got " + args.length + ": "),
+                                ConsoleColour.YELLOW.with(Arrays.toString(args))
+                        }
+                ));
+                return;
+            }
+            final ValidationState state = widget.updateVariableValue(args[0], args[1]);
+            widget.submitCommand(ExecutedCommand.from(
+                    new ColouredString[]{
+                            ConsoleColour.GREEN.with(command + " "),
+                            ConsoleColour.NORMAL.with(String.join(" ", args))
+                    },
+                    state.message()
+            ));
+        }));
+        ConsoleWidget.COMMAND_HANDLERS.put("get", ImmutablePair.of("get <variable>", (final ConsoleWidget widget, final String command, final String[] args) -> widget.submitCommand(ExecutedCommand.from(
+                new ColouredString[]{
+                        ConsoleColour.GREEN.with(command + " "),
+                        ConsoleColour.NORMAL.with(String.join(" ", args))
+                },
+                ConsoleColour.NORMAL.with("get stuff!")
+        ))));
+        ConsoleWidget.COMMAND_HANDLERS.put("listvars", ImmutablePair.of("listvars", (final ConsoleWidget widget, final String command, final String[] args) -> {
+            if (args.length > 1) {
+                widget.handleUnknownCommand();
+            }
+            widget.submitCommand(ExecutedCommand.from(
+                    ConsoleColour.GREEN.with(command),
+                    widget.listAllVars()
+            ));
+        }));
+        ConsoleWidget.COMMAND_HANDLERS.put("help", ImmutablePair.of("help", (final ConsoleWidget widget, final String command, final String[] args) -> {
+            final ColouredString[] commandsSyntax = ConsoleWidget.COMMAND_HANDLERS.values()
+                    .stream()
+                    .map(Pair::getLeft)
+                    .map((final String commandSyntax) -> String.format(
+                            " - %s%s",
+                            commandSyntax,
+                            ConsoleWidget.NEWLINE_CHARACTER
+                    )).map(ConsoleColour.NORMAL::with)
+                    .toArray(ColouredString[]::new);
+            widget.submitCommand(ExecutedCommand.from(
+                    ConsoleColour.GREEN.with(command),
+                    commandsSyntax
+            ));
+        }));
+    }
+
     private void handleCommand() {
         if (this.consoleInput.isBlank()) {
             return;
@@ -474,47 +524,11 @@ public class ConsoleWidget implements IGUIInstance {
         }
         final String command = splitCommand[0];
         final String[] args = ArrayUtils.subarray(splitCommand, 1, splitCommand.length);
-        switch (command) {
-            case "set" -> {
-                if (args.length != 2) {
-                    submitCommand(ExecutedCommand.from(
-                            new ColouredString[]{
-                                    ConsoleColour.GREEN.with(command + " "),
-                                    ConsoleColour.NORMAL.with(String.join(" ", args))
-                            },
-                            new ColouredString[]{
-                                    ConsoleColour.RED.with("Expected 2 arguments, got " + args.length + ": "),
-                                    ConsoleColour.YELLOW.with(Arrays.toString(args))
-                            }
-                    ));
-                    return;
-                }
-                final ValidationState state = updateVariableValue(args[0], args[1]);
-                submitCommand(ExecutedCommand.from(
-                        new ColouredString[]{
-                                ConsoleColour.GREEN.with(command + " "),
-                                ConsoleColour.NORMAL.with(String.join(" ", args))
-                        },
-                        state.message()
-                ));
-            }
-            case "get" -> submitCommand(ExecutedCommand.from(
-                    new ColouredString[]{
-                            ConsoleColour.GREEN.with(command + " "),
-                            ConsoleColour.NORMAL.with(String.join(" ", args))
-                    },
-                    ConsoleColour.NORMAL.with("get stuff!")
-            ));
-            case "listvars" -> {
-                if (args.length > 1) {
-                    handleUnknownCommand();
-                }
-                submitCommand(ExecutedCommand.from(
-                        ConsoleColour.GREEN.with(command),
-                        listAllVars()
-                ));
-            }
-            default -> handleUnknownCommand();
+        final Pair<String, TriConsumer<ConsoleWidget, String, String[]>> commandHandler = ConsoleWidget.COMMAND_HANDLERS.get(command);
+        if (commandHandler == null) {
+            handleUnknownCommand();
+        } else {
+            commandHandler.getRight().accept(this, command, args);
         }
     }
 
