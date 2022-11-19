@@ -26,6 +26,8 @@ struct Material {
 uniform sampler2D textureSampler[MAX_TEXTURES];
 uniform Material materials[MAX_MATERIALS];
 
+uniform int showNormals;
+
 vec3 calcNormal(int idx, vec3 normal, vec3 tangent, vec3 bitangent, vec2 textCoords) {
     mat3 TBN = mat3(tangent, bitangent, normal);
     vec3 newNormal = texture(textureSampler[idx], textCoords).rgb;
@@ -48,7 +50,11 @@ void main() {
         normal = calcNormal(material.normalMapIdx, outNormal, outTangent, outBitangent, outTextCoord);
     }
 
-    buffAlbedo   = vec4(diffuse.xyz, material.reflectance);
+    if (showNormals == 1) {
+        buffAlbedo = vec4(0.5 * normal + 0.5, material.reflectance);
+    } else {
+        buffAlbedo = vec4(diffuse.xyz, material.reflectance);
+    }
     buffNormal   = vec4(0.5 * normal + 0.5, 1.0);
     buffSpecular = specular;
 }

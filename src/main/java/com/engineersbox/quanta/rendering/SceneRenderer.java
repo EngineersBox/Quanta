@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.rendering;
 
+import com.engineersbox.quanta.gui.console.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
@@ -42,6 +43,8 @@ public class SceneRenderer {
     private static final int COMMAND_SIZE = 5 * 4;
     private static final int MAX_MATERIALS = 20;
     private static final int MAX_TEXTURES = 16;
+    @VariableHook(name = "renderer.show_normals")
+    private static boolean showNormals = false;
     private final Map<String, Integer> entitiesIdxMap;
     private final ShaderProgram shader;
     private int staticDrawCount;
@@ -69,7 +72,8 @@ public class SceneRenderer {
         this.uniforms = new Uniforms(this.shader.getProgramId());
         Stream.of(
                 "projectionMatrix",
-                "viewMatrix"
+                "viewMatrix",
+                "showNormals"
         ).forEach(this.uniforms::createUniform);
         for (int i = 0; i < SceneRenderer.MAX_TEXTURES; i++) {
             this.uniforms.createUniform("textureSampler[" + i + "]");
@@ -111,6 +115,10 @@ public class SceneRenderer {
         this.uniforms.setUniform(
                 "viewMatrix",
                 scene.getCamera().getViewMatrix()
+        );
+        this.uniforms.setUniform(
+                "showNormals",
+                showNormals
         );
         final TextureCache textureCache = scene.getTextureCache();
         final List<Texture> textures = textureCache.getAll().stream().toList();
