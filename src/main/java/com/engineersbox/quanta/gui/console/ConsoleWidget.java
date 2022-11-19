@@ -380,23 +380,12 @@ public class ConsoleWidget implements IGUIInstance {
             }
         }
         synchronized (this) {
-//            try {
                 VarHandleUtils.setValue(
                         varHandle,
                         matchingInstance,
                         valueToWrite,
                         requiresInstance
                 );
-//            } catch (final IllegalAccessException | NoSuchFieldException e) {
-//                ConsoleWidget.LOGGER.error("Unable to update variable", e);
-//                return new ValidationState(
-//                        false,
-//                        new ColouredString[]{
-//                                new ColouredString(ConsoleColour.RED, "Unable to update variable: "),
-//                                new ColouredString(ConsoleColour.YELLOW, path)
-//                        }
-//                );
-//            }
         }
         return new ValidationState(
                 true,
