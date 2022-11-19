@@ -22,3 +22,4 @@
 * Fix shadow acne and bias
 * Fix shadow sampling and smoothing
 * Debug view for OpenGL and pipeline statistics with ImGui
+* Replace usages of `RuntimeException` with custom exceptions
