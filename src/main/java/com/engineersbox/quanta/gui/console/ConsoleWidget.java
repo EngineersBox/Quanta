@@ -15,7 +15,6 @@ import imgui.ImVec2;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
@@ -24,7 +23,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.TriConsumer;
-import org.eclipse.collections.api.map.ImmutableMap;
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
 import org.reflections.util.ConfigurationBuilder;
@@ -34,8 +32,6 @@ import java.lang.reflect.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -151,7 +147,7 @@ public class ConsoleWidget implements IGUIInstance {
                                         field,
                                         isNotStatic
                                 );
-                            } catch (IllegalAccessException | NoSuchFieldException e) {
+                            } catch (final IllegalAccessException | NoSuchFieldException e) {
                                 throw new RuntimeException(String.format(
                                         "Cannot resolve varhandle for varHandle [%s]:",
                                         field
@@ -380,12 +376,12 @@ public class ConsoleWidget implements IGUIInstance {
             }
         }
         synchronized (this) {
-                VarHandleUtils.setValue(
-                        varHandle,
-                        matchingInstance,
-                        valueToWrite,
-                        requiresInstance
-                );
+            VarHandleUtils.setValue(
+                    varHandle,
+                    matchingInstance,
+                    valueToWrite,
+                    requiresInstance
+            );
         }
         return new ValidationState(
                 true,
