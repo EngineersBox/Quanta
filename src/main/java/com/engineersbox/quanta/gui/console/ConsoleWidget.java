@@ -51,7 +51,7 @@ public class ConsoleWidget implements IGUIInstance {
             .forPackages("com.engineersbox.quanta")
     );
 
-    public static final Map<Field, List<Object>> FIELD_INSTANCE_MAPPINGS = new HashMap<>();
+    protected static final Map<Field, List<Object>> FIELD_INSTANCE_MAPPINGS = new HashMap<>();
     private static final String VARIABLE_PATH_DELIMITER = ".";
     private static final VariableTree<HookBinding> HOOKS = new VariableTree<>(ConsoleWidget.VARIABLE_PATH_DELIMITER);
 
