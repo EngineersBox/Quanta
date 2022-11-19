@@ -149,7 +149,7 @@ public class ConsoleWidget implements IGUIInstance {
                                 );
                             } catch (final IllegalAccessException | NoSuchFieldException e) {
                                 throw new RuntimeException(String.format(
-                                        "Cannot resolve varhandle for varHandle [%s]:",
+                                        "Cannot resolve varHandle for field [%s]:",
                                         field
                                 ), e);
                             }
