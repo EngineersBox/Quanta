@@ -48,7 +48,6 @@ public class Statistics {
     }
 
     public static final int MAX = 11;
-
     private static final String QUERY_EXTENSION_ARB = "GL_ARB_pipeline_statistics_query";
 
     private final boolean extensionAvailable;

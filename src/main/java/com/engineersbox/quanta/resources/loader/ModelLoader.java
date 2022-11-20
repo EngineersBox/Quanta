@@ -31,6 +31,96 @@ public class ModelLoader {
         // Utility class
     }
 
+    public static Model loadModel(final String modelId,
+                                  final String modelPath,
+                                  final TextureCache textureCache,
+                                  final MaterialCache materialCache,
+                                  final boolean animated) {
+        return ModelLoader.loadModel(
+                modelId,
+                modelPath,
+                textureCache,
+                materialCache,
+                aiProcess_GenSmoothNormals
+                        | aiProcess_JoinIdenticalVertices
+                        | aiProcess_Triangulate
+                        | aiProcess_FixInfacingNormals
+                        | aiProcess_CalcTangentSpace
+                        | aiProcess_LimitBoneWeights
+                        | aiProcess_GenBoundingBoxes
+                        | (animated ? 0 : aiProcess_PreTransformVertices)
+        );
+    }
+
+    public static Model loadModel(final String modelId,
+                                  final String modelPath,
+                                  final TextureCache textureCache,
+                                  final MaterialCache materialCache,
+                                  final int flags) {
+        final File file = new File(modelPath);
+        if (!file.exists()) {
+            throw new RuntimeException("Model path does not exist [" + modelPath + "]");
+        }
+        final String modelDir = file.getParent();
+        final AIScene aiScene = aiImportFile(modelPath, flags);
+        if (aiScene == null) {
+            throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
+        }
+        final int numMaterials = aiScene.mNumMaterials();
+        final PointerBuffer aiMaterials = aiScene.mMaterials();
+        if (aiMaterials == null) {
+            throw new RuntimeException(String.format(
+                    "Expected materials for model [%s], got none",
+                    modelId
+            ));
+        }
+        final List<Material> materialList = new ArrayList<>();
+        for (int i = 0; i < numMaterials; i++) {
+            final AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
+            final Material material = ModelLoader.processMaterial(aiMaterial, modelDir, textureCache);
+            materialCache.addMaterial(material);
+            materialList.add(material);
+        }
+        final int numMeshes = aiScene.mNumMeshes();
+        final PointerBuffer aiMeshes = aiScene.mMeshes();
+        if (aiMeshes == null) {
+            throw new RuntimeException(String.format(
+                    "Expected meshes to be present in scene, found none while loading model [%s] from [%s]",
+                    modelId,
+                    modelPath
+            ));
+        }
+        final List<MeshData> meshDataList = new ArrayList<>();
+        final List<Bone> boneList = new ArrayList<>();
+        for (int i = 0; i < numMeshes; i++) {
+            final AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
+            final MeshData meshData = ModelLoader.processMesh(aiMesh, boneList);
+            final int materialIdx = aiMesh.mMaterialIndex();
+            if (materialIdx >= 0 && materialIdx < materialList.size()) {
+                meshData.setMaterialIdx(materialList.get(materialIdx).getMaterialIdx());
+            } else {
+                meshData.setMaterialIdx(MaterialCache.DEFAULT_MATERIAL_IDX);
+            }
+            meshDataList.add(meshData);
+        }
+
+        List<Animation> animations = new ArrayList<>();
+        final int numAnimations = aiScene.mNumAnimations();
+        if (numAnimations > 0) {
+            final AINode sceneRootNode = aiScene.mRootNode();
+            if (sceneRootNode == null) {
+                throw new NullPointerException("Unexpected null scene root node");
+            }
+            final Node rootNode = ModelLoader.buildNodesTree(sceneRootNode, null);
+            final Matrix4f globalInverseTransformation = ModelLoader.toMatrix(sceneRootNode.mTransformation()).invert();
+            animations = ModelLoader.processAnimations(aiScene, boneList, rootNode, globalInverseTransformation);
+        }
+
+        aiReleaseImport(aiScene);
+
+        return new Model(modelId, meshDataList, animations);
+    }
+
     private static void buildFrameMatrices(final AIAnimation aiAnimation,
                                            final List<Bone> boneList,
                                            final AnimatedFrame animatedFrame,
@@ -134,96 +224,6 @@ public class ModelLoader {
             }
         }
         return result;
-    }
-
-    public static Model loadModel(final String modelId,
-                                  final String modelPath,
-                                  final TextureCache textureCache,
-                                  final MaterialCache materialCache,
-                                  final boolean animated) {
-        return ModelLoader.loadModel(
-                modelId,
-                modelPath,
-                textureCache,
-                materialCache,
-                aiProcess_GenSmoothNormals
-                        | aiProcess_JoinIdenticalVertices
-                        | aiProcess_Triangulate
-                        | aiProcess_FixInfacingNormals
-                        | aiProcess_CalcTangentSpace
-                        | aiProcess_LimitBoneWeights
-                        | aiProcess_GenBoundingBoxes
-                        | (animated ? 0 : aiProcess_PreTransformVertices)
-        );
-    }
-
-    public static Model loadModel(final String modelId,
-                                  final String modelPath,
-                                  final TextureCache textureCache,
-                                  final MaterialCache materialCache,
-                                  final int flags) {
-        final File file = new File(modelPath);
-        if (!file.exists()) {
-            throw new RuntimeException("Model path does not exist [" + modelPath + "]");
-        }
-        final String modelDir = file.getParent();
-        final AIScene aiScene = aiImportFile(modelPath, flags);
-        if (aiScene == null) {
-            throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
-        }
-        final int numMaterials = aiScene.mNumMaterials();
-        final PointerBuffer aiMaterials = aiScene.mMaterials();
-        if (aiMaterials == null) {
-            throw new RuntimeException(String.format(
-                    "Expected materials for model [%s], got none",
-                    modelId
-            ));
-        }
-        final List<Material> materialList = new ArrayList<>();
-        for (int i = 0; i < numMaterials; i++) {
-            final AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
-            final Material material = ModelLoader.processMaterial(aiMaterial, modelDir, textureCache);
-            materialCache.addMaterial(material);
-            materialList.add(material);
-        }
-        final int numMeshes = aiScene.mNumMeshes();
-        final PointerBuffer aiMeshes = aiScene.mMeshes();
-        if (aiMeshes == null) {
-            throw new RuntimeException(String.format(
-                    "Expected meshes to be present in scene, found none while loading model [%s] from [%s]",
-                    modelId,
-                    modelPath
-            ));
-        }
-        final List<MeshData> meshDataList = new ArrayList<>();
-        final List<Bone> boneList = new ArrayList<>();
-        for (int i = 0; i < numMeshes; i++) {
-            final AIMesh aiMesh = AIMesh.create(aiMeshes.get(i));
-            final MeshData meshData = ModelLoader.processMesh(aiMesh, boneList);
-            final int materialIdx = aiMesh.mMaterialIndex();
-            if (materialIdx >= 0 && materialIdx < materialList.size()) {
-                meshData.setMaterialIdx(materialList.get(materialIdx).getMaterialIdx());
-            } else {
-                meshData.setMaterialIdx(MaterialCache.DEFAULT_MATERIAL_IDX);
-            }
-            meshDataList.add(meshData);
-        }
-
-        List<Animation> animations = new ArrayList<>();
-        final int numAnimations = aiScene.mNumAnimations();
-        if (numAnimations > 0) {
-            final AINode sceneRootNode = aiScene.mRootNode();
-            if (sceneRootNode == null) {
-                throw new NullPointerException("Unexpected null scene root node");
-            }
-            final Node rootNode = ModelLoader.buildNodesTree(sceneRootNode, null);
-            final Matrix4f globalInverseTransformation = ModelLoader.toMatrix(sceneRootNode.mTransformation()).invert();
-            animations = ModelLoader.processAnimations(aiScene, boneList, rootNode, globalInverseTransformation);
-        }
-
-        aiReleaseImport(aiScene);
-
-        return new Model(modelId, meshDataList, animations);
     }
 
     private static List<Animation> processAnimations(final AIScene aiScene,

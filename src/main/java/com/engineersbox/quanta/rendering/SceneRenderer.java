@@ -44,7 +44,7 @@ public class SceneRenderer {
     private static final int MAX_MATERIALS = 20;
     private static final int MAX_TEXTURES = 16;
     @VariableHook(name = "renderer.show_normals")
-    private static boolean showNormals = false;
+    private static boolean SHOW_NORMALS = false;
     private final Map<String, Integer> entitiesIdxMap;
     private final ShaderProgram shader;
     private int staticDrawCount;
@@ -118,7 +118,7 @@ public class SceneRenderer {
         );
         this.uniforms.setUniform(
                 "showNormals",
-                showNormals
+                SHOW_NORMALS
         );
         final TextureCache textureCache = scene.getTextureCache();
         final List<Texture> textures = textureCache.getAll().stream().toList();
