@@ -61,6 +61,10 @@ public class PipelineStatistics {
         this.running = false;
     }
 
+    public boolean extensionAvailable() {
+        return this.extensionAvailable;
+    }
+
     public void init() {
         if (!this.extensionAvailable) {
             return;

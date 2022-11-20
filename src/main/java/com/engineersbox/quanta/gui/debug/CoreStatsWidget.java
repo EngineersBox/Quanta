@@ -5,7 +5,6 @@ import com.engineersbox.quanta.debug.OpenGLInfo;
 import com.engineersbox.quanta.debug.PipelineStatistics;
 import com.engineersbox.quanta.debug.VariableHooksState;
 import com.engineersbox.quanta.debug.hooks.HookBinding;
-import com.engineersbox.quanta.debug.hooks.InstanceIdentifierProvider;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.gui.format.ColouredString;
@@ -15,76 +14,14 @@ import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.utils.reflect.VarHandleUtils;
 import imgui.ImGui;
-import org.apache.commons.lang3.stream.Streams;
 
 import javax.swing.tree.DefaultMutableTreeNode;
-import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CoreStatsWidget implements IGUIInstance {
-
-    /*
-     * LAYOUT
-     * =========================
-     * [OPENGL CONTEXT]
-     *  - Version
-     *  - GLSL Version
-     *  - Vendor
-     *  - Renderer
-     *  - Extensions
-     * [ENGINE PROPERTIES]
-     *  - Cull faces
-     *  - Show triangles
-     *  - Compatibility profile
-     *  - Frustum culling
-     * [DEBUG]
-     *  - Shadows only
-     *  - Depth only
-     *  - Normals only
-     *  - Show shadow cascades
-     *  - Flat
-     * [CAMERA]
-     *  - Near/far
-     *  - FOV
-     *  - Position: [
-     *    - X
-     *    - Y
-     *    - Z
-     *   ]
-     *  - Rotation: [
-     *    - X
-     *    - Y
-     *    - Z
-     *   ]
-     * [RENDERER]
-     *  - Pre-cull scene elements
-     *   - Instanced
-     *   - Non-instanced
-     *  - Culled scene elements
-     *   - Instanced
-     *   - Non-instanced
-     * [PIPELINE]
-     *  - VERTICES_SUBMITTED
-     *  - TRIANGLES_SUBMITTED
-     *  - PRIMITIVES_SUBMITTED
-     *  - VERTEX_SHADER_INVOCATIONS
-     *  - TESS_CONTROL_SHADER_PATCHES
-     *  - TESS_EVALUATION_SHADER_INVOCATIONS
-     *  - GEOMETRY_SHADER_INVOCATIONS
-     *  - GEOMETRY_SHADER_PRIMITIVES_EMITTED
-     *  - FRAGMENT_SHADER_INVOCATIONS
-     *  - COMPUTE_SHADER_INVOCATIONS
-     *  - CLIPPING_INPUT_PRIMITIVES
-     *  - CLIPPING_OUTPUT_PRIMITIVES
-     * =========================
-     */
 
     private final OpenGLInfo openGLInfo;
     private final PipelineStatistics pipelineStatistics;
@@ -146,7 +83,7 @@ public class CoreStatsWidget implements IGUIInstance {
 
     private ColouredString[] formatBooleanProperty(final String name,
                                                    final boolean value) {
-        return new ColouredString[] {
+        return new ColouredString[]{
                 GUITextColour.NORMAL.with(name),
                 booleanValue(value)
         };
@@ -281,7 +218,8 @@ public class CoreStatsWidget implements IGUIInstance {
     }
 
     private void drawPipelineStats() {
-        if (!ImGui.collapsingHeader("Pipeline")) {
+        if (!this.pipelineStatistics.extensionAvailable()
+            || !ImGui.collapsingHeader("Pipeline")) {
             return;
         }
         ColouredString.renderFormattedString(
