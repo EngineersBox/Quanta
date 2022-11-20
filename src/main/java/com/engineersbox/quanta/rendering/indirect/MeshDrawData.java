@@ -1,5 +1,10 @@
 package com.engineersbox.quanta.rendering.indirect;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+@JsonSerialize
 public record MeshDrawData(int sizeInBytes,
                            int materialIdx,
                            int offset,

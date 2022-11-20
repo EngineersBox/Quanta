@@ -1,5 +1,7 @@
 package com.engineersbox.quanta.resources.assets.object;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Vector3f;
 
 import java.util.ArrayList;
@@ -29,7 +31,33 @@ public class MeshData {
                     final float[] weights,
                     final Vector3f aabbMin,
                     final Vector3f aabbMax) {
-        this.materialIdx = 0;
+        this(
+                positions,
+                normals,
+                tangents,
+                biTangents,
+                textCoords,
+                indices,
+                boneIndices,
+                weights,
+                aabbMin,
+                aabbMax,
+                0
+        );
+    }
+
+    @JsonCreator
+    public MeshData(@JsonProperty("positions") final float[] positions,
+                    @JsonProperty("normals") final float[] normals,
+                    @JsonProperty("tangents") final float[] tangents,
+                    @JsonProperty("bi_tangents") final float[] biTangents,
+                    @JsonProperty("texture_coordinates") final float[] textCoords,
+                    @JsonProperty("indices") final int[] indices,
+                    @JsonProperty("bone_indices") final int[] boneIndices,
+                    @JsonProperty("weights") final float[] weights,
+                    @JsonProperty("aabb_min") final Vector3f aabbMin,
+                    @JsonProperty("aabb_max") final Vector3f aabbMax,
+                    @JsonProperty("material_index") final int materialIdx) {
         this.positions = positions;
         this.normals = normals;
         this.tangents = tangents;
@@ -40,48 +68,60 @@ public class MeshData {
         this.weights = weights;
         this.aabbMin = aabbMin;
         this.aabbMax = aabbMax;
+        this.materialIdx = materialIdx;
     }
 
+    @JsonProperty("aabb_max")
     public Vector3f getAabbMax() {
         return this.aabbMax;
     }
 
+    @JsonProperty("aabb_min")
     public Vector3f getAabbMin() {
         return this.aabbMin;
     }
 
+    @JsonProperty("bi_tangents")
     public float[] getBiTangents() {
         return this.biTangents;
     }
 
+    @JsonProperty("bone_indices")
     public int[] getBoneIndices() {
         return this.boneIndices;
     }
 
+    @JsonProperty("indices")
     public int[] getIndices() {
         return this.indices;
     }
 
+    @JsonProperty("material_index")
     public int getMaterialIdx() {
         return this.materialIdx;
     }
 
+    @JsonProperty("normals")
     public float[] getNormals() {
         return this.normals;
     }
 
+    @JsonProperty("positions")
     public float[] getPositions() {
         return this.positions;
     }
 
+    @JsonProperty("tangents")
     public float[] getTangents() {
         return this.tangents;
     }
 
+    @JsonProperty("texture_coordinates")
     public float[] getTextCoords() {
         return this.textCoords;
     }
 
+    @JsonProperty("weights")
     public float[] getWeights() {
         return this.weights;
     }
