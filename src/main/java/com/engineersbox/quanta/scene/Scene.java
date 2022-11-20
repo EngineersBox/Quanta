@@ -49,6 +49,7 @@ public class Scene {
                  @JsonProperty("scene_lights") final SceneLights sceneLights,
                  @JsonProperty("skybox") final SkyBox skyBox,
                  @JsonProperty("fog") final Fog fog) {
+        // TODO: Need custom serialiser implementation & models, materials and textures should be imported and not serialised
         this.models = models;
         this.projection = projection;
         this.camera = camera;
