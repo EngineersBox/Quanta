@@ -1,6 +1,6 @@
 package com.engineersbox.quanta.rendering;
 
-import com.engineersbox.quanta.gui.console.hooks.VariableHook;
+import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
 import com.engineersbox.quanta.rendering.shadow.ShadowCascade;
 import com.engineersbox.quanta.resources.assets.object.QuadMesh;

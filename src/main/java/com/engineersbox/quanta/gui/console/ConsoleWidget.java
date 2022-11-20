@@ -1,11 +1,11 @@
 package com.engineersbox.quanta.gui.console;
 
 import com.engineersbox.quanta.core.Window;
+import com.engineersbox.quanta.debug.VariableHooksState;
 import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.gui.format.ColouredString;
 import com.engineersbox.quanta.gui.format.GUITextColour;
-import com.engineersbox.quanta.gui.console.hooks.*;
-import com.engineersbox.quanta.gui.console.tree.VariableTree;
+import com.engineersbox.quanta.debug.hooks.*;
 import com.engineersbox.quanta.input.DebouncedKeyCapture;
 import com.engineersbox.quanta.input.KeyState;
 import com.engineersbox.quanta.scene.Scene;
@@ -19,15 +19,10 @@ import imgui.flag.ImGuiInputTextFlags;
 import imgui.type.ImString;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.TriConsumer;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanners;
-import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
@@ -35,7 +30,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_DOWN;
@@ -44,167 +38,6 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_UP;
 public class ConsoleWidget implements IGUIInstance {
 
     private static final Logger LOGGER = LogManager.getLogger(ConsoleWidget.class);
-    private static final Reflections REFLECTIONS = new Reflections(new ConfigurationBuilder()
-            .addScanners(Scanners.FieldsAnnotated, Scanners.MethodsAnnotated)
-            .forPackages("com.engineersbox.quanta")
-    );
-
-    protected static final Map<Field, List<Object>> FIELD_INSTANCE_MAPPINGS = new HashMap<>();
-    private static final String VARIABLE_PATH_DELIMITER = ".";
-    private static final VariableTree<HookBinding> HOOKS = new VariableTree<>(ConsoleWidget.VARIABLE_PATH_DELIMITER);
-
-    static {
-        final Map<VariableHook, Triple<Field, VarHandle, Boolean>> variableHooks = ConsoleWidget.resolveVariableHooks();
-        final Map<String, Method> hookValidators = ConsoleWidget.resolveHookValidators();
-        int count = 0;
-        for (final Map.Entry<VariableHook, Triple<Field, VarHandle, Boolean>> entry : variableHooks.entrySet()) {
-            final String name = entry.getKey().name();
-            final Triple<Field, VarHandle, Boolean> hookValue = entry.getValue();
-            if (name.isBlank()) {
-                ConsoleWidget.LOGGER.warn("Invalid variable hook name for varHandle [{}]", hookValue.getLeft());
-                continue;
-            }
-            final String validatorName = entry.getKey().hookValidator();
-            Method hookValidator = null;
-            if (!Objects.equals(validatorName, "")) {
-                hookValidator = hookValidators.get(validatorName);
-            }
-            if (hookValidator != null && !ConsoleWidget.validateValidatorArgs(
-                    name,
-                    validatorName,
-                    hookValidator
-            )) {
-                continue;
-            }
-            ConsoleWidget.HOOKS.insert(
-                    entry.getKey().name(),
-                    new HookBinding(
-                            hookValue.getLeft(),
-                            hookValue.getMiddle(),
-                            hookValue.getRight(),
-                            hookValidator
-                    )
-            );
-            count++;
-        }
-        ConsoleWidget.LOGGER.debug("Resolved {} variable hook(s)", count);
-    }
-
-    private static boolean validateValidatorArgs(final String varHookName,
-                                                 final String validatorName,
-                                                 final Method method) {
-        final int parameterCount = method.getParameterCount();
-        if (parameterCount != 1) {
-            ConsoleWidget.LOGGER.error(
-                    "Invalid validator [{}] for variable hook [{}]: expected 1 parameter, got {}",
-                    validatorName,
-                    varHookName,
-                    parameterCount
-            );
-            return false;
-        }
-        final Class<?> parameterType = method.getParameterTypes()[0];
-        if (!parameterType.isAssignableFrom(String.class)) {
-            ConsoleWidget.LOGGER.error(
-                    "Invalid validator [{}] for variable hook [{}]: expected parameter of type {}, got {}",
-                    validatorName,
-                    varHookName,
-                    String.class.getName(),
-                    parameterType.getName()
-            );
-            return false;
-        }
-        return true;
-    }
-
-    private static Stream<Field> resolveVariableHooksFields(final boolean logBadState) {
-        return ConsoleWidget.REFLECTIONS.getFieldsAnnotatedWith(VariableHook.class)
-                .stream()
-                .filter((final Field field) -> {
-                    if (!HookBinding.validateField(field)) {
-                        if (logBadState) {
-                            ConsoleWidget.LOGGER.error(
-                                    "Invalid @VariableHook usage. Field [{}] is primitive [{}] and marked as [static final] which is inlined during compilation. Field cannot be altered at runtime, skipping.",
-                                    field,
-                                    field.getType().getSimpleName()
-                            );
-                        }
-                        return false;
-                    } else if (Modifier.isStatic(field.getModifiers())) {
-                        return true;
-                    }
-                    return ConsoleWidget.hasConstructorWithRegistrationWrapper(field);
-                });
-    }
-
-    private static Map<VariableHook, Triple<Field, VarHandle, Boolean>> resolveVariableHooks() {
-        return ConsoleWidget.resolveVariableHooksFields(true)
-                .collect(Collectors.toMap(
-                        (final Field field) -> field.getAnnotation(VariableHook.class),
-                        (final Field field) -> {
-                            final boolean isNotStatic = !Modifier.isStatic(field.getModifiers());
-                            final VarHandle varHandle;
-                            try {
-                                varHandle = VarHandleUtils.resolveVarHandle(
-                                        field,
-                                        isNotStatic
-                                );
-                            } catch (final IllegalAccessException | NoSuchFieldException e) {
-                                throw new RuntimeException(String.format(
-                                        "Cannot resolve varHandle for field [%s]:",
-                                        field
-                                ), e);
-                            }
-                            return ImmutableTriple.of(
-                                    field,
-                                    varHandle,
-                                    isNotStatic
-                            );
-                        }
-                ));
-    }
-
-    private static boolean hasConstructorWithRegistrationWrapper(final Field field) {
-        final Constructor<?>[] constructors = field.getDeclaringClass().getDeclaredConstructors();
-        if (constructors.length < 1) {
-            return false;
-        }
-        return Arrays.stream(constructors)
-                .anyMatch((final Constructor<?> constructor) -> constructor.isAnnotationPresent(RegisterInstanceVariableHooks.class));
-    }
-
-    private static Map<String, Method> resolveHookValidators() {
-        return ConsoleWidget.REFLECTIONS.getMethodsAnnotatedWith(HookValidator.class)
-                .stream()
-                .filter((final Method method) -> {
-                    final StringBuilder errorBuilder = new StringBuilder();
-                    final boolean isStatic = Modifier.isStatic(method.getModifiers());
-                    if (!isStatic) {
-                        errorBuilder.append("\n\t- Not declared static");
-                    }
-                    final boolean isBooleanReturn = method.getReturnType().isAssignableFrom(Object.class);
-                    if (!isBooleanReturn) {
-                        errorBuilder.append("\n\t- Does not return an object");
-                    }
-                    final boolean acceptsSingleObjectArgument = method.getParameterTypes().length == 1
-                            || method.getParameterTypes()[0].isAssignableFrom(String.class);
-                    if (!acceptsSingleObjectArgument) {
-                        errorBuilder.append("\n\t- Does not accept single string argument");
-                    }
-                    if (!isStatic || !isBooleanReturn || !acceptsSingleObjectArgument) {
-                        ConsoleWidget.LOGGER.error(
-                                "Invalid hook validator [{}]:{}",
-                                method.getName(),
-                                errorBuilder
-                        );
-                        return false;
-                    }
-                    return true;
-                }).collect(Collectors.toMap(
-                        (final Method method) -> method.getAnnotation(HookValidator.class).name(),
-                        Function.identity()
-                ));
-    }
 
     private static final int COMMAND_LOG_SIZE = 100;
     private static final boolean COMMAND_LOG_AUTO_SCROLL = true;
@@ -216,7 +49,6 @@ public class ConsoleWidget implements IGUIInstance {
 
     private static final ColouredString ERROR_MESSAGE_PREFIX = new ColouredString(GUITextColour.RED, "Variable validation failed: ");
     private static final ColouredString DEFAULT_NONE_ERROR_MESSAGE = new ColouredString(GUITextColour.NORMAL, "<NONE>");
-    private static final String NEWLINE_CHARACTER = System.getProperty("line.separator");
 
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm:ss.SSSS");
     private final ImString rawConsoleInput;
@@ -332,7 +164,7 @@ public class ConsoleWidget implements IGUIInstance {
         );
         final HookBinding hookBinding;
         try {
-            hookBinding = ConsoleWidget.HOOKS.get(instanceTarget[0]);
+            hookBinding = VariableHooksState.HOOKS.get(instanceTarget[0]);
         } catch (final NoSuchElementException e) {
             return invalidState;
         }
@@ -348,7 +180,7 @@ public class ConsoleWidget implements IGUIInstance {
                         }
                 );
             }
-            final Optional<Object> potentialMatchingInstance = getFieldParentInstance(hookBinding.field(), instanceTarget[1]);
+            final Optional<Object> potentialMatchingInstance = VariableHooksState.getFieldParentInstance(hookBinding.field(), instanceTarget[1]);
             if (potentialMatchingInstance.isEmpty()) {
                 return new ValidationState(
                         false,
@@ -408,16 +240,8 @@ public class ConsoleWidget implements IGUIInstance {
         );
     }
 
-    private Optional<Object> getFieldParentInstance(final Field field,
-                                                    final String target) {
-        final List<Object> instances = ConsoleWidget.FIELD_INSTANCE_MAPPINGS.get(field);
-        return instances.stream()
-                .filter((final Object instance) -> InstanceIdentifierProvider.deriveInstanceID(instance).equals(target))
-                .findFirst();
-    }
-
     private ColouredString[] listAllVars() {
-        return ConsoleWidget.resolveVariableHooksFields(false).flatMap((final Field field) -> {
+        return VariableHooksState.resolveVariableHooksFields(false).flatMap((final Field field) -> {
             final VariableHook annotation = field.getAnnotation(VariableHook.class);
             if (Modifier.isStatic(field.getModifiers())) {
                 return Stream.of(new ColouredString(
@@ -429,7 +253,7 @@ public class ConsoleWidget implements IGUIInstance {
                         )
                 ));
             }
-            return ConsoleWidget.FIELD_INSTANCE_MAPPINGS.get(field)
+            return VariableHooksState.FIELD_INSTANCE_MAPPINGS.get(field)
                     .stream()
                     .map((final Object instance) -> new ColouredString(
                             GUITextColour.NORMAL,
@@ -503,7 +327,7 @@ public class ConsoleWidget implements IGUIInstance {
                     .map((final String commandSyntax) -> String.format(
                             " - %s%s",
                             commandSyntax,
-                            ConsoleWidget.NEWLINE_CHARACTER
+                            ColouredString.NEWLINE_CHARACTER
                     )).map(GUITextColour.NORMAL::with)
                     .toArray(ColouredString[]::new);
             widget.submitCommand(ExecutedCommand.from(
@@ -531,36 +355,6 @@ public class ConsoleWidget implements IGUIInstance {
         }
     }
 
-    private void renderFormattedString(final ColouredString[] colouredStrings) {
-        boolean onSameLine = false;
-        boolean pushed = false;
-        for (final ColouredString colouredString : colouredStrings) {
-            if (onSameLine) {
-                ImGui.sameLine(0, 0);
-            }
-            if (colouredString.colour() != null) {
-                if (pushed) {
-                    ImGui.popStyleColor();
-                    pushed = false;
-                }
-                ImGui.pushStyleColor(
-                        ImGuiCol.Text,
-                        colouredString.colour().getColour()
-                );
-                pushed = true;
-            }
-            if (colouredString.value() != null) {
-                ImGui.text(colouredString.value());
-                onSameLine = !colouredString.value().endsWith(ConsoleWidget.NEWLINE_CHARACTER);
-            } else {
-                onSameLine = true;
-            }
-        }
-        if (pushed) {
-            ImGui.popStyleColor();
-        }
-    }
-
     private void executedCommandLog() {
         final float footerHeightToReserve = ImGui.getStyle().getItemSpacingY() + ImGui.getFrameHeightWithSpacing();
         if (!ImGui.beginChild("ScrollRegion##", 0, -footerHeightToReserve, false, 0)) {
@@ -576,7 +370,7 @@ public class ConsoleWidget implements IGUIInstance {
             if (count++ != 0) {
                 ImGui.dummy(-1, ImGui.getFontSize());
             }
-            renderFormattedString(ArrayUtils.addFirst(command.command(), GUITextColour.CYAN.with("> ")));
+            ColouredString.renderFormattedString(ArrayUtils.addFirst(command.command(), GUITextColour.CYAN.with("> ")));
             if (ConsoleWidget.SHOW_TIMESTAMP) {
                 ImGui.popTextWrapPos();
                 ImGui.sameLine(ImGui.getColumnWidth(-1) - timestampWidth);
@@ -584,7 +378,7 @@ public class ConsoleWidget implements IGUIInstance {
                 ImGui.text(this.dateFormatter.format(command.date()));
                 ImGui.popStyleColor();
             }
-            renderFormattedString(command.result());
+            ColouredString.renderFormattedString(command.result());
         }
         ImGui.popTextWrapPos();
         if (this.scrollToBottom && (ImGui.getScrollY() >= ImGui.getScrollMaxY() || ConsoleWidget.COMMAND_LOG_AUTO_SCROLL)) {

@@ -9,7 +9,7 @@ public class Camera {
     private final Vector3f direction;
     private final Vector3f position;
     private final Vector3f right;
-    private final Vector2f rotation;
+    private final Vector3f rotation;
     private final Vector3f up;
     private final Matrix4f viewMatrix;
     private final Matrix4f inverseViewMatrix;
@@ -19,18 +19,21 @@ public class Camera {
         this.right = new Vector3f();
         this.up = new Vector3f();
         this.position = new Vector3f();
-        this.rotation = new Vector2f();
+        this.rotation = new Vector3f();
         this.viewMatrix = new Matrix4f();
         this.inverseViewMatrix = new Matrix4f();
     }
 
-    public void addRotation(final float x, final float y) {
-        this.rotation.add(x, y);
+    public void addRotation(final float x, final float y, final float z) {
+        this.rotation.add(x, y, z);
         recalculate();
     }
 
     public Vector3f getPosition() {
         return this.position;
+    }
+    public Vector3f getRotation() {
+        return this.rotation;
     }
 
     public Matrix4f getViewMatrix() {
@@ -81,6 +84,7 @@ public class Camera {
         this.viewMatrix.identity()
                 .rotateX(this.rotation.x)
                 .rotateY(this.rotation.y)
+                .rotateZ(this.rotation.z)
                 .translate(-this.position.x, -this.position.y, -this.position.z);
         this.inverseViewMatrix.set(this.viewMatrix).invert();
     }
@@ -90,8 +94,8 @@ public class Camera {
         recalculate();
     }
 
-    public void setRotation(final float x, final float y) {
-        this.rotation.set(x, y);
+    public void setRotation(final float x, final float y, final float z) {
+        this.rotation.set(x, y, z);
         recalculate();
     }
 

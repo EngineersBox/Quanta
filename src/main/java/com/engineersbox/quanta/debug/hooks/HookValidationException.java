@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.gui.console.hooks;
+package com.engineersbox.quanta.debug.hooks;
 
 import com.engineersbox.quanta.gui.format.ColouredString;
 import com.engineersbox.quanta.gui.format.GUITextColour;

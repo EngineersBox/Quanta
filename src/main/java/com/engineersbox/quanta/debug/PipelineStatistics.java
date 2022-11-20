@@ -7,7 +7,7 @@ import java.nio.IntBuffer;
 import static org.lwjgl.opengl.ARBPipelineStatisticsQuery.*;
 import static org.lwjgl.opengl.GL15.*;
 
-public class Statistics {
+public class PipelineStatistics {
 
     public enum Stat {
         VERTICES_SUBMITTED(0, GL_VERTICES_SUBMITTED_ARB),
@@ -55,9 +55,9 @@ public class Statistics {
     private IntBuffer queryResult;
     private boolean running;
 
-    public Statistics() {
-        this.extensionAvailable = GLVersion.isExtensionSupported(Statistics.QUERY_EXTENSION_ARB);
-        this.queryName = MemoryUtil.memAllocInt(Statistics.MAX);
+    public PipelineStatistics() {
+        this.extensionAvailable = GLVersion.isExtensionSupported(PipelineStatistics.QUERY_EXTENSION_ARB);
+        this.queryName = MemoryUtil.memAllocInt(PipelineStatistics.MAX);
         this.running = false;
     }
 
@@ -67,7 +67,7 @@ public class Statistics {
         }
         glGenQueries(this.queryName);
 
-        final int[] queryCounterBits = new int[Statistics.MAX];
+        final int[] queryCounterBits = new int[PipelineStatistics.MAX];
 
         for (final Stat stat : Stat.values()) {
             if (stat.composite) {
@@ -79,7 +79,7 @@ public class Statistics {
                     GL_QUERY_COUNTER_BITS,
                     query
             );
-            queryCounterBits[stat.target] = query[0];
+            queryCounterBits[stat.index] = query[0];
         }
 
         boolean validated = true;
@@ -112,7 +112,7 @@ public class Statistics {
         if (!this.running) {
             throw new IllegalStateException("Statistics query is not running");
         }
-        this.queryResult = MemoryUtil.memAllocInt(Statistics.MAX);
+        this.queryResult = MemoryUtil.memAllocInt(PipelineStatistics.MAX);
         for (final Stat stat : Stat.values()) {
             if (stat.composite) {
                 continue;

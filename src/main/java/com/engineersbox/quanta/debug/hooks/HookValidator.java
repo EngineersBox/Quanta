@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.gui.console.hooks;
+package com.engineersbox.quanta.debug.hooks;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

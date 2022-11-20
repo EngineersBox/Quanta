@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.gui.console.tree;
+package com.engineersbox.quanta.debug.tree;
 
 public record TreeNodeLabel(String value) {
 

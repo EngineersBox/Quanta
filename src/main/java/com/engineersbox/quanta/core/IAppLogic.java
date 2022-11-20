@@ -7,9 +7,7 @@ public interface IAppLogic {
 
     void cleanup();
 
-    void init(final Window window,
-              final Scene scene,
-              final Renderer renderer);
+    void init(final EngineInitContext context);
 
     void input(final Window window,
                final Scene scene,

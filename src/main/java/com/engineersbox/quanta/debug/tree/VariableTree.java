@@ -1,12 +1,10 @@
-package com.engineersbox.quanta.gui.console.tree;
+package com.engineersbox.quanta.debug.tree;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
+import java.util.*;
 
 public class VariableTree<T> extends DefaultTreeModel {
 
@@ -107,6 +105,24 @@ public class VariableTree<T> extends DefaultTreeModel {
         }
         final DefaultMutableTreeNode child = (DefaultMutableTreeNode) selectedComponent.getFirstChild();
         return (T) child.getUserObject();
+    }
+
+    public List<DefaultMutableTreeNode> getLeafNodes() {
+        final List<DefaultMutableTreeNode> leaves = new ArrayList<>();
+        getLeafNodesRecursive((DefaultMutableTreeNode) super.getRoot(), leaves);
+        return leaves;
+    }
+
+    private void getLeafNodesRecursive(final DefaultMutableTreeNode parent, final List<DefaultMutableTreeNode> leaves) {
+        final Enumeration<TreeNode> children = parent.children();
+        while (children.hasMoreElements()) {
+            final DefaultMutableTreeNode node = (DefaultMutableTreeNode) children.nextElement();
+            if (node.isLeaf()) {
+                leaves.add(node);
+            } else {
+                getLeafNodesRecursive(node, leaves);
+            }
+        }
     }
 
 }

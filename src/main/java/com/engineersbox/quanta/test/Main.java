@@ -1,6 +1,7 @@
 package com.engineersbox.quanta.test;
 
 import com.engineersbox.quanta.core.Engine;
+import com.engineersbox.quanta.core.EngineInitContext;
 import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.input.MouseInput;
@@ -46,40 +47,42 @@ public class Main implements IAppLogic {
     private TestConsole console;
 
     @Override
-    public void init(final Window window,
-                     final Scene scene,
-                     final Renderer renderer) {
-        this.console = new TestConsole();
-        scene.setGUIInstance(this.console);
+    public void init(final EngineInitContext context) {
+        this.console = new TestConsole(
+                context.openGLInfo(),
+                context.pipelineStatistics(),
+                context.scene().getCamera()
+        );
+        context.scene().setGUIInstance(this.console);
         final String terrainModelId = "terrain";
         final Model terrainModel = ModelLoader.loadModel(
                 terrainModelId,
                 "assets/models/terrain/terrain.obj",
-                scene.getTextureCache(),
-                scene.getMaterialCache(),
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
                 false
         );
-        scene.addModel(terrainModel);
+        context.scene().addModel(terrainModel);
         final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
         terrainEntity.setScale(100.0f);
         terrainEntity.updateModelMatrix();
-        scene.addEntity(terrainEntity);
+        context.scene().addEntity(terrainEntity);
 
         final String bobModelId = "bobModel";
         final Model bobModel = ModelLoader.loadModel(
                 bobModelId,
                 "assets/models/bob/boblamp.md5mesh",
-                scene.getTextureCache(),
-                scene.getMaterialCache(),
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
                 true
         );
-        scene.addModel(bobModel);
+        context.scene().addModel(bobModel);
         final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
         bobEntity.setScale(0.05f);
         bobEntity.updateModelMatrix();
         this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
         bobEntity.setAnimationData(this.animationData1);
-        scene.addEntity(bobEntity);
+        context.scene().addEntity(bobEntity);
 
         final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
         bobEntity2.setPosition(2, 0, 0);
@@ -87,27 +90,27 @@ public class Main implements IAppLogic {
         bobEntity2.updateModelMatrix();
         this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
         bobEntity2.setAnimationData(this.animationData2);
-        scene.addEntity(bobEntity2);
+        context.scene().addEntity(bobEntity2);
 
         final Model cubeModel = ModelLoader.loadModel(
                 "cube-model",
                 "assets/models/cube/cube.obj",
-                scene.getTextureCache(),
-                scene.getMaterialCache(),
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
                 false
         );
-        scene.addModel(cubeModel);
+        context.scene().addModel(cubeModel);
         this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
         this.cubeEntity1.setPosition(0, 2, -1);
         this.cubeEntity1.updateModelMatrix();
-        scene.addEntity(this.cubeEntity1);
+        context.scene().addEntity(this.cubeEntity1);
 
         this.cubeEntity2 = new Entity("cube-entity-2", cubeModel.getId());
         this.cubeEntity2.setPosition(-2, 2, -1);
         this.cubeEntity2.updateModelMatrix();
-        scene.addEntity(this.cubeEntity2);
+        context.scene().addEntity(this.cubeEntity2);
 
-        renderer.setupData(scene);
+        context.renderer().setupData(context.scene());
 
         final SceneLights sceneLights = new SceneLights();
         final AmbientLight ambientLight = sceneLights.getAmbientLight();
@@ -117,26 +120,26 @@ public class Main implements IAppLogic {
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();
         dirLight.setPosition(0, 1, 0);
         dirLight.setIntensity(1.0f);
-        scene.setSceneLights(sceneLights);
+        context.scene().setSceneLights(sceneLights);
 
         final SkyBox skyBox = new SkyBox(
                 "assets/models/skybox/skybox.obj",
-                scene.getTextureCache(),
-                scene.getMaterialCache()
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache()
         );
         skyBox.getEntity().setScale(100);
         skyBox.getEntity().updateModelMatrix();
-        scene.setSkyBox(skyBox);
+        context.scene().setSkyBox(skyBox);
 
-        scene.setFog(new Fog(
+        context.scene().setFog(new Fog(
                 true,
                 new Vector3f(0.5f, 0.5f, 0.5f),
                 0.02f
         ));
 
-        final Camera camera = scene.getCamera();
+        final Camera camera = context.scene().getCamera();
         camera.setPosition(-1.5f, 3.0f, 4.5f);
-        camera.addRotation((float) Math.toRadians(15.0f), (float) Math.toRadians(390.f));
+        camera.addRotation((float) Math.toRadians(15.0f), (float) Math.toRadians(390.f), 0);
 
         this.lightAngle = 45.001f;
     }
@@ -182,7 +185,8 @@ public class Main implements IAppLogic {
             final Vector2f displayVec = mouseInput.getDisplayVec();
             camera.addRotation(
                     (float) Math.toRadians(displayVec.x * ConfigHandler.CONFIG.mouse.sensitivity),
-                    (float) Math.toRadians(displayVec.y * ConfigHandler.CONFIG.mouse.sensitivity)
+                    (float) Math.toRadians(displayVec.y * ConfigHandler.CONFIG.mouse.sensitivity),
+                    0
             );
         }
         final SceneLights sceneLights = scene.getSceneLights();

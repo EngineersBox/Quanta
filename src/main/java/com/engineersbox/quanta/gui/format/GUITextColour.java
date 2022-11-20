@@ -28,4 +28,11 @@ public enum GUITextColour {
         return new ColouredString(this, value);
     }
 
+    public ColouredString withFormat(final String format, final Object ...values) {
+        return with(String.format(
+                format,
+                values
+        ));
+    }
+
 }

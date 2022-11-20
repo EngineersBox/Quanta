@@ -1,7 +1,9 @@
 package com.engineersbox.quanta.core;
 
 import com.engineersbox.quanta.debug.OpenGLInfo;
+import com.engineersbox.quanta.debug.PipelineStatistics;
 import com.engineersbox.quanta.gui.IGUIInstance;
+import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
@@ -17,7 +19,6 @@ public class Engine {
     private static final Logger LOGGER = LogManager.getLogger(Engine.class);
 
     private final OpenGLInfo info;
-
     private final IAppLogic appLogic;
     private final Window window;
     private final Renderer renderer;
@@ -25,6 +26,9 @@ public class Engine {
     private final Scene scene;
     private final int targetFPS;
     private final int targetUPS;
+    private final PipelineStatistics pipelineStatistics;
+    @VariableHook(name = "engine.capture_pipeline_stats")
+    private boolean capturePipelineStats;
 
     public Engine(final String title,
                   final IAppLogic appLogic) {
@@ -32,7 +36,7 @@ public class Engine {
             resize();
             return null;
         });
-        Engine.init();
+        init();
         Engine.LOGGER.info("[OPENGL] Created context");
         this.info = OpenGLInfo.retrieve();
         this.info.log(false);
@@ -44,11 +48,20 @@ public class Engine {
                 this.window.getWidth(),
                 this.window.getHeight()
         );
-        this.appLogic.init(this.window, this.scene, this.renderer);
+        this.capturePipelineStats = false;
+        this.pipelineStatistics = new PipelineStatistics();
+        this.pipelineStatistics.init();
+        this.appLogic.init(new EngineInitContext(
+                this.window,
+                this.scene,
+                this.renderer,
+                this.pipelineStatistics,
+                this.info
+        ));
         this.running = true;
     }
 
-    private static void init() {
+    private void init() {
         GL.createCapabilities();
         glEnable(GL_DEPTH_TEST);
         if (ConfigHandler.CONFIG.engine.glOptions.antialiasing) {
@@ -78,6 +91,9 @@ public class Engine {
         long updateTime = initialTime;
         final IGUIInstance guiInstance = this.scene.getGUIInstance();
         while (this.running && !this.window.windowShouldClose()) {
+            if (this.capturePipelineStats) {
+                this.pipelineStatistics.begin();
+            }
             this.window.pollEvents();
             final long now = System.currentTimeMillis();
             deltaUpdate += (now - initialTime) / timeU;
@@ -98,6 +114,9 @@ public class Engine {
                 this.window.update();
             }
             initialTime = now;
+            if (this.capturePipelineStats) {
+                this.pipelineStatistics.end();
+            }
         }
         cleanup();
     }

@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.gui.console.hooks;
+package com.engineersbox.quanta.debug.hooks;
 
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;

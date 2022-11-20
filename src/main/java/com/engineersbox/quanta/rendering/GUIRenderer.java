@@ -2,10 +2,10 @@ package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.gui.IGUIInstance;
-import com.engineersbox.quanta.gui.console.hooks.HookValidationException;
-import com.engineersbox.quanta.gui.console.hooks.HookValidator;
-import com.engineersbox.quanta.gui.console.hooks.RegisterInstanceVariableHooks;
-import com.engineersbox.quanta.gui.console.hooks.VariableHook;
+import com.engineersbox.quanta.debug.hooks.HookValidationException;
+import com.engineersbox.quanta.debug.hooks.HookValidator;
+import com.engineersbox.quanta.debug.hooks.RegisterInstanceVariableHooks;
+import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.resources.assets.gui.GUIMesh;
 import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;

@@ -47,4 +47,13 @@ public class VarHandleUtils {
         }
     }
 
+    public static Object getValue(final VarHandle varHandle,
+                                  final Object instance,
+                                  final boolean requiresInstance) {
+        if (requiresInstance) {
+            return varHandle.get(instance);
+        }
+        return varHandle.get();
+    }
+
 }

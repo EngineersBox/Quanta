@@ -1,6 +1,7 @@
-package com.engineersbox.quanta.gui.console;
+package com.engineersbox.quanta.debug;
 
-import com.engineersbox.quanta.gui.console.hooks.VariableHook;
+import com.engineersbox.quanta.debug.hooks.VariableHook;
+import com.engineersbox.quanta.gui.console.ConsoleWidget;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -10,11 +11,11 @@ import java.util.Arrays;
 public final aspect VariableHookRegistrationAspect {
 
     pointcut constructorVisit(final Object instance):
-            execution(@com.engineersbox.quanta.gui.console.hooks.RegisterInstanceVariableHooks *.new(..)) && this(instance);
+            execution(@com.engineersbox.quanta.debug.hooks.RegisterInstanceVariableHooks *.new(..)) && this(instance);
 
     after (final Object instance): constructorVisit(instance) {
         for (final Field field : getAnnotatedFields(instance)) {
-            ConsoleWidget.FIELD_INSTANCE_MAPPINGS.computeIfAbsent(
+            VariableHooksState.FIELD_INSTANCE_MAPPINGS.computeIfAbsent(
                     field,
                     (final Field ignored) -> new ArrayList<>()
             ).add(instance);

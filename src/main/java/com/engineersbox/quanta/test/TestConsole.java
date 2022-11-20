@@ -1,9 +1,13 @@
 package com.engineersbox.quanta.test;
 
 import com.engineersbox.quanta.core.Window;
+import com.engineersbox.quanta.debug.OpenGLInfo;
+import com.engineersbox.quanta.debug.PipelineStatistics;
 import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.gui.console.ConsoleWidget;
+import com.engineersbox.quanta.gui.debug.CoreStatsWidget;
 import com.engineersbox.quanta.input.MouseInput;
+import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.scene.Scene;
 import imgui.ImGui;
 import imgui.ImGuiIO;
@@ -17,11 +21,19 @@ public class TestConsole implements IGUIInstance {
     private boolean show;
     private boolean tildePressed;
     private final ConsoleWidget console;
+    private final CoreStatsWidget coreStatsWidget;
 
-    public TestConsole() {
+    public TestConsole(final OpenGLInfo openGLInfo,
+                       final PipelineStatistics pipelineStatistics,
+                       final Camera camera) {
         this.show = false;
         this.tildePressed = false;
         this.console = new ConsoleWidget();
+        this.coreStatsWidget = new CoreStatsWidget(
+                openGLInfo,
+                pipelineStatistics,
+                camera
+        );
     }
 
     @Override
@@ -32,11 +44,14 @@ public class TestConsole implements IGUIInstance {
             ImGui.render();
             return;
         }
+
         ImGui.newFrame();
         ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
         ImGui.setNextWindowSize(450, 400);
         this.console.drawGUI();
+        this.coreStatsWidget.drawGUI();
         ImGui.endFrame();
+
         ImGui.render();
     }
 
@@ -44,6 +59,7 @@ public class TestConsole implements IGUIInstance {
     public boolean handleGUIInput(final Scene scene,
                                   final Window window) {
         this.console.handleGUIInput(scene, window);
+        this.coreStatsWidget.handleGUIInput(scene, window);
         if (window.isKeyPressed(GLFW_KEY_GRAVE_ACCENT) && !this.tildePressed) {
             this.show = !this.show;
             this.tildePressed = true;
