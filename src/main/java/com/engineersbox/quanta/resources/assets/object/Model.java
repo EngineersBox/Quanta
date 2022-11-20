@@ -20,22 +20,22 @@ public class Model {
     public Model(final String id,
                  final List<MeshData> meshData,
                  final List<Animation> animations) {
-        this.entities = new ArrayList<>();
-        this.id = id;
-        this.meshData = meshData;
-        this.animations = animations;
-        this.meshDrawData = new ArrayList<>();
+        this(
+                id,
+                meshData,
+                animations,
+                new ArrayList<>()
+        );
     }
 
     @JsonCreator
     public Model(@JsonProperty("id") final String id,
                  @JsonProperty("mesh_data") final List<MeshData> meshData,
-                 @JsonProperty("mesh_draw_data") final List<MeshDrawData> meshDrawData,
                  @JsonProperty("animations") final List<Animation> animations,
                  @JsonProperty("entities") final List<Entity> entities) {
         this.id = id;
         this.meshData = meshData;
-        this.meshDrawData = meshDrawData;
+        this.meshDrawData = new ArrayList<>();
         this.animations = animations;
         this.entities = entities;
     }
@@ -60,7 +60,6 @@ public class Model {
         return this.meshData;
     }
 
-    @JsonProperty("mesh_draw_data")
     public List<MeshDrawData> getMeshDrawData() {
         return this.meshDrawData;
     }

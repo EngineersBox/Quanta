@@ -23,3 +23,4 @@
 * Fix shadow sampling and smoothing
 * Replace usages of `RuntimeException` with custom exceptions
 * Implement frustum culling
+* Scene serialisation/deserialisation
