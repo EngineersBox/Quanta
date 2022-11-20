@@ -1,6 +1,6 @@
 package com.engineersbox.quanta.gui.console;
 
-import com.engineersbox.quanta.gui.console.format.ColouredString;
+import com.engineersbox.quanta.gui.format.ColouredString;
 
 import java.util.Arrays;
 import java.util.Date;

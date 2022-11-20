@@ -1,7 +1,7 @@
 package com.engineersbox.quanta.gui.console.hooks;
 
-import com.engineersbox.quanta.gui.console.format.ColouredString;
-import com.engineersbox.quanta.gui.console.format.ConsoleColour;
+import com.engineersbox.quanta.gui.format.ColouredString;
+import com.engineersbox.quanta.gui.format.GUITextColour;
 
 public class HookValidationException extends RuntimeException {
 
@@ -9,7 +9,7 @@ public class HookValidationException extends RuntimeException {
 
     public HookValidationException(final String message) {
         this(new ColouredString[]{new ColouredString(
-                ConsoleColour.NORMAL,
+                GUITextColour.NORMAL,
                 message
         )});
     }

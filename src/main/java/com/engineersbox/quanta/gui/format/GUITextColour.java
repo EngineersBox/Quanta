@@ -1,8 +1,8 @@
-package com.engineersbox.quanta.gui.console.format;
+package com.engineersbox.quanta.gui.format;
 
 import imgui.ImColor;
 
-public enum ConsoleColour {
+public enum GUITextColour {
     ORANGE(ImColor.rgbToColor("#f59762")),
     YELLOW(ImColor.rgbToColor("#ffd866")),
     RED(ImColor.rgbToColor("#ff6188")),
@@ -16,7 +16,7 @@ public enum ConsoleColour {
 
     private final int colour;
 
-    ConsoleColour(final int colour) {
+    GUITextColour(final int colour) {
         this.colour = colour;
     }
 

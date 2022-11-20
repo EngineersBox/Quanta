@@ -2,10 +2,12 @@ package com.engineersbox.quanta.gui.console;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.gui.IGUIInstance;
-import com.engineersbox.quanta.gui.console.format.ColouredString;
-import com.engineersbox.quanta.gui.console.format.ConsoleColour;
+import com.engineersbox.quanta.gui.format.ColouredString;
+import com.engineersbox.quanta.gui.format.GUITextColour;
 import com.engineersbox.quanta.gui.console.hooks.*;
 import com.engineersbox.quanta.gui.console.tree.VariableTree;
+import com.engineersbox.quanta.input.DebouncedKeyCapture;
+import com.engineersbox.quanta.input.KeyState;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.utils.reflect.TypeConversionUtils;
 import com.engineersbox.quanta.utils.reflect.VarHandleUtils;
@@ -212,8 +214,8 @@ public class ConsoleWidget implements IGUIInstance {
             | ImGuiInputTextFlags.CallbackCompletion
             | ImGuiInputTextFlags.EnterReturnsTrue;
 
-    private static final ColouredString ERROR_MESSAGE_PREFIX = new ColouredString(ConsoleColour.RED, "Variable validation failed: ");
-    private static final ColouredString DEFAULT_NONE_ERROR_MESSAGE = new ColouredString(ConsoleColour.NORMAL, "<NONE>");
+    private static final ColouredString ERROR_MESSAGE_PREFIX = new ColouredString(GUITextColour.RED, "Variable validation failed: ");
+    private static final ColouredString DEFAULT_NONE_ERROR_MESSAGE = new ColouredString(GUITextColour.NORMAL, "<NONE>");
     private static final String NEWLINE_CHARACTER = System.getProperty("line.separator");
 
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("hh:mm:ss.SSSS");
@@ -230,6 +232,17 @@ public class ConsoleWidget implements IGUIInstance {
     private boolean scrollToBottom;
     private boolean wasPrevFrameTabCompletion;
     private final List<String> commandSuggestions; // TODO: Implement suggestions
+    private boolean updateReadOnlyFlag;
+    private final DebouncedKeyCapture upKeyCapture = new DebouncedKeyCapture(GLFW_KEY_UP)
+            .withOnPressHandler(() -> {
+                this.previousCommandSelectionDirection = true;
+                updatePreviousCommandSelection();
+            });
+    private final DebouncedKeyCapture downKeyCapture = new DebouncedKeyCapture(GLFW_KEY_DOWN)
+            .withOnPressHandler(() -> {
+                this.previousCommandSelectionDirection = false;
+                updatePreviousCommandSelection();
+            });
 
     public ConsoleWidget() {
         this.rawConsoleInput = new ImString();
@@ -242,6 +255,7 @@ public class ConsoleWidget implements IGUIInstance {
         this.historyTraversable = false;
         this.previousCommandSelection = -1;
         this.previousCommandSelectionDirection = true;
+        this.updateReadOnlyFlag = false;
     }
 
     private void submitCommand(final ExecutedCommand executedCommand) {
@@ -270,8 +284,8 @@ public class ConsoleWidget implements IGUIInstance {
                     new ValidationState(
                             false,
                             new ColouredString[]{
-                                    new ColouredString(ConsoleColour.RED, "Error invoking variable validator: "),
-                                    new ColouredString(ConsoleColour.NORMAL, message)
+                                    new ColouredString(GUITextColour.RED, "Error invoking variable validator: "),
+                                    new ColouredString(GUITextColour.NORMAL, message)
                             }
                     ),
                     null
@@ -312,8 +326,8 @@ public class ConsoleWidget implements IGUIInstance {
         final ValidationState invalidState = new ValidationState(
                 false,
                 new ColouredString[]{
-                        new ColouredString(ConsoleColour.RED, "Unknown variable: "),
-                        new ColouredString(ConsoleColour.NORMAL, path)
+                        new ColouredString(GUITextColour.RED, "Unknown variable: "),
+                        new ColouredString(GUITextColour.NORMAL, path)
                 }
         );
         final HookBinding hookBinding;
@@ -329,8 +343,8 @@ public class ConsoleWidget implements IGUIInstance {
                 return new ValidationState(
                         false,
                         new ColouredString[]{
-                                new ColouredString(ConsoleColour.RED, "Instance ID is required to update variable: "),
-                                new ColouredString(ConsoleColour.YELLOW, path)
+                                new ColouredString(GUITextColour.RED, "Instance ID is required to update variable: "),
+                                new ColouredString(GUITextColour.YELLOW, path)
                         }
                 );
             }
@@ -339,10 +353,10 @@ public class ConsoleWidget implements IGUIInstance {
                 return new ValidationState(
                         false,
                         new ColouredString[]{
-                                new ColouredString(ConsoleColour.RED, "Variable "),
-                                new ColouredString(ConsoleColour.YELLOW, instanceTarget[0]),
-                                new ColouredString(ConsoleColour.RED, " is not registered to an instance with ID "),
-                                new ColouredString(ConsoleColour.YELLOW, instanceTarget[1]),
+                                new ColouredString(GUITextColour.RED, "Variable "),
+                                new ColouredString(GUITextColour.YELLOW, instanceTarget[0]),
+                                new ColouredString(GUITextColour.RED, " is not registered to an instance with ID "),
+                                new ColouredString(GUITextColour.YELLOW, instanceTarget[1]),
                         }
                 );
             }
@@ -367,10 +381,10 @@ public class ConsoleWidget implements IGUIInstance {
                 return new ValidationState(
                         false,
                         new ColouredString[]{
-                                new ColouredString(ConsoleColour.RED, "Invalid variable value \""),
-                                new ColouredString(ConsoleColour.YELLOW, state.getValue().toString()),
-                                new ColouredString(ConsoleColour.RED, "\", expected type "),
-                                new ColouredString(ConsoleColour.CYAN, hookBinding.field().getName()),
+                                new ColouredString(GUITextColour.RED, "Invalid variable value \""),
+                                new ColouredString(GUITextColour.YELLOW, state.getValue().toString()),
+                                new ColouredString(GUITextColour.RED, "\", expected type "),
+                                new ColouredString(GUITextColour.CYAN, hookBinding.field().getName()),
                         }
                 );
             }
@@ -386,10 +400,10 @@ public class ConsoleWidget implements IGUIInstance {
         return new ValidationState(
                 true,
                 new ColouredString[]{
-                        new ColouredString(ConsoleColour.NORMAL, "Variable "),
-                        new ColouredString(ConsoleColour.CYAN, path),
-                        new ColouredString(ConsoleColour.NORMAL, " updated to "),
-                        new ColouredString(ConsoleColour.YELLOW, value)
+                        new ColouredString(GUITextColour.NORMAL, "Variable "),
+                        new ColouredString(GUITextColour.CYAN, path),
+                        new ColouredString(GUITextColour.NORMAL, " updated to "),
+                        new ColouredString(GUITextColour.YELLOW, value)
                 }
         );
     }
@@ -407,7 +421,7 @@ public class ConsoleWidget implements IGUIInstance {
             final VariableHook annotation = field.getAnnotation(VariableHook.class);
             if (Modifier.isStatic(field.getModifiers())) {
                 return Stream.of(new ColouredString(
-                        ConsoleColour.NORMAL,
+                        GUITextColour.NORMAL,
                         String.format(
                                 " - [%s] %s%n",
                                 field.getType().getSimpleName(),
@@ -418,7 +432,7 @@ public class ConsoleWidget implements IGUIInstance {
             return ConsoleWidget.FIELD_INSTANCE_MAPPINGS.get(field)
                     .stream()
                     .map((final Object instance) -> new ColouredString(
-                            ConsoleColour.NORMAL,
+                            GUITextColour.NORMAL,
                             String.format(
                                     " - [%s] %s::%s%n",
                                     field.getType().getSimpleName(),
@@ -431,10 +445,10 @@ public class ConsoleWidget implements IGUIInstance {
 
     private void handleUnknownCommand() {
         submitCommand(ExecutedCommand.from(
-                ConsoleColour.NORMAL.with(this.consoleInput),
+                GUITextColour.NORMAL.with(this.consoleInput),
                 new ColouredString[]{
-                        ConsoleColour.RED.with("Unknown command: "),
-                        ConsoleColour.NORMAL.with(this.consoleInput)
+                        GUITextColour.RED.with("Unknown command: "),
+                        GUITextColour.NORMAL.with(this.consoleInput)
                 }
         ));
     }
@@ -447,12 +461,12 @@ public class ConsoleWidget implements IGUIInstance {
             if (args.length != 2) {
                 widget.submitCommand(ExecutedCommand.from(
                         new ColouredString[]{
-                                ConsoleColour.GREEN.with(command + " "),
-                                ConsoleColour.NORMAL.with(String.join(" ", args))
+                                GUITextColour.GREEN.with(command + " "),
+                                GUITextColour.NORMAL.with(String.join(" ", args))
                         },
                         new ColouredString[]{
-                                ConsoleColour.RED.with("Expected 2 arguments, got " + args.length + ": "),
-                                ConsoleColour.YELLOW.with(Arrays.toString(args))
+                                GUITextColour.RED.with("Expected 2 arguments, got " + args.length + ": "),
+                                GUITextColour.YELLOW.with(Arrays.toString(args))
                         }
                 ));
                 return;
@@ -460,25 +474,25 @@ public class ConsoleWidget implements IGUIInstance {
             final ValidationState state = widget.updateVariableValue(args[0], args[1]);
             widget.submitCommand(ExecutedCommand.from(
                     new ColouredString[]{
-                            ConsoleColour.GREEN.with(command + " "),
-                            ConsoleColour.NORMAL.with(String.join(" ", args))
+                            GUITextColour.GREEN.with(command + " "),
+                            GUITextColour.NORMAL.with(String.join(" ", args))
                     },
                     state.message()
             ));
         }));
         ConsoleWidget.COMMAND_HANDLERS.put("get", ImmutablePair.of("get <variable>", (final ConsoleWidget widget, final String command, final String[] args) -> widget.submitCommand(ExecutedCommand.from(
                 new ColouredString[]{
-                        ConsoleColour.GREEN.with(command + " "),
-                        ConsoleColour.NORMAL.with(String.join(" ", args))
+                        GUITextColour.GREEN.with(command + " "),
+                        GUITextColour.NORMAL.with(String.join(" ", args))
                 },
-                ConsoleColour.NORMAL.with("get stuff!")
+                GUITextColour.NORMAL.with("get stuff!")
         ))));
         ConsoleWidget.COMMAND_HANDLERS.put("listvars", ImmutablePair.of("listvars", (final ConsoleWidget widget, final String command, final String[] args) -> {
             if (args.length > 1) {
                 widget.handleUnknownCommand();
             }
             widget.submitCommand(ExecutedCommand.from(
-                    ConsoleColour.GREEN.with(command),
+                    GUITextColour.GREEN.with(command),
                     widget.listAllVars()
             ));
         }));
@@ -490,10 +504,10 @@ public class ConsoleWidget implements IGUIInstance {
                             " - %s%s",
                             commandSyntax,
                             ConsoleWidget.NEWLINE_CHARACTER
-                    )).map(ConsoleColour.NORMAL::with)
+                    )).map(GUITextColour.NORMAL::with)
                     .toArray(ColouredString[]::new);
             widget.submitCommand(ExecutedCommand.from(
-                    ConsoleColour.GREEN.with(command),
+                    GUITextColour.GREEN.with(command),
                     commandsSyntax
             ));
         }));
@@ -562,11 +576,11 @@ public class ConsoleWidget implements IGUIInstance {
             if (count++ != 0) {
                 ImGui.dummy(-1, ImGui.getFontSize());
             }
-            renderFormattedString(ArrayUtils.addFirst(command.command(), ConsoleColour.CYAN.with("> ")));
+            renderFormattedString(ArrayUtils.addFirst(command.command(), GUITextColour.CYAN.with("> ")));
             if (ConsoleWidget.SHOW_TIMESTAMP) {
                 ImGui.popTextWrapPos();
                 ImGui.sameLine(ImGui.getColumnWidth(-1) - timestampWidth);
-                ImGui.pushStyleColor(ImGuiCol.Text, ConsoleColour.GRAY.getColour());
+                ImGui.pushStyleColor(ImGuiCol.Text, GUITextColour.GRAY.getColour());
                 ImGui.text(this.dateFormatter.format(command.date()));
                 ImGui.popStyleColor();
             }
@@ -579,8 +593,6 @@ public class ConsoleWidget implements IGUIInstance {
         this.scrollToBottom = false;
         ImGui.endChild();
     }
-
-    private boolean updateReadOnlyFlag = false;
 
     private void setHistoryInInput() {
         if (this.previousCommands != null
@@ -634,9 +646,6 @@ public class ConsoleWidget implements IGUIInstance {
         ImGui.end();
     }
 
-    private boolean upKeyPressed = false;
-    private boolean downKeyPressed = false;
-
     @Override
     public boolean handleGUIInput(final Scene scene,
                                   final Window window) {
@@ -644,21 +653,10 @@ public class ConsoleWidget implements IGUIInstance {
         if (!imGuiIO.getWantCaptureMouse() && !imGuiIO.getWantCaptureKeyboard()) {
             return false;
         }
-        if (window.isKeyPressed(GLFW_KEY_UP) && !this.upKeyPressed) {
-            this.upKeyPressed = true;
-            this.previousCommandSelectionDirection = true;
-            updatePreviousCommandSelection();
-        } else if (window.isKeyPressed(GLFW_KEY_DOWN) && !this.downKeyPressed) {
-            this.downKeyPressed = true;
-            this.previousCommandSelectionDirection = false;
-            updatePreviousCommandSelection();
-        } else if (this.updateReadOnlyFlag) {
+        if (upKeyCapture.update(window) != KeyState.PRESSED
+            && downKeyCapture.update(window) != KeyState.PRESSED
+            && this.updateReadOnlyFlag) {
             this.updateReadOnlyFlag = false;
-        }
-        if (window.isKeyReleased(GLFW_KEY_UP) && this.upKeyPressed) {
-            this.upKeyPressed = false;
-        } else if (window.isKeyReleased(GLFW_KEY_DOWN) && this.downKeyPressed) {
-            this.downKeyPressed = false;
         }
         return true;
     }
