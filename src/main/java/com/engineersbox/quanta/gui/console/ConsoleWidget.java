@@ -65,6 +65,7 @@ public class ConsoleWidget implements IGUIInstance {
     private boolean wasPrevFrameTabCompletion;
     private final List<String> commandSuggestions; // TODO: Implement suggestions
     private boolean updateReadOnlyFlag;
+    private boolean inputSelected;
     private final DebouncedKeyCapture upKeyCapture = new DebouncedKeyCapture(GLFW_KEY_UP)
             .withOnPressHandler(() -> {
                 this.previousCommandSelectionDirection = true;
@@ -88,6 +89,7 @@ public class ConsoleWidget implements IGUIInstance {
         this.previousCommandSelection = -1;
         this.previousCommandSelectionDirection = true;
         this.updateReadOnlyFlag = false;
+        this.inputSelected = false;
     }
 
     private void submitCommand(final ExecutedCommand executedCommand) {
@@ -411,6 +413,7 @@ public class ConsoleWidget implements IGUIInstance {
             reclaimFocus = true;
             this.rawConsoleInput.clear();
         }
+        this.inputSelected = ImGui.isItemActive();
         // Previous command selection
         if (ImGui.isItemActive() && this.historyTraversable && this.previousCommands != null) {
             setHistoryInInput();
@@ -467,5 +470,9 @@ public class ConsoleWidget implements IGUIInstance {
                 this.previousCommands.size() - 1
         ), 0);
         setHistoryInInput();
+    }
+
+    public boolean isInputSelected() {
+        return this.inputSelected;
     }
 }

@@ -6,6 +6,7 @@ import com.engineersbox.quanta.debug.PipelineStatistics;
 import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.gui.console.ConsoleWidget;
 import com.engineersbox.quanta.gui.debug.CoreStatsWidget;
+import com.engineersbox.quanta.input.DebouncedKeyCapture;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.scene.Scene;
@@ -19,16 +20,20 @@ import static org.lwjgl.glfw.GLFW.GLFW_KEY_GRAVE_ACCENT;
 public class TestConsole implements IGUIInstance {
 
     private boolean show;
-    private boolean tildePressed;
     private final ConsoleWidget console;
     private final CoreStatsWidget coreStatsWidget;
+    private final DebouncedKeyCapture tildeKey;
 
     public TestConsole(final OpenGLInfo openGLInfo,
                        final PipelineStatistics pipelineStatistics,
                        final Camera camera) {
         this.show = false;
-        this.tildePressed = false;
         this.console = new ConsoleWidget();
+        this.tildeKey = new DebouncedKeyCapture(GLFW_KEY_GRAVE_ACCENT).withOnPressHandler(() -> {
+            if (!this.console.isInputSelected()) {
+                this.show = !this.show;
+            }
+        });
         this.coreStatsWidget = new CoreStatsWidget(
                 openGLInfo,
                 pipelineStatistics,
@@ -60,13 +65,7 @@ public class TestConsole implements IGUIInstance {
                                   final Window window) {
         this.console.handleGUIInput(scene, window);
         this.coreStatsWidget.handleGUIInput(scene, window);
-        if (window.isKeyPressed(GLFW_KEY_GRAVE_ACCENT) && !this.tildePressed) {
-            this.show = !this.show;
-            this.tildePressed = true;
-        }
-        if (window.isKeyReleased(GLFW_KEY_GRAVE_ACCENT) && this.tildePressed) {
-            this.tildePressed = false;
-        }
+        this.tildeKey.update(window);
         final ImGuiIO imGuiIO = ImGui.getIO();
         final MouseInput mouseInput = window.getMouseInput();
         final Vector2f mousePos = mouseInput.getCurrentPos();
