@@ -227,7 +227,7 @@ public class CoreStatsWidget implements IGUIInstance {
                         .map((final PipelineStatistics.Stat stat) -> GUITextColour.NORMAL.withFormat(
                                 "%s: %d%n",
                                 stat.name(),
-                                this.pipelineStatistics.getResult(stat)
+                                Integer.toUnsignedLong(this.pipelineStatistics.getResult(stat))
                         )).toArray(ColouredString[]::new)
         );
     }

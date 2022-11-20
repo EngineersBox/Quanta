@@ -28,7 +28,7 @@ public class Engine {
     private final int targetUPS;
     private final PipelineStatistics pipelineStatistics;
     @VariableHook(name = "engine.capture_pipeline_stats")
-    private boolean capturePipelineStats;
+    private static boolean CAPTURE_PIPELINE_STATS = false;
 
     public Engine(final String title,
                   final IAppLogic appLogic) {
@@ -48,7 +48,6 @@ public class Engine {
                 this.window.getWidth(),
                 this.window.getHeight()
         );
-        this.capturePipelineStats = false;
         this.pipelineStatistics = new PipelineStatistics();
         this.pipelineStatistics.init();
         this.appLogic.init(new EngineInitContext(
@@ -91,9 +90,6 @@ public class Engine {
         long updateTime = initialTime;
         final IGUIInstance guiInstance = this.scene.getGUIInstance();
         while (this.running && !this.window.windowShouldClose()) {
-            if (this.capturePipelineStats) {
-                this.pipelineStatistics.begin();
-            }
             this.window.pollEvents();
             final long now = System.currentTimeMillis();
             deltaUpdate += (now - initialTime) / timeU;
@@ -109,14 +105,17 @@ public class Engine {
                 deltaUpdate--;
             }
             if (this.targetFPS <= 0 || deltaFps >= 1) {
+                if (CAPTURE_PIPELINE_STATS) {
+                    this.pipelineStatistics.begin();
+                }
                 this.renderer.render(this.window, this.scene);
+                if (CAPTURE_PIPELINE_STATS) {
+                    this.pipelineStatistics.end();
+                }
                 deltaFps--;
                 this.window.update();
             }
             initialTime = now;
-            if (this.capturePipelineStats) {
-                this.pipelineStatistics.end();
-            }
         }
         cleanup();
     }

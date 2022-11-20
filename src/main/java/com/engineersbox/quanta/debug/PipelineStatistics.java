@@ -3,9 +3,11 @@ package com.engineersbox.quanta.debug;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.IntBuffer;
+import java.util.stream.IntStream;
 
 import static org.lwjgl.opengl.ARBPipelineStatisticsQuery.*;
 import static org.lwjgl.opengl.GL15.*;
+import static org.lwjgl.opengl.GL15.glGetQueryObjectuiv;
 
 public class PipelineStatistics {
 
@@ -59,6 +61,10 @@ public class PipelineStatistics {
         this.extensionAvailable = GLVersion.isExtensionSupported(PipelineStatistics.QUERY_EXTENSION_ARB);
         this.queryName = MemoryUtil.memAllocInt(PipelineStatistics.MAX);
         this.running = false;
+        this.queryResult = MemoryUtil.memAllocInt(PipelineStatistics.MAX);
+        IntStream.range(0, PipelineStatistics.MAX).forEach((final int index) ->
+                this.queryResult.put(index, 0)
+        );
     }
 
     public boolean extensionAvailable() {
@@ -98,7 +104,8 @@ public class PipelineStatistics {
 
     public void begin() {
         if (this.running) {
-            throw new IllegalStateException("Statistics query already running");
+            return;
+//            throw new IllegalStateException("Statistics query already running");
         }
         for (final Stat stat : Stat.values()) {
             if (stat.composite) {
@@ -114,19 +121,21 @@ public class PipelineStatistics {
 
     public void end() {
         if (!this.running) {
-            throw new IllegalStateException("Statistics query is not running");
+            return;
+//            throw new IllegalStateException("Statistics query is not running");
         }
-        this.queryResult = MemoryUtil.memAllocInt(PipelineStatistics.MAX);
         for (final Stat stat : Stat.values()) {
             if (stat.composite) {
                 continue;
             }
             glEndQuery(stat.target);
+            final int[] value = new int[1];
             glGetQueryObjectuiv(
                     this.queryName.get(stat.index),
                     GL_QUERY_RESULT,
-                    this.queryResult
+                    value
             );
+            this.queryResult.put(stat.index, value[0]);
         }
         this.running = false;
     }
