@@ -5,8 +5,10 @@ import com.engineersbox.quanta.debug.OpenGLInfo;
 import com.engineersbox.quanta.debug.PipelineStatistics;
 import com.engineersbox.quanta.debug.VariableHooksState;
 import com.engineersbox.quanta.debug.hooks.HookBinding;
+import com.engineersbox.quanta.debug.hooks.InstanceIdentifierProvider;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.gui.IGUIInstance;
+import com.engineersbox.quanta.gui.IndentManager;
 import com.engineersbox.quanta.gui.format.ColouredString;
 import com.engineersbox.quanta.gui.format.GUITextColour;
 import com.engineersbox.quanta.rendering.view.Camera;
@@ -19,25 +21,32 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class CoreStatsWidget implements IGUIInstance {
+import static org.lwjgl.opengl.GL11.GL_EXTENSIONS;
+import static org.lwjgl.opengl.GL30.glGetStringi;
 
+public class CoreDebugInfoWidget implements IGUIInstance {
+
+    private static final float INDENT_SIZE = 10.0f;
     private final OpenGLInfo openGLInfo;
     private final PipelineStatistics pipelineStatistics;
     private final Camera camera;
+    private final IndentManager indentManager;
 
-    public CoreStatsWidget(final OpenGLInfo openGLInfo,
-                           final PipelineStatistics pipelineStatistics,
-                           final Camera camera) {
+    public CoreDebugInfoWidget(final OpenGLInfo openGLInfo,
+                               final PipelineStatistics pipelineStatistics,
+                               final Camera camera) {
         this.openGLInfo = openGLInfo;
         this.pipelineStatistics = pipelineStatistics;
         this.camera = camera;
+        this.indentManager = new IndentManager();
     }
 
     @Override
     public void drawGUI() {
-        ImGui.begin("Pipeline Stats");
+        ImGui.begin("Core Debug Info");
         drawOpenGLContext();
         drawEngineProperties();
         drawVariableHookStates();
@@ -50,6 +59,7 @@ public class CoreStatsWidget implements IGUIInstance {
         if (!ImGui.collapsingHeader("OpenGL Context")) {
             return;
         }
+        this.indentManager.push(CoreDebugInfoWidget.INDENT_SIZE);
         ColouredString.renderFormattedString(
                 GUITextColour.NORMAL.withFormat(
                         "Version: %s%n",
@@ -72,6 +82,22 @@ public class CoreStatsWidget implements IGUIInstance {
                         this.openGLInfo.extensions()
                 )
         );
+        if (!ImGui.collapsingHeader("Supported Extensions")) {
+            this.indentManager.pop();
+            return;
+        }
+        this.indentManager.push(CoreDebugInfoWidget.INDENT_SIZE);
+        ColouredString.renderFormattedString(
+                (Object) IntStream.range(0, this.openGLInfo.extensions())
+                        .mapToObj((final int extensionId) -> glGetStringi(
+                                GL_EXTENSIONS,
+                                extensionId
+                        )).map((final String extensionName) -> GUITextColour.NORMAL.withFormat(
+                                "%s%n",
+                                extensionName
+                        )).toArray(ColouredString[]::new)
+        );
+        this.indentManager.popN(2);
     }
 
     private ColouredString booleanValue(final boolean value) {
@@ -93,6 +119,7 @@ public class CoreStatsWidget implements IGUIInstance {
         if (!ImGui.collapsingHeader("Engine Properties")) {
             return;
         }
+        this.indentManager.push(CoreDebugInfoWidget.INDENT_SIZE);
         ColouredString.renderFormattedString(
                 formatBooleanProperty("Cull faces: ", ConfigHandler.CONFIG.engine.glOptions.cullface),
                 formatBooleanProperty("Show triangles: ", ConfigHandler.CONFIG.engine.glOptions.showTrianges),
@@ -103,12 +130,14 @@ public class CoreStatsWidget implements IGUIInstance {
                         ConfigHandler.CONFIG.engine.glOptions.aaSamples
                 )
         );
+        this.indentManager.pop();
     }
 
     private void drawVariableHookStates() {
         if (!ImGui.collapsingHeader("Variable Hooks")) {
             return;
         }
+        this.indentManager.push(CoreDebugInfoWidget.INDENT_SIZE);
         final Object[] colouredStringObjects = VariableHooksState.HOOKS.getLeafNodes()
                 .stream()
                 .map((final DefaultMutableTreeNode node) -> (HookBinding) node.getUserObject())
@@ -141,7 +170,7 @@ public class CoreStatsWidget implements IGUIInstance {
                                         true
                                 );
                                 return Stream.of(
-                                        GUITextColour.NORMAL.withFormat(" - %s: ", instance),
+                                        GUITextColour.NORMAL.withFormat(" - %s: ", InstanceIdentifierProvider.deriveInstanceID(instance)),
                                         field.getType().isAssignableFrom(boolean.class)
                                                 ? booleanValue((boolean) value)
                                                 : GUITextColour.NORMAL.withFormat("%s%n", value)
@@ -157,12 +186,14 @@ public class CoreStatsWidget implements IGUIInstance {
                     );
                 }).toArray(Object[]::new);
         ColouredString.renderFormattedString(colouredStringObjects);
+        this.indentManager.pop();
     }
 
     private void drawCameraState() {
         if (!ImGui.collapsingHeader("Camera")) {
             return;
         }
+        this.indentManager.push(CoreDebugInfoWidget.INDENT_SIZE);
         ColouredString.renderFormattedString(
                 GUITextColour.NORMAL.withFormat(
                         "Near/far: %f/%f%n",
@@ -206,6 +237,7 @@ public class CoreStatsWidget implements IGUIInstance {
                 },
                 GUITextColour.NORMAL.withFormat("]%n")
         );
+        this.indentManager.pop();
     }
 
     private void drawRendererState() {
@@ -222,6 +254,7 @@ public class CoreStatsWidget implements IGUIInstance {
             || !ImGui.collapsingHeader("Pipeline")) {
             return;
         }
+        this.indentManager.push(CoreDebugInfoWidget.INDENT_SIZE);
         ColouredString.renderFormattedString(
                 (Object) Arrays.stream(PipelineStatistics.Stat.values())
                         .map((final PipelineStatistics.Stat stat) -> GUITextColour.NORMAL.withFormat(
@@ -230,6 +263,7 @@ public class CoreStatsWidget implements IGUIInstance {
                                 Integer.toUnsignedLong(this.pipelineStatistics.getResult(stat))
                         )).toArray(ColouredString[]::new)
         );
+        this.indentManager.pop();
     }
 
     @Override

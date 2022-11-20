@@ -372,7 +372,7 @@ public class ConsoleWidget implements IGUIInstance {
             if (count++ != 0) {
                 ImGui.dummy(-1, ImGui.getFontSize());
             }
-            ColouredString.renderFormattedString(ArrayUtils.addFirst(command.command(), GUITextColour.CYAN.with("> ")));
+            ColouredString.renderFormattedString((Object) ArrayUtils.addFirst(command.command(), GUITextColour.CYAN.with("> ")));
             if (ConsoleWidget.SHOW_TIMESTAMP) {
                 ImGui.popTextWrapPos();
                 ImGui.sameLine(ImGui.getColumnWidth(-1) - timestampWidth);
@@ -380,7 +380,7 @@ public class ConsoleWidget implements IGUIInstance {
                 ImGui.text(this.dateFormatter.format(command.date()));
                 ImGui.popStyleColor();
             }
-            ColouredString.renderFormattedString(command.result());
+            ColouredString.renderFormattedString((Object) command.result());
         }
         ImGui.popTextWrapPos();
         if (this.scrollToBottom && (ImGui.getScrollY() >= ImGui.getScrollMaxY() || ConsoleWidget.COMMAND_LOG_AUTO_SCROLL)) {

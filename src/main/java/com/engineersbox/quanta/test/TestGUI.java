@@ -5,7 +5,7 @@ import com.engineersbox.quanta.debug.OpenGLInfo;
 import com.engineersbox.quanta.debug.PipelineStatistics;
 import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.gui.console.ConsoleWidget;
-import com.engineersbox.quanta.gui.debug.CoreStatsWidget;
+import com.engineersbox.quanta.gui.debug.CoreDebugInfoWidget;
 import com.engineersbox.quanta.input.DebouncedKeyCapture;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.view.Camera;
@@ -17,16 +17,16 @@ import org.joml.Vector2f;
 
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_GRAVE_ACCENT;
 
-public class TestConsole implements IGUIInstance {
+public class TestGUI implements IGUIInstance {
 
     private boolean show;
     private final ConsoleWidget console;
-    private final CoreStatsWidget coreStatsWidget;
+    private final CoreDebugInfoWidget coreDebugInfoWidget;
     private final DebouncedKeyCapture tildeKey;
 
-    public TestConsole(final OpenGLInfo openGLInfo,
-                       final PipelineStatistics pipelineStatistics,
-                       final Camera camera) {
+    public TestGUI(final OpenGLInfo openGLInfo,
+                   final PipelineStatistics pipelineStatistics,
+                   final Camera camera) {
         this.show = false;
         this.console = new ConsoleWidget();
         this.tildeKey = new DebouncedKeyCapture(GLFW_KEY_GRAVE_ACCENT).withOnPressHandler(() -> {
@@ -34,7 +34,7 @@ public class TestConsole implements IGUIInstance {
                 this.show = !this.show;
             }
         });
-        this.coreStatsWidget = new CoreStatsWidget(
+        this.coreDebugInfoWidget = new CoreDebugInfoWidget(
                 openGLInfo,
                 pipelineStatistics,
                 camera
@@ -51,10 +51,12 @@ public class TestConsole implements IGUIInstance {
         }
 
         ImGui.newFrame();
-        ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
-        ImGui.setNextWindowSize(450, 400);
+        ImGui.setNextWindowPos(0, 0, ImGuiCond.FirstUseEver);
+        ImGui.setNextWindowSize(450, 400, ImGuiCond.FirstUseEver);
         this.console.drawGUI();
-        this.coreStatsWidget.drawGUI();
+        ImGui.setNextWindowPos(0, 400, ImGuiCond.FirstUseEver);
+        ImGui.setNextWindowSize(400, 200, ImGuiCond.FirstUseEver);
+        this.coreDebugInfoWidget.drawGUI();
         ImGui.endFrame();
 
         ImGui.render();
@@ -64,7 +66,7 @@ public class TestConsole implements IGUIInstance {
     public boolean handleGUIInput(final Scene scene,
                                   final Window window) {
         this.console.handleGUIInput(scene, window);
-        this.coreStatsWidget.handleGUIInput(scene, window);
+        this.coreDebugInfoWidget.handleGUIInput(scene, window);
         this.tildeKey.update(window);
         final ImGuiIO imGuiIO = ImGui.getIO();
         final MouseInput mouseInput = window.getMouseInput();

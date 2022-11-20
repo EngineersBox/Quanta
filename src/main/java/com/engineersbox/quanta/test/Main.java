@@ -5,7 +5,6 @@ import com.engineersbox.quanta.core.EngineInitContext;
 import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.input.MouseInput;
-import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
@@ -44,11 +43,11 @@ public class Main implements IAppLogic {
     private Entity cubeEntity2;
     private float lightAngle;
     private float rotation;
-    private TestConsole console;
+    private TestGUI console;
 
     @Override
     public void init(final EngineInitContext context) {
-        this.console = new TestConsole(
+        this.console = new TestGUI(
                 context.openGLInfo(),
                 context.pipelineStatistics(),
                 context.scene().getCamera()
