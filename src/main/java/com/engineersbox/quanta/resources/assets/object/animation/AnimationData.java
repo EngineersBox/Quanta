@@ -1,6 +1,8 @@
 package com.engineersbox.quanta.resources.assets.object.animation;
 
 import com.engineersbox.quanta.resources.loader.ModelLoader;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Matrix4f;
 
 import java.util.Arrays;
@@ -18,10 +20,17 @@ public class AnimationData {
     private int currentFrameIdx;
 
     public AnimationData(final Animation currentAnimation) {
-        this.currentFrameIdx = 0;
-        this.currentAnimation = currentAnimation;
+        this(currentAnimation, 0);
     }
 
+    @JsonCreator
+    public AnimationData(@JsonProperty("current_animation") final Animation currentAnimation,
+                         @JsonProperty("current_frame_index") final int currentFrameIdx) {
+        this.currentAnimation = currentAnimation;
+        this.currentFrameIdx = currentFrameIdx;
+    }
+
+    @JsonProperty("current_animation")
     public Animation getCurrentAnimation() {
         return this.currentAnimation;
     }
@@ -30,6 +39,7 @@ public class AnimationData {
         return this.currentAnimation.frames().get(this.currentFrameIdx);
     }
 
+    @JsonProperty("current_frame_index")
     public int getCurrentFrameIdx() {
         return this.currentFrameIdx;
     }

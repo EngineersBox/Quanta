@@ -3,6 +3,8 @@ package com.engineersbox.quanta.resources.assets.object;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
 import com.engineersbox.quanta.resources.assets.object.animation.Animation;
 import com.engineersbox.quanta.scene.Entity;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,22 +27,40 @@ public class Model {
         this.meshDrawData = new ArrayList<>();
     }
 
+    @JsonCreator
+    public Model(@JsonProperty("id") final String id,
+                 @JsonProperty("mesh_data") final List<MeshData> meshData,
+                 @JsonProperty("mesh_draw_data") final List<MeshDrawData> meshDrawData,
+                 @JsonProperty("animations") final List<Animation> animations,
+                 @JsonProperty("entities") final List<Entity> entities) {
+        this.id = id;
+        this.meshData = meshData;
+        this.meshDrawData = meshDrawData;
+        this.animations = animations;
+        this.entities = entities;
+    }
+
+    @JsonProperty("animations")
     public List<Animation> getAnimations() {
         return this.animations;
     }
 
+    @JsonProperty("entities")
     public List<Entity> getEntities() {
         return this.entities;
     }
 
+    @JsonProperty("id")
     public String getId() {
         return this.id;
     }
 
+    @JsonProperty("mesh_data")
     public List<MeshData> getMeshData() {
         return this.meshData;
     }
 
+    @JsonProperty("mesh_draw_data")
     public List<MeshDrawData> getMeshDrawData() {
         return this.meshDrawData;
     }

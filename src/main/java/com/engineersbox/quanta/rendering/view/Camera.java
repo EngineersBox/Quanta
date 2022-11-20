@@ -1,7 +1,8 @@
 package com.engineersbox.quanta.rendering.view;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 
 public class Camera {
@@ -15,13 +16,26 @@ public class Camera {
     private final Matrix4f inverseViewMatrix;
 
     public Camera() {
+        this(
+                new Vector3f(),
+                new Vector3f(),
+                new Matrix4f(),
+                new Matrix4f()
+        );
+    }
+
+    @JsonCreator
+    public Camera(@JsonProperty("position") final Vector3f position,
+                  @JsonProperty("rotation") final Vector3f rotation,
+                  @JsonProperty("view_matrix") final Matrix4f viewMatrix,
+                  @JsonProperty("inverse_view_matrix") final Matrix4f inverseViewMatrix) {
+        this.position = position;
+        this.rotation = rotation;
+        this.viewMatrix = viewMatrix;
+        this.inverseViewMatrix = inverseViewMatrix;
         this.direction = new Vector3f();
         this.right = new Vector3f();
         this.up = new Vector3f();
-        this.position = new Vector3f();
-        this.rotation = new Vector3f();
-        this.viewMatrix = new Matrix4f();
-        this.inverseViewMatrix = new Matrix4f();
     }
 
     public void addRotation(final float x, final float y, final float z) {
@@ -29,17 +43,22 @@ public class Camera {
         recalculate();
     }
 
+    @JsonProperty("position")
     public Vector3f getPosition() {
         return this.position;
     }
+
+    @JsonProperty("rotation")
     public Vector3f getRotation() {
         return this.rotation;
     }
 
+    @JsonProperty("view_matrix")
     public Matrix4f getViewMatrix() {
         return this.viewMatrix;
     }
 
+    @JsonProperty("inverse_view_matrix")
     public Matrix4f getInverseViewMatrix() {
         return this.inverseViewMatrix;
     }

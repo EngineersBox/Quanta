@@ -21,6 +21,7 @@
         <joml.version>1.10.4</joml.version>
         <jaxb-api.version>2.4.0-b180830.0359</jaxb-api.version>
         <jaxb-runtime.version>4.0.0</jaxb-runtime.version>
+        <jackson.version>2.14.0</jackson.version>
         <pngdecoder.version>1.0</pngdecoder.version>
         <eclipse.colections.version>11.1.0</eclipse.colections.version>
         <typesafe-config.version>1.4.2</typesafe-config.version>
@@ -104,7 +105,13 @@
             <version>${jaxb-runtime.version}</version>
             <scope>runtime</scope>
         </dependency>
-        <!-- TODO: Add dependency for Jackson Databind -->
+        <!-- Jackson FasterXML -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
         <!-- Jupiter API for writing tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

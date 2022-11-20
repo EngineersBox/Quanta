@@ -8,6 +8,11 @@ import com.engineersbox.quanta.resources.assets.material.TextureCache;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.MapSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +21,9 @@ public class Scene {
 
     private final Map<String, Model> models;
     private final Projection projection;
+    @JsonIgnore
     private final TextureCache textureCache;
+    @JsonIgnore
     private final MaterialCache materialCache;
     private final Camera camera;
     private IGUIInstance guiInstance;
@@ -34,6 +41,25 @@ public class Scene {
         this.fog = new Fog();
     }
 
+    @JsonCreator
+    public Scene(@JsonProperty("models") final Map<String, Model> models,
+                 @JsonProperty("projection") final Projection projection,
+                 @JsonProperty("camera") final Camera camera,
+                 @JsonProperty("gui") final IGUIInstance guiInstance,
+                 @JsonProperty("scene_lights") final SceneLights sceneLights,
+                 @JsonProperty("skybox") final SkyBox skyBox,
+                 @JsonProperty("fog") final Fog fog) {
+        this.models = models;
+        this.projection = projection;
+        this.camera = camera;
+        this.guiInstance = guiInstance;
+        this.sceneLights = sceneLights;
+        this.skyBox = skyBox;
+        this.fog = fog;
+        this.textureCache = new TextureCache();
+        this.materialCache = new MaterialCache();
+    }
+
     public void addEntity(final Entity entity) {
         final String modelId = entity.getModelId();
         final Model model = this.models.get(modelId);
@@ -47,10 +73,13 @@ public class Scene {
         this.models.put(model.getId(), model);
     }
 
+    @JsonProperty("models")
+    @JsonSerialize(keyUsing = MapSerializer.class)
     public Map<String, Model> getModels() {
         return this.models;
     }
 
+    @JsonProperty("projection")
     public Projection getProjection() {
         return this.projection;
     }
@@ -67,10 +96,12 @@ public class Scene {
         return this.materialCache;
     }
 
+    @JsonProperty("camera")
     public Camera getCamera() {
         return this.camera;
     }
 
+    @JsonProperty("gui")
     public IGUIInstance getGUIInstance() {
         return this.guiInstance;
     }
@@ -79,6 +110,7 @@ public class Scene {
         this.guiInstance = guiInstance;
     }
 
+    @JsonProperty("scene_lights")
     public SceneLights getSceneLights() {
         return this.sceneLights;
     }
@@ -87,6 +119,7 @@ public class Scene {
         this.sceneLights = sceneLights;
     }
 
+    @JsonProperty("skybox")
     public SkyBox getSkyBox() {
         return this.skyBox;
     }
@@ -95,6 +128,7 @@ public class Scene {
         this.skyBox = skyBox;
     }
 
+    @JsonProperty("fog")
     public Fog getFog() {
         return this.fog;
     }

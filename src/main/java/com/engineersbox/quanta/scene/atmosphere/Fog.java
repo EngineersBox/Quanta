@@ -1,5 +1,7 @@
 package com.engineersbox.quanta.scene.atmosphere;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Vector3f;
 
 public class Fog {
@@ -13,22 +15,26 @@ public class Fog {
         this.color = new Vector3f();
     }
 
-    public Fog(final boolean active,
-               final Vector3f color,
-               final float density) {
+    @JsonCreator
+    public Fog(@JsonProperty("active") final boolean active,
+               @JsonProperty("colour") final Vector3f color,
+               @JsonProperty("density") final float density) {
         this.color = color;
         this.density = density;
         this.active = active;
     }
 
+    @JsonProperty("colour")
     public Vector3f getColor() {
         return this.color;
     }
 
+    @JsonProperty("density")
     public float getDensity() {
         return this.density;
     }
 
+    @JsonProperty("active")
     public boolean isActive() {
         return this.active;
     }

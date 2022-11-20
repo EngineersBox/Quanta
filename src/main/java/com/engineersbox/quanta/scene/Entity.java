@@ -1,6 +1,8 @@
 package com.engineersbox.quanta.scene;
 
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -25,26 +27,49 @@ public class Entity {
         this.scale = 1;
     }
 
+    @JsonCreator
+    public Entity(@JsonProperty("id") final String id,
+                  @JsonProperty("model_id") final String modelId,
+                  @JsonProperty("model_matrix") final Matrix4f modelMatrix,
+                  @JsonProperty("position") final Vector3f position,
+                  @JsonProperty("rotation") final Quaternionf rotation,
+                  @JsonProperty("scale") final float scale,
+                  @JsonProperty("animation_data") final AnimationData animationData) {
+        this.id = id;
+        this.modelId = modelId;
+        this.modelMatrix = modelMatrix;
+        this.position = position;
+        this.rotation = rotation;
+        this.scale = scale;
+        this.animationData = animationData;
+    }
+
+    @JsonProperty("id")
     public String getId() {
         return this.id;
     }
 
+    @JsonProperty("model_id")
     public String getModelId() {
         return this.modelId;
     }
 
+    @JsonProperty("model_matrix")
     public Matrix4f getModelMatrix() {
         return this.modelMatrix;
     }
 
+    @JsonProperty("position")
     public Vector3f getPosition() {
         return this.position;
     }
 
+    @JsonProperty("rotation")
     public Quaternionf getRotation() {
         return this.rotation;
     }
 
+    @JsonProperty("scale")
     public float getScale() {
         return this.scale;
     }
@@ -75,6 +100,7 @@ public class Entity {
         );
     }
 
+    @JsonProperty("animation_data")
     public AnimationData getAnimationData() {
         return this.animationData;
     }

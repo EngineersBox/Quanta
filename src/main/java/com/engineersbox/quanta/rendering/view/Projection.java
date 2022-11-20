@@ -1,6 +1,7 @@
 package com.engineersbox.quanta.rendering.view;
 
 import com.engineersbox.quanta.resources.config.ConfigHandler;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Matrix4f;
 
 public class Projection {
@@ -10,15 +11,25 @@ public class Projection {
 
     public Projection(final int width,
                       final int height) {
-        this.projectionMatrix = new Matrix4f();
-        this.inverseProjectionMatrix = new Matrix4f();
+        this(
+                new Matrix4f(),
+                new Matrix4f()
+        );
         updateProjectionMatrix(width, height);
     }
 
+    public Projection(@JsonProperty("projection_matrix") final Matrix4f projectionMatrix,
+                      @JsonProperty("inverse_projection_matrix") final Matrix4f inverseProjectionMatrix) {
+        this.projectionMatrix = projectionMatrix;
+        this.inverseProjectionMatrix = inverseProjectionMatrix;
+    }
+
+    @JsonProperty("projection_matrix")
     public Matrix4f getProjectionMatrix() {
         return this.projectionMatrix;
     }
 
+    @JsonProperty("inverse_projection_matrix")
     public Matrix4f getInverseProjectionMatrix() {
         return this.inverseProjectionMatrix;
     }
