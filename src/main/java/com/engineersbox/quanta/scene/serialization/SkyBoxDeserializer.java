@@ -4,7 +4,6 @@ import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.SkyBox;
 import com.engineersbox.quanta.utils.serialization.SerializationUtils;
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -16,7 +15,7 @@ import java.io.IOException;
 
 public class SkyBoxDeserializer extends StdDeserializer<SkyBox> {
 
-    private final Scene scene;
+    private final transient Scene scene;
 
     public SkyBoxDeserializer(final Scene scene) {
         this(null, scene);
