@@ -3,7 +3,9 @@ package com.engineersbox.quanta.scene.serialization;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.rendering.view.Projection;
 import com.engineersbox.quanta.resources.assets.object.Model;
+import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.assets.object.serialization.ModelDeserializer;
+import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.SkyBox;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
@@ -68,9 +70,15 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
         final Map<String, Model> modelsMap = StreamSupport.stream(Spliterators.spliteratorUnknownSize(modelMapFields, 0), false)
                 .map((final Map.Entry<String, JsonNode> entry) -> {
                     try {
+                        final Model model = modelDeserializer.deserialize(entry.getValue().traverse(codec), deserializationContext);
+                        if (model.isAnimated()) {
+                            for (final Entity entity : model.getEntities()) {
+                                entity.setAnimationData(new AnimationData(model.getAnimations().get(0)));
+                            }
+                        }
                         return ImmutablePair.of(
                                 entry.getKey(),
-                                modelDeserializer.deserialize(entry.getValue().traverse(codec), deserializationContext)
+                                model
                         );
                     } catch (final IOException e) {
                         throw new RuntimeException(e);
@@ -80,7 +88,6 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
                         Pair::getValue
                 ));
         scene.getModels().putAll(modelsMap);
-        // TODO: Bind animations to entities if they are required
 
         final JsonNode projectionNode = node.get("projection");
         if (projectionNode == null) {

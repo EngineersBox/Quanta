@@ -88,7 +88,7 @@ public class Scene {
         return this.camera;
     }
 
-    @JsonIgnore
+    @JsonIgnore //TODO: Serialize the gui instance
     public IGUIInstance getGUIInstance() {
         return this.guiInstance;
     }
