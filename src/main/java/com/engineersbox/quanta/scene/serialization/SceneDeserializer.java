@@ -80,6 +80,7 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
                         Pair::getValue
                 ));
         scene.getModels().putAll(modelsMap);
+        // TODO: Bind animations to entities if they are required
 
         final JsonNode projectionNode = node.get("projection");
         if (projectionNode == null) {
