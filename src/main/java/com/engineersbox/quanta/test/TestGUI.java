@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.test;
 
+import com.engineersbox.quanta.core.EngineInitContext;
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.debug.OpenGLInfo;
 import com.engineersbox.quanta.debug.PipelineStatistics;
@@ -24,20 +25,18 @@ public class TestGUI implements IGUIInstance {
     private final CoreDebugInfoWidget coreDebugInfoWidget;
     private final DebouncedKeyCapture tildeKey;
 
-    public TestGUI(final OpenGLInfo openGLInfo,
-                   final PipelineStatistics pipelineStatistics,
-                   final Camera camera) {
+    public TestGUI(final EngineInitContext engineInitContext) {
         this.show = false;
-        this.console = new ConsoleWidget();
+        this.console = new ConsoleWidget(engineInitContext);
         this.tildeKey = new DebouncedKeyCapture(GLFW_KEY_GRAVE_ACCENT).withOnPressHandler(() -> {
             if (!this.console.isInputSelected()) {
                 this.show = !this.show;
             }
         });
         this.coreDebugInfoWidget = new CoreDebugInfoWidget(
-                openGLInfo,
-                pipelineStatistics,
-                camera
+                engineInitContext.openGLInfo(),
+                engineInitContext.pipelineStatistics(),
+                engineInitContext.scene().getCamera()
         );
     }
 

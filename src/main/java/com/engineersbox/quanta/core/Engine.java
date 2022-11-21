@@ -2,6 +2,7 @@ package com.engineersbox.quanta.core;
 
 import com.engineersbox.quanta.debug.OpenGLInfo;
 import com.engineersbox.quanta.debug.PipelineStatistics;
+import com.engineersbox.quanta.debug.hooks.RegisterInstanceVariableHooks;
 import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.Renderer;
@@ -23,13 +24,15 @@ public class Engine {
     private final Window window;
     private final Renderer renderer;
     private boolean running;
-    private final Scene scene;
+    @VariableHook(name = "engine.scene")
+    private Scene scene;
     private final int targetFPS;
     private final int targetUPS;
     private final PipelineStatistics pipelineStatistics;
     @VariableHook(name = "engine.capture_pipeline_stats")
     private static boolean CAPTURE_PIPELINE_STATS = false;
 
+    @RegisterInstanceVariableHooks
     public Engine(final String title,
                   final IAppLogic appLogic) {
         this.window = new Window(title, () -> {

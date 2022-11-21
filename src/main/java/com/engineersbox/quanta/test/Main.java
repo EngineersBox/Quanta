@@ -55,11 +55,7 @@ public class Main implements IAppLogic {
 
     @Override
     public void init(final EngineInitContext context) {
-        this.console = new TestGUI(
-                context.openGLInfo(),
-                context.pipelineStatistics(),
-                context.scene().getCamera()
-        );
+        this.console = new TestGUI(context);
         context.scene().setGUIInstance(this.console);
         final String terrainModelId = "terrain";
         final Model terrainModel = ModelLoader.loadModel(

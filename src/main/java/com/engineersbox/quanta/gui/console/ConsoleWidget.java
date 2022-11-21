@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.gui.console;
 
+import com.engineersbox.quanta.core.EngineInitContext;
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.debug.VariableHooksState;
 import com.engineersbox.quanta.gui.IGUIInstance;
@@ -23,6 +24,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.TriConsumer;
+import org.codehaus.plexus.util.FileUtils;
 
 import java.lang.invoke.VarHandle;
 import java.lang.reflect.*;
@@ -77,7 +79,9 @@ public class ConsoleWidget implements IGUIInstance {
                 updatePreviousCommandSelection();
             });
 
-    public ConsoleWidget() {
+    private final EngineInitContext engineInitContext;
+
+    public ConsoleWidget(final EngineInitContext engineInitContext) {
         this.rawConsoleInput = new ImString();
         this.consoleInput = "";
         this.commandLog = new LinkedBlockingDeque<>(ConsoleWidget.COMMAND_LOG_SIZE);
@@ -90,6 +94,7 @@ public class ConsoleWidget implements IGUIInstance {
         this.previousCommandSelectionDirection = true;
         this.updateReadOnlyFlag = false;
         this.inputSelected = false;
+        this.engineInitContext = engineInitContext;
     }
 
     private void submitCommand(final ExecutedCommand executedCommand) {
@@ -100,7 +105,7 @@ public class ConsoleWidget implements IGUIInstance {
     }
 
     private Pair<ValidationState, Object> invokeValidator(final Method method,
-                                                          final String value) {
+                                                          final Object value) {
         if (method == null) {
             return ImmutablePair.of(
                     new ValidationState(true, new ColouredString[0]),
@@ -155,7 +160,7 @@ public class ConsoleWidget implements IGUIInstance {
     }
 
     private ValidationState updateVariableValue(final String path,
-                                                final String value) {
+                                                final Object value) {
         final String[] instanceTarget = path.split(ConsoleWidget.VARIABLE_INSTANCE_TARGET_DELIMITER);
         final ValidationState invalidState = new ValidationState(
                 false,
@@ -224,6 +229,7 @@ public class ConsoleWidget implements IGUIInstance {
             }
         }
         synchronized (this) {
+            hookBinding.field().setAccessible(true);
             VarHandleUtils.setValue(
                     varHandle,
                     matchingInstance,
@@ -237,7 +243,7 @@ public class ConsoleWidget implements IGUIInstance {
                         new ColouredString(GUITextColour.NORMAL, "Variable "),
                         new ColouredString(GUITextColour.CYAN, path),
                         new ColouredString(GUITextColour.NORMAL, " updated to "),
-                        new ColouredString(GUITextColour.YELLOW, value)
+                        new ColouredString(GUITextColour.YELLOW, value.toString())
                 }
         );
     }
@@ -320,6 +326,81 @@ public class ConsoleWidget implements IGUIInstance {
             widget.submitCommand(ExecutedCommand.from(
                     GUITextColour.GREEN.with(command),
                     widget.listAllVars()
+            ));
+        }));
+        ConsoleWidget.COMMAND_HANDLERS.put("save", ImmutablePair.of("save <filepath>", (final ConsoleWidget widget, final String command, final String[] args) -> {
+            if (args.length != 1) {
+                widget.submitCommand(ExecutedCommand.from(
+                        new ColouredString[]{
+                                GUITextColour.GREEN.with(command + " "),
+                                GUITextColour.NORMAL.with(String.join(" ", args))
+                        },
+                        new ColouredString[]{
+                                GUITextColour.RED.with("Expected 1 file path argument, got " + args.length + ": "),
+                                GUITextColour.YELLOW.with(Arrays.toString(args))
+                        }
+                ));
+                return;
+            }
+            final Scene scene = widget.engineInitContext.scene();
+            if (scene == null) {
+                widget.submitCommand(ExecutedCommand.from(
+                        new ColouredString[]{
+                                GUITextColour.GREEN.with(command + " "),
+                                GUITextColour.NORMAL.with(String.join(" ", args))
+                        },
+                        GUITextColour.RED.with("No scene object loaded")
+                ));
+                return;
+            }
+            scene.serialize(args[0]);
+            widget.submitCommand(ExecutedCommand.from(
+                    new ColouredString[]{
+                            GUITextColour.GREEN.with(command + " "),
+                            GUITextColour.NORMAL.with(String.join(" ", args))
+                    },
+                    new ColouredString[]{
+                            GUITextColour.NORMAL.with("Serialized scene object to \""),
+                            GUITextColour.YELLOW.with(args[0]),
+                            GUITextColour.NORMAL.with("\""),
+                    }
+            ));
+        }));
+        ConsoleWidget.COMMAND_HANDLERS.put("load", ImmutablePair.of("load <engine id> <filepath>", (final ConsoleWidget widget, final String command, final String[] args) -> {
+            if (args.length != 2) {
+                widget.submitCommand(ExecutedCommand.from(
+                        new ColouredString[]{
+                                GUITextColour.GREEN.with(command + " "),
+                                GUITextColour.NORMAL.with(String.join(" ", args))
+                        },
+                        new ColouredString[]{
+                                GUITextColour.RED.with("Expected 2 arguments, got " + args.length + ": "),
+                                GUITextColour.YELLOW.with(Arrays.toString(args))
+                        }
+                ));
+                return;
+            } else if (!FileUtils.fileExists(args[1])) {
+                widget.submitCommand(ExecutedCommand.from(
+                        new ColouredString[]{
+                                GUITextColour.GREEN.with(command + " "),
+                                GUITextColour.NORMAL.with(String.join(" ", args))
+                        },
+                        new ColouredString[]{
+                                GUITextColour.RED.with("File does not exist: "),
+                                GUITextColour.YELLOW.with(args[1])
+                        }
+                ));
+                return;
+            }
+            final Scene loadedScene = Scene.deserialize(args[1]);
+            final ValidationState state = widget.updateVariableValue("engine.scene::" + args[0], loadedScene);
+            widget.engineInitContext.renderer().setupData(loadedScene);
+            widget.submitCommand(ExecutedCommand.from(
+                    new ColouredString[]{
+                            GUITextColour.GREEN.with(command + " "),
+                            GUITextColour.NORMAL.with(String.join(" ", args))
+                    },
+                    state.message()
             ));
         }));
         ConsoleWidget.COMMAND_HANDLERS.put("help", ImmutablePair.of("help", (final ConsoleWidget widget, final String command, final String[] args) -> {
