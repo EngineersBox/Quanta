@@ -6,9 +6,11 @@ import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Base64;
 
 public class ExternalizableDeserializer<T extends Externalizable> extends StdDeserializer<T> implements ContextualDeserializer {
 
@@ -32,7 +34,7 @@ public class ExternalizableDeserializer<T extends Externalizable> extends StdDes
     public T deserialize(final JsonParser jsonParser,
                          final DeserializationContext context) throws IOException {
         final JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-        final byte[] data = node.binaryValue();
+        final byte[] data = Base64.getDecoder().decode(node.asText());
         try (final ObjectInput objectInput = new ObjectInputStream(new ByteArrayInputStream(data))) {
             this.instance.readExternal(objectInput);
             return this.instance;

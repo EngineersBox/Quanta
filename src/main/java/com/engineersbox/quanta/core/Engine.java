@@ -3,8 +3,8 @@ package com.engineersbox.quanta.core;
 import com.engineersbox.quanta.debug.OpenGLInfo;
 import com.engineersbox.quanta.debug.PipelineStatistics;
 import com.engineersbox.quanta.debug.hooks.RegisterInstanceVariableHooks;
-import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
+import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
@@ -19,7 +19,6 @@ public class Engine {
 
     private static final Logger LOGGER = LogManager.getLogger(Engine.class);
 
-    private final OpenGLInfo info;
     private final IAppLogic appLogic;
     private final Window window;
     private final Renderer renderer;
@@ -30,7 +29,7 @@ public class Engine {
     private final int targetUPS;
     private final PipelineStatistics pipelineStatistics;
     @VariableHook(name = "engine.capture_pipeline_stats")
-    private static boolean CAPTURE_PIPELINE_STATS = false;
+    private boolean capturePipelineStats = false;
 
     @RegisterInstanceVariableHooks
     public Engine(final String title,
@@ -41,13 +40,18 @@ public class Engine {
         });
         init();
         Engine.LOGGER.info("[OPENGL] Created context");
-        this.info = OpenGLInfo.retrieve();
-        this.info.log(false);
+        final OpenGLInfo info = OpenGLInfo.retrieve();
+        info.log(false);
         this.targetFPS = ConfigHandler.CONFIG.video.fps;
         this.targetUPS = ConfigHandler.CONFIG.video.ups;
         this.appLogic = appLogic;
         this.renderer = new Renderer(this.window);
-        this.scene = new Scene(
+//        this.scene = new Scene(
+//                this.window.getWidth(),
+//                this.window.getHeight()
+//        );
+        this.scene = Scene.deserialize("saves/test.json");
+        this.scene.getProjection().updateProjectionMatrix(
                 this.window.getWidth(),
                 this.window.getHeight()
         );
@@ -58,7 +62,7 @@ public class Engine {
                 this.scene,
                 this.renderer,
                 this.pipelineStatistics,
-                this.info
+                info
         ));
         this.running = true;
     }
@@ -108,11 +112,11 @@ public class Engine {
                 deltaUpdate--;
             }
             if (this.targetFPS <= 0 || deltaFps >= 1) {
-                if (CAPTURE_PIPELINE_STATS) {
+                if (this.capturePipelineStats) {
                     this.pipelineStatistics.begin();
                 }
                 this.renderer.render(this.window, this.scene);
-                if (CAPTURE_PIPELINE_STATS) {
+                if (this.capturePipelineStats) {
                     this.pipelineStatistics.end();
                 }
                 deltaFps--;

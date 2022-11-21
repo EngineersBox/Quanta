@@ -1,9 +1,12 @@
 package com.engineersbox.quanta.resources.assets.object.serialization;
 
 import com.engineersbox.quanta.resources.assets.object.Model;
+import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
+import com.engineersbox.quanta.utils.StreamUtils;
+import com.engineersbox.quanta.utils.UncheckedThrowsAdapter;
 import com.engineersbox.quanta.utils.serialization.SerializationUtils;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -14,7 +17,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.StreamSupport;
+
+import static com.engineersbox.quanta.utils.UncheckedThrowsAdapter.unchecked;
 
 public class ModelDeserializer extends StdDeserializer<Model> {
 
@@ -61,13 +68,16 @@ public class ModelDeserializer extends StdDeserializer<Model> {
             throw new JsonParseException(jsonParser, "Expected entities node in model node");
         }
         final List<Entity> entities = model.getEntities();
-        for (final JsonNode entityNode : entitiesNode) {
-            final Entity entity = SerializationUtils.OBJECT_MAPPER.reader()
-                    .forType(new TypeReference<Entity>() {})
-                    .readValue(entityNode);
-            entity.updateModelMatrix();
-            entities.add(entity);
-        }
+        StreamSupport.stream(entitiesNode.spliterator(), false)
+                .map(UncheckedThrowsAdapter.<JsonNode, Entity>unchecked(
+                        SerializationUtils.OBJECT_MAPPER.reader()
+                        .forType(new TypeReference<Entity>(){})::readValue // TODO: Fix this updating previously deserialized objects
+                )).map(StreamUtils.passThrough(Entity::updateModelMatrix))
+                .map(StreamUtils.passThrough((final Entity entity) -> {
+                    if (isAnimated) {
+                        entity.setAnimationData(new AnimationData(model.getAnimations().get(0)));
+                    }
+                })).forEach(entities::add);
         return model;
     }
 

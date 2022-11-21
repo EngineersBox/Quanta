@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.*;
+import java.util.Base64;
 
 public class ExternalizableSerializer<T extends Externalizable> extends StdSerializer<T> {
 
@@ -24,7 +25,7 @@ public class ExternalizableSerializer<T extends Externalizable> extends StdSeria
              final ObjectOutput output = new ObjectOutputStream(baos)) {
             externalizable.writeExternal(output);
             output.flush();
-            jsonGenerator.writeBinary(baos.toByteArray());
+            jsonGenerator.writeString(Base64.getEncoder().encodeToString(baos.toByteArray()));
         }
     }
 }

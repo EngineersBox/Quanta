@@ -1,15 +1,13 @@
 package com.engineersbox.quanta.scene;
 
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
-import com.engineersbox.quanta.utils.serialization.ExternalizableDeserializer;
-import com.engineersbox.quanta.utils.serialization.ExternalizableSerializer;
 import com.engineersbox.quanta.utils.serialization.JsonDeserializeExternalizable;
 import com.engineersbox.quanta.utils.serialization.JsonSerializeExternalizable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -117,6 +115,7 @@ public class Entity {
         this.animationData = animationData;
     }
 
+    @JsonIgnore
     public void update(final Entity other) {
         this.position.set(other.position);
         this.rotation.set(other.rotation);
@@ -124,4 +123,19 @@ public class Entity {
         this.scale = other.scale;
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final Entity entity = (Entity) o;
+
+        return new EqualsBuilder().append(scale, entity.scale).append(id, entity.id).append(modelId, entity.modelId).append(modelMatrix, entity.modelMatrix).append(position, entity.position).append(rotation, entity.rotation).append(animationData, entity.animationData).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(id).append(modelId).append(modelMatrix).append(position).append(rotation).append(scale).append(animationData).toHashCode();
+    }
 }

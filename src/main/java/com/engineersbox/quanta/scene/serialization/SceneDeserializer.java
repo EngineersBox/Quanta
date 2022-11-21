@@ -61,33 +61,17 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
         final Scene scene = new Scene(this.width, this.height);
         final ObjectCodec codec = jsonParser.getCodec();
         final JsonNode node = codec.readTree(jsonParser);
+
         final JsonNode modelMapNode = node.get("models");
         if (modelMapNode == null) {
             throw new JsonParseException(jsonParser, "Expected model map node");
         }
-        final Iterator<Map.Entry<String, JsonNode>> modelMapFields = modelMapNode.fields();
-        final ModelDeserializer modelDeserializer = new ModelDeserializer(scene);
-        final Map<String, Model> modelsMap = StreamSupport.stream(Spliterators.spliteratorUnknownSize(modelMapFields, 0), false)
-                .map((final Map.Entry<String, JsonNode> entry) -> {
-                    try {
-                        final Model model = modelDeserializer.deserialize(entry.getValue().traverse(codec), deserializationContext);
-                        if (model.isAnimated()) {
-                            for (final Entity entity : model.getEntities()) {
-                                entity.setAnimationData(new AnimationData(model.getAnimations().get(0)));
-                            }
-                        }
-                        return ImmutablePair.of(
-                                entry.getKey(),
-                                model
-                        );
-                    } catch (final IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toMap(
-                        Pair::getKey,
-                        Pair::getValue
-                ));
-        scene.getModels().putAll(modelsMap);
+        deserializeModelMap(
+                modelMapNode.fields(),
+                scene,
+                codec,
+                deserializationContext
+        );
 
         final JsonNode projectionNode = node.get("projection");
         if (projectionNode == null) {
@@ -134,4 +118,35 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
         }
         return scene;
     }
+
+    private void deserializeModelMap(final Iterator<Map.Entry<String, JsonNode>> modelMapFields,
+                                     final Scene scene,
+                                     final ObjectCodec codec,
+                                     final DeserializationContext deserializationContext) {
+        final ModelDeserializer modelDeserializer = new ModelDeserializer(scene);
+        final Map<String, Model> modelsMap = StreamSupport.stream(
+                        Spliterators.spliteratorUnknownSize(
+                                modelMapFields,
+                                0
+                        ),
+                        false
+                ).map((final Map.Entry<String, JsonNode> entry) -> {
+                    try {
+                        return ImmutablePair.of(
+                                entry.getKey(),
+                                modelDeserializer.deserialize(
+                                        entry.getValue().traverse(codec),
+                                        deserializationContext
+                                )
+                        );
+                    } catch (final IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toMap(
+                        Pair::getKey,
+                        Pair::getValue
+                ));
+        scene.getModels().putAll(modelsMap);
+    }
+
 }
