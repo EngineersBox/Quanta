@@ -132,5 +132,6 @@ public class Camera {
         this.inverseViewMatrix.set(other.inverseViewMatrix);
         this.rotation.set(other.rotation);
         this.viewMatrix.set(other.viewMatrix);
+        recalculate();
     }
 }

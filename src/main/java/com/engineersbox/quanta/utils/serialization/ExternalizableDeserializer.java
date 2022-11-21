@@ -37,7 +37,7 @@ public class ExternalizableDeserializer<T extends Externalizable> extends StdDes
     public T deserialize(final JsonParser jsonParser,
                          final DeserializationContext context) throws IOException, JacksonException {
         final JsonNode node = jsonParser.getCodec().readTree(jsonParser);
-        final byte[] data = Base64.getDecoder().decode(node.asText());
+        final byte[] data = node.binaryValue();
         try (final ObjectInput objectInput = new ObjectInputStream(new ByteArrayInputStream(data))) {
             this.instance.readExternal(objectInput);
             return this.instance;

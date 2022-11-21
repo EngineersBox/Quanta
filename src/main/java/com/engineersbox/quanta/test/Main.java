@@ -17,19 +17,11 @@ import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
-import com.engineersbox.quanta.scene.serialization.SceneDeserializer;
-import com.engineersbox.quanta.utils.serialization.SerializationUtils;
-import com.fasterxml.jackson.core.exc.StreamWriteException;
-import com.fasterxml.jackson.databind.DatabindException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 
-import java.io.File;
-import java.io.IOException;
-
-import static java.awt.SystemColor.window;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Main implements IAppLogic {
@@ -211,11 +203,19 @@ public class Main implements IAppLogic {
         if (this.rotation > 360) {
             this.rotation = 0;
         }
-        this.cubeEntity1.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
-        this.cubeEntity1.updateModelMatrix();
+        scene.getModels().get("cube-model").getEntities().forEach((final Entity entity) -> {
+            if (entity.getId().equals("cube-entity-1")) {
+                entity.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
+            } else if (entity.getId().equals("cube-entity-2")) {
+                entity.setRotation(1, 1, 1, (float) Math.toRadians(360 - this.rotation));
+            }
+            entity.updateModelMatrix();
+        });
+//        this.cubeEntity1.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
+//        this.cubeEntity1.updateModelMatrix();
 
-        this.cubeEntity2.setRotation(1, 1, 1, (float) Math.toRadians(360 - this.rotation));
-        this.cubeEntity2.updateModelMatrix();
+//        this.cubeEntity2.setRotation(1, 1, 1, (float) Math.toRadians(360 - this.rotation));
+//        this.cubeEntity2.updateModelMatrix();
     }
 
     @Override

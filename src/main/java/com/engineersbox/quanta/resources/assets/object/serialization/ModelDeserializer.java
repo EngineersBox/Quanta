@@ -62,10 +62,11 @@ public class ModelDeserializer extends StdDeserializer<Model> {
         }
         final List<Entity> entities = model.getEntities();
         for (final JsonNode entityNode : entitiesNode) {
-            entities.add(SerializationUtils.OBJECT_MAPPER.reader()
+            final Entity entity = SerializationUtils.OBJECT_MAPPER.reader()
                     .forType(new TypeReference<Entity>() {})
-                    .readValue(entityNode)
-            );
+                    .readValue(entityNode);
+            entity.updateModelMatrix();
+            entities.add(entity);
         }
         return model;
     }

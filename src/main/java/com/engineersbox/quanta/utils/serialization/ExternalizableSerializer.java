@@ -25,8 +25,7 @@ public class ExternalizableSerializer<T extends Externalizable> extends StdSeria
              final ObjectOutput output = new ObjectOutputStream(baos)) {
             externalizable.writeExternal(output);
             output.flush();
-            final String b64Result = Base64.getEncoder().encodeToString(baos.toByteArray());
-            jsonGenerator.writeString(b64Result);
+            jsonGenerator.writeBinary(baos.toByteArray());
         }
     }
 }

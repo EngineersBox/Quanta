@@ -52,6 +52,7 @@ public class SkyBoxDeserializer extends StdDeserializer<SkyBox> {
         final Entity entity = SerializationUtils.OBJECT_MAPPER.reader()
                 .forType(new TypeReference<Entity>(){})
                 .readValue(entityNode);
+        skyBox.getEntity().updateModelMatrix();
         skyBox.getEntity().update(entity);
         return skyBox;
     }
