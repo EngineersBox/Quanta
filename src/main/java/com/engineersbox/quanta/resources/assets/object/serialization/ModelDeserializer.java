@@ -18,7 +18,7 @@ import java.util.List;
 
 public class ModelDeserializer extends StdDeserializer<Model> {
 
-    private final Scene scene;
+    private final transient Scene scene;
 
     public ModelDeserializer(final Scene scene) {
         this(null, scene);
