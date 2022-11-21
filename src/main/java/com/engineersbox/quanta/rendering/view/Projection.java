@@ -43,4 +43,9 @@ public class Projection {
         );
         this.inverseProjectionMatrix.set(this.projectionMatrix).invert();
     }
+
+    public void update(final Projection other) {
+        this.projectionMatrix.set(other.projectionMatrix);
+        this.inverseProjectionMatrix.set(other.inverseProjectionMatrix);
+    }
 }

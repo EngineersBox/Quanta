@@ -7,7 +7,7 @@ import com.engineersbox.quanta.resources.assets.object.Mesh;
 import com.engineersbox.quanta.resources.assets.object.MeshData;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class SkyBox {
@@ -31,30 +31,19 @@ public class SkyBox {
         this.material = materialCache.getMaterial(meshData.getMaterialIdx());
         this.mesh = new Mesh(meshData);
         this.skyBoxModel.getMeshData().clear();
-        this.skyBoxEntity = new Entity("skyBoxEntity-entity", this.skyBoxModel.getId());
-    }
-
-    @JsonCreator
-    public SkyBox(@JsonProperty("material") final Material material,
-                  @JsonProperty("mesh") final Mesh mesh,
-                  @JsonProperty("entity") final Entity entity,
-                  @JsonProperty("model") final Model model) {
-        this.material = material;
-        this.mesh = mesh;
-        this.skyBoxEntity = entity;
-        this.skyBoxModel = model;
+        this.skyBoxEntity = new Entity("skybox-entity", this.skyBoxModel.getId());
     }
 
     public void cleanup() {
         this.mesh.cleanup();
     }
 
-    @JsonProperty("material")
+    @JsonIgnore
     public Material getMaterial() {
         return this.material;
     }
 
-    @JsonProperty("mesh")
+    @JsonIgnore
     public Mesh getMesh() {
         return this.mesh;
     }

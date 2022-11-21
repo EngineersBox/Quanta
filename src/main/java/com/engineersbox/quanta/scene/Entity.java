@@ -2,6 +2,7 @@ package com.engineersbox.quanta.scene;
 
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -33,15 +34,13 @@ public class Entity {
                   @JsonProperty("model_matrix") final Matrix4f modelMatrix,
                   @JsonProperty("position") final Vector3f position,
                   @JsonProperty("rotation") final Quaternionf rotation,
-                  @JsonProperty("scale") final float scale,
-                  @JsonProperty("animation_data") final AnimationData animationData) {
+                  @JsonProperty("scale") final float scale) {
         this.id = id;
         this.modelId = modelId;
         this.modelMatrix = modelMatrix;
         this.position = position;
         this.rotation = rotation;
         this.scale = scale;
-        this.animationData = animationData;
     }
 
     @JsonProperty("id")
@@ -100,12 +99,20 @@ public class Entity {
         );
     }
 
-    @JsonProperty("animation_data")
+    @JsonIgnore
     public AnimationData getAnimationData() {
         return this.animationData;
     }
+
     public void setAnimationData(final AnimationData animationData) {
         this.animationData = animationData;
+    }
+
+    public void update(final Entity other) {
+        this.position.set(other.position);
+        this.rotation.set(other.rotation);
+        this.modelMatrix.set(other.modelMatrix);
+        this.scale = other.scale;
     }
 
 }

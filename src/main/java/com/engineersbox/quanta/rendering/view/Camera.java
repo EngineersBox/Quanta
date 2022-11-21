@@ -118,4 +118,13 @@ public class Camera {
         recalculate();
     }
 
+    public void update(final Camera other) {
+        this.right.set(other.right);
+        this.up.set(other.up);
+        this.position.set(other.position);
+        this.direction.set(other.direction);
+        this.inverseViewMatrix.set(other.inverseViewMatrix);
+        this.rotation.set(other.rotation);
+        this.viewMatrix.set(other.viewMatrix);
+    }
 }

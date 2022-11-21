@@ -118,7 +118,12 @@ public class ModelLoader {
 
         aiReleaseImport(aiScene);
 
-        return new Model(modelId, meshDataList, animations);
+        return new Model(
+                modelId,
+                modelPath,
+                meshDataList,
+                animations
+        );
     }
 
     private static void buildFrameMatrices(final AIAnimation aiAnimation,
