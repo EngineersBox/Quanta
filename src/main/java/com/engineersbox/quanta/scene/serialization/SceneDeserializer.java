@@ -12,6 +12,7 @@ import com.engineersbox.quanta.utils.serialization.SerializationUtils;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -30,6 +31,10 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
 
     private final int width;
     private final int height;
+
+    public SceneDeserializer() {
+        this(0, 0);
+    }
 
     public SceneDeserializer(final int width,
                              final int height) {
@@ -52,7 +57,8 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
     public Scene deserialize(final JsonParser jsonParser,
                              final DeserializationContext deserializationContext) throws IOException, JacksonException {
         final Scene scene = new Scene(this.width, this.height);
-        final JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+        final ObjectCodec codec = jsonParser.getCodec();
+        final JsonNode node = codec.readTree(jsonParser);
         final JsonNode modelMapNode = node.get("models");
         if (modelMapNode == null) {
             throw new JsonParseException(jsonParser, "Expected model map node");
@@ -64,9 +70,9 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
                     try {
                         return ImmutablePair.of(
                                 entry.getKey(),
-                                modelDeserializer.deserialize(entry.getValue().traverse(), deserializationContext)
+                                modelDeserializer.deserialize(entry.getValue().traverse(codec), deserializationContext)
                         );
-                    } catch (IOException e) {
+                    } catch (final IOException e) {
                         throw new RuntimeException(e);
                     }
                 }).collect(Collectors.toMap(
@@ -81,7 +87,7 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
         }
         final Projection projection = SerializationUtils.OBJECT_MAPPER.reader()
                 .forType(new TypeReference<Projection>(){})
-                .readValue(projectionNode.traverse());
+                .readValue(projectionNode.traverse(codec));
         scene.getProjection().update(projection);
 
         final JsonNode cameraNode = node.get("camera");
@@ -90,14 +96,14 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
         }
         final Camera camera = SerializationUtils.OBJECT_MAPPER.reader()
                 .forType(new TypeReference<Camera>(){})
-                .readValue(cameraNode.traverse());
+                .readValue(cameraNode.traverse(codec));
         scene.getCamera().update(camera);
 
         final JsonNode sceneLightsNode = node.get("scene_lights");
         if (sceneLightsNode != null) {
             final SceneLights sceneLights = SerializationUtils.OBJECT_MAPPER.reader()
                     .forType(new TypeReference<SceneLights>(){})
-                    .readValue(sceneLightsNode.traverse());
+                    .readValue(sceneLightsNode.traverse(codec));
             scene.setSceneLights(sceneLights);
         }
 
@@ -105,7 +111,7 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
         if (skyBoxNode != null) {
             final SkyBoxDeserializer skyBoxDeserializer = new SkyBoxDeserializer(scene);
             final SkyBox skyBox = skyBoxDeserializer.deserialize(
-                    skyBoxNode.traverse(),
+                    skyBoxNode.traverse(codec),
                     deserializationContext
             );
             scene.setSkyBox(skyBox);
@@ -115,7 +121,7 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
         if (fogNode != null) {
             final Fog fog = SerializationUtils.OBJECT_MAPPER.reader()
                     .forType(new TypeReference<Fog>(){})
-                    .readValue(fogNode.traverse());
+                    .readValue(fogNode.traverse(codec));
             scene.setFog(fog);
         }
         return scene;

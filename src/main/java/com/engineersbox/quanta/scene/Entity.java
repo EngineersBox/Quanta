@@ -1,9 +1,15 @@
 package com.engineersbox.quanta.scene;
 
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
+import com.engineersbox.quanta.utils.serialization.ExternalizableDeserializer;
+import com.engineersbox.quanta.utils.serialization.ExternalizableSerializer;
+import com.engineersbox.quanta.utils.serialization.JsonDeserializeExternalizable;
+import com.engineersbox.quanta.utils.serialization.JsonSerializeExternalizable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -31,9 +37,9 @@ public class Entity {
     @JsonCreator
     public Entity(@JsonProperty("id") final String id,
                   @JsonProperty("model_id") final String modelId,
-                  @JsonProperty("model_matrix") final Matrix4f modelMatrix,
-                  @JsonProperty("position") final Vector3f position,
-                  @JsonProperty("rotation") final Quaternionf rotation,
+                  @JsonProperty("model_matrix") @JsonDeserializeExternalizable final Matrix4f modelMatrix,
+                  @JsonProperty("position") @JsonDeserializeExternalizable final Vector3f position,
+                  @JsonProperty("rotation") @JsonDeserializeExternalizable final Quaternionf rotation,
                   @JsonProperty("scale") final float scale) {
         this.id = id;
         this.modelId = modelId;
@@ -54,16 +60,19 @@ public class Entity {
     }
 
     @JsonProperty("model_matrix")
+    @JsonSerializeExternalizable
     public Matrix4f getModelMatrix() {
         return this.modelMatrix;
     }
 
     @JsonProperty("position")
+    @JsonSerializeExternalizable
     public Vector3f getPosition() {
         return this.position;
     }
 
     @JsonProperty("rotation")
+    @JsonSerializeExternalizable
     public Quaternionf getRotation() {
         return this.rotation;
     }

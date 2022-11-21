@@ -1,5 +1,8 @@
 package com.engineersbox.quanta.scene.lighting;
 
+import com.engineersbox.quanta.utils.serialization.JsonDeserializeExternalizable;
+import com.engineersbox.quanta.utils.serialization.JsonSerializeExternalizable;
+import com.fasterxml.jackson.annotation.*;
 import org.joml.Vector3f;
 
 public class AmbientLight {
@@ -8,8 +11,9 @@ public class AmbientLight {
 
     private float intensity;
 
-    public AmbientLight(final float intensity,
-                        final Vector3f color) {
+    @JsonCreator
+    public AmbientLight(@JsonProperty("intensity") final float intensity,
+                        @JsonProperty("colour") @JsonDeserializeExternalizable final Vector3f color) {
         this.intensity = intensity;
         this.color = color;
     }
@@ -18,10 +22,13 @@ public class AmbientLight {
         this(1.0f, new Vector3f(1.0f, 1.0f, 1.0f));
     }
 
+    @JsonProperty("colour")
+    @JsonSerializeExternalizable
     public Vector3f getColor() {
         return this.color;
     }
 
+    @JsonProperty("intensity")
     public float getIntensity() {
         return this.intensity;
     }

@@ -1,6 +1,9 @@
 package com.engineersbox.quanta.rendering.view;
 
 import com.engineersbox.quanta.resources.config.ConfigHandler;
+import com.engineersbox.quanta.utils.serialization.JsonDeserializeExternalizable;
+import com.engineersbox.quanta.utils.serialization.JsonSerializeExternalizable;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Matrix4f;
 
@@ -18,18 +21,21 @@ public class Projection {
         updateProjectionMatrix(width, height);
     }
 
-    public Projection(@JsonProperty("projection_matrix") final Matrix4f projectionMatrix,
-                      @JsonProperty("inverse_projection_matrix") final Matrix4f inverseProjectionMatrix) {
+    @JsonCreator
+    public Projection(@JsonProperty("projection_matrix") @JsonDeserializeExternalizable final Matrix4f projectionMatrix,
+                      @JsonProperty("inverse_projection_matrix") @JsonDeserializeExternalizable final Matrix4f inverseProjectionMatrix) {
         this.projectionMatrix = projectionMatrix;
         this.inverseProjectionMatrix = inverseProjectionMatrix;
     }
 
     @JsonProperty("projection_matrix")
+    @JsonSerializeExternalizable
     public Matrix4f getProjectionMatrix() {
         return this.projectionMatrix;
     }
 
     @JsonProperty("inverse_projection_matrix")
+    @JsonSerializeExternalizable
     public Matrix4f getInverseProjectionMatrix() {
         return this.inverseProjectionMatrix;
     }

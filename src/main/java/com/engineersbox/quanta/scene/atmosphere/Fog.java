@@ -1,5 +1,7 @@
 package com.engineersbox.quanta.scene.atmosphere;
 
+import com.engineersbox.quanta.utils.serialization.JsonDeserializeExternalizable;
+import com.engineersbox.quanta.utils.serialization.JsonSerializeExternalizable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Vector3f;
@@ -17,7 +19,7 @@ public class Fog {
 
     @JsonCreator
     public Fog(@JsonProperty("active") final boolean active,
-               @JsonProperty("colour") final Vector3f color,
+               @JsonProperty("colour") @JsonDeserializeExternalizable final Vector3f color,
                @JsonProperty("density") final float density) {
         this.color = color;
         this.density = density;
@@ -25,6 +27,7 @@ public class Fog {
     }
 
     @JsonProperty("colour")
+    @JsonSerializeExternalizable
     public Vector3f getColor() {
         return this.color;
     }

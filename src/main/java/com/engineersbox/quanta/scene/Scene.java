@@ -9,6 +9,7 @@ import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.serialization.ModelDeserializer;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
+import com.engineersbox.quanta.scene.serialization.SceneDeserializer;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -19,6 +20,7 @@ import com.fasterxml.jackson.databind.ser.std.MapSerializer;
 import java.util.HashMap;
 import java.util.Map;
 
+@JsonDeserialize(using = SceneDeserializer.class)
 public class Scene {
 
     private final Map<String, Model> models;

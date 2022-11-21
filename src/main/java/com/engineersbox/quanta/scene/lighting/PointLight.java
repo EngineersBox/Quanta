@@ -1,5 +1,9 @@
 package com.engineersbox.quanta.scene.lighting;
 
+import com.engineersbox.quanta.utils.serialization.JsonDeserializeExternalizable;
+import com.engineersbox.quanta.utils.serialization.JsonSerializeExternalizable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Vector3f;
 
 public class PointLight {
@@ -12,24 +16,43 @@ public class PointLight {
     public PointLight(final Vector3f color,
                       final Vector3f position,
                       final float intensity) {
-        this.attenuation = new Attenuation(0, 0, 1);
+        this(
+                color,
+                position,
+                intensity,
+                new Attenuation(0, 0, 1)
+        );
+    }
+
+    @JsonCreator
+    public PointLight(@JsonProperty("colour") @JsonDeserializeExternalizable final Vector3f color,
+                      @JsonProperty("position") @JsonDeserializeExternalizable final Vector3f position,
+                      @JsonProperty("intensity") final float intensity,
+                      @JsonProperty("attenuation") final Attenuation attenuation) {
+        this.attenuation = attenuation;
         this.color = color;
         this.position = position;
         this.intensity = intensity;
     }
 
+    @JsonProperty("attenuation")
     public Attenuation getAttenuation() {
         return this.attenuation;
     }
 
+    @JsonProperty("colour")
+    @JsonSerializeExternalizable
     public Vector3f getColor() {
         return this.color;
     }
 
+    @JsonProperty("intensity")
     public float getIntensity() {
         return this.intensity;
     }
 
+    @JsonProperty("position")
+    @JsonSerializeExternalizable
     public Vector3f getPosition() {
         return this.position;
     }

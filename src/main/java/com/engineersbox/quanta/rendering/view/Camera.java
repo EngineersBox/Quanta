@@ -1,5 +1,7 @@
 package com.engineersbox.quanta.rendering.view;
 
+import com.engineersbox.quanta.utils.serialization.JsonDeserializeExternalizable;
+import com.engineersbox.quanta.utils.serialization.JsonSerializeExternalizable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Matrix4f;
@@ -25,10 +27,10 @@ public class Camera {
     }
 
     @JsonCreator
-    public Camera(@JsonProperty("position") final Vector3f position,
-                  @JsonProperty("rotation") final Vector3f rotation,
-                  @JsonProperty("view_matrix") final Matrix4f viewMatrix,
-                  @JsonProperty("inverse_view_matrix") final Matrix4f inverseViewMatrix) {
+    public Camera(@JsonProperty("position") @JsonDeserializeExternalizable final Vector3f position,
+                  @JsonProperty("rotation") @JsonDeserializeExternalizable final Vector3f rotation,
+                  @JsonProperty("view_matrix") @JsonDeserializeExternalizable final Matrix4f viewMatrix,
+                  @JsonProperty("inverse_view_matrix") @JsonDeserializeExternalizable final Matrix4f inverseViewMatrix) {
         this.position = position;
         this.rotation = rotation;
         this.viewMatrix = viewMatrix;
@@ -44,21 +46,25 @@ public class Camera {
     }
 
     @JsonProperty("position")
+    @JsonSerializeExternalizable
     public Vector3f getPosition() {
         return this.position;
     }
 
     @JsonProperty("rotation")
+    @JsonSerializeExternalizable
     public Vector3f getRotation() {
         return this.rotation;
     }
 
     @JsonProperty("view_matrix")
+    @JsonSerializeExternalizable
     public Matrix4f getViewMatrix() {
         return this.viewMatrix;
     }
 
     @JsonProperty("inverse_view_matrix")
+    @JsonSerializeExternalizable
     public Matrix4f getInverseViewMatrix() {
         return this.inverseViewMatrix;
     }

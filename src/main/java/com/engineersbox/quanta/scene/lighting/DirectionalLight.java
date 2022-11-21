@@ -1,5 +1,9 @@
 package com.engineersbox.quanta.scene.lighting;
 
+import com.engineersbox.quanta.utils.serialization.JsonDeserializeExternalizable;
+import com.engineersbox.quanta.utils.serialization.JsonSerializeExternalizable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.joml.Vector3f;
 
 public class DirectionalLight {
@@ -10,22 +14,28 @@ public class DirectionalLight {
 
     private float intensity;
 
-    public DirectionalLight(final Vector3f color,
-                            final Vector3f direction,
-                            final float intensity) {
+    @JsonCreator
+    public DirectionalLight(@JsonProperty("colour") @JsonDeserializeExternalizable final Vector3f color,
+                            @JsonProperty("direction") @JsonDeserializeExternalizable final Vector3f direction,
+                            @JsonProperty("intensity") final float intensity) {
         this.color = color;
         this.direction = direction;
         this.intensity = intensity;
     }
 
+    @JsonProperty("colour")
+    @JsonSerializeExternalizable
     public Vector3f getColor() {
         return this.color;
     }
 
+    @JsonProperty("direction")
+    @JsonSerializeExternalizable
     public Vector3f getDirection() {
         return this.direction;
     }
 
+    @JsonProperty("intensity")
     public float getIntensity() {
         return this.intensity;
     }

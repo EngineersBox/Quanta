@@ -17,6 +17,7 @@ import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
+import com.engineersbox.quanta.scene.serialization.SceneDeserializer;
 import com.engineersbox.quanta.utils.serialization.SerializationUtils;
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.DatabindException;
@@ -28,6 +29,7 @@ import org.joml.Vector3f;
 import java.io.File;
 import java.io.IOException;
 
+import static java.awt.SystemColor.window;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Main implements IAppLogic {
@@ -147,14 +149,21 @@ public class Main implements IAppLogic {
         camera.addRotation((float) Math.toRadians(15.0f), (float) Math.toRadians(390.f), 0);
 
         this.lightAngle = 45.001f;
-        try {
-            SerializationUtils.OBJECT_MAPPER.writeValue(
-                    new File("saves/scene.json"),
-                    context.scene()
-            );
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            SerializationUtils.OBJECT_MAPPER.writeValue(
+//                    new File("saves/scene.json"),
+//                    context.scene()
+//            );
+//        } catch (final IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//        try {
+//            final Scene deserializedScene = SerializationUtils.OBJECT_MAPPER.readerFor(Scene.class)
+//                    .readValue(new File("saves/scene.json"));
+//            LOGGER.info("Successful deserialization of scene {}", deserializedScene);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     @Override

@@ -2,15 +2,19 @@ package com.engineersbox.quanta.resources.assets.object.serialization;
 
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
+import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
+import com.engineersbox.quanta.utils.serialization.SerializationUtils;
 import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
+import java.util.List;
 
 public class ModelDeserializer extends StdDeserializer<Model> {
 
@@ -37,7 +41,7 @@ public class ModelDeserializer extends StdDeserializer<Model> {
         final String id = idNode.asText();
         final JsonNode pathNode = node.get("path");
         if (pathNode == null) {
-            throw new JsonParseException(jsonParser, "Expected pathj node in model node");
+            throw new JsonParseException(jsonParser, "Expected path node in model node");
         }
         final String path = pathNode.asText();
         final JsonNode isAnimatedNode = node.get("is_animated");
@@ -45,13 +49,25 @@ public class ModelDeserializer extends StdDeserializer<Model> {
             throw new JsonParseException(jsonParser, "Expected is_animated node in model node");
         }
         final boolean isAnimated = isAnimatedNode.asBoolean();
-        return ModelLoader.loadModel(
+        final Model model = ModelLoader.loadModel(
                 id,
                 path,
                 this.scene.getTextureCache(),
                 this.scene.getMaterialCache(),
                 isAnimated
         );
+        final JsonNode entitiesNode = node.get("entities");
+        if (entitiesNode == null || !entitiesNode.isArray()) {
+            throw new JsonParseException(jsonParser, "Expected entities node in model node");
+        }
+        final List<Entity> entities = model.getEntities();
+        for (final JsonNode entityNode : entitiesNode) {
+            entities.add(SerializationUtils.OBJECT_MAPPER.reader()
+                    .forType(new TypeReference<Entity>() {})
+                    .readValue(entityNode)
+            );
+        }
+        return model;
     }
 
 }
