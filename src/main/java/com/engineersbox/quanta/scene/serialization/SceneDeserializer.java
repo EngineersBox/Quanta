@@ -57,7 +57,7 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
 
     @Override
     public Scene deserialize(final JsonParser jsonParser,
-                             final DeserializationContext deserializationContext) throws IOException, JacksonException {
+                             final DeserializationContext deserializationContext) throws IOException {
         final Scene scene = new Scene(this.width, this.height);
         final ObjectCodec codec = jsonParser.getCodec();
         final JsonNode node = codec.readTree(jsonParser);

@@ -30,7 +30,7 @@ public class SkyBoxDeserializer extends StdDeserializer<SkyBox> {
 
     @Override
     public SkyBox deserialize(final JsonParser jsonParser,
-                              final DeserializationContext deserializationContext) throws IOException, JacksonException {
+                              final DeserializationContext deserializationContext) throws IOException {
         final JsonNode node = jsonParser.getCodec().readTree(jsonParser);
         final JsonNode modelNode = node.get("model");
         if (modelNode == null) {

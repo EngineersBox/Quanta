@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.*;
-import java.util.Base64;
 
 public class ExternalizableSerializer<T extends Externalizable> extends StdSerializer<T> {
 

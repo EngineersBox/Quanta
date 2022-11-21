@@ -32,7 +32,7 @@ public class ModelDeserializer extends StdDeserializer<Model> {
 
     @Override
     public Model deserialize(final JsonParser jsonParser,
-                             final DeserializationContext deserializationContext) throws IOException, JacksonException {
+                             final DeserializationContext deserializationContext) throws IOException {
         final JsonNode node = jsonParser.getCodec().readTree(jsonParser);
         final JsonNode idNode = node.get("id");
         if (idNode == null) {
