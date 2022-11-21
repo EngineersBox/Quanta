@@ -149,21 +149,6 @@ public class Main implements IAppLogic {
         camera.addRotation((float) Math.toRadians(15.0f), (float) Math.toRadians(390.f), 0);
 
         this.lightAngle = 45.001f;
-//        try {
-//            SerializationUtils.OBJECT_MAPPER.writeValue(
-//                    new File("saves/scene.json"),
-//                    context.scene()
-//            );
-//        } catch (final IOException e) {
-//            throw new RuntimeException(e);
-//        }
-//        try {
-//            final Scene deserializedScene = SerializationUtils.OBJECT_MAPPER.readerFor(Scene.class)
-//                    .readValue(new File("saves/scene.json"));
-//            LOGGER.info("Successful deserialization of scene {}", deserializedScene);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
     }
 
     @Override

@@ -10,6 +10,7 @@ import com.engineersbox.quanta.resources.assets.object.serialization.ModelDeseri
 import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
 import com.engineersbox.quanta.scene.serialization.SceneDeserializer;
+import com.engineersbox.quanta.utils.serialization.SerializationUtils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -17,6 +18,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.MapSerializer;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,5 +122,25 @@ public class Scene {
 
     public void setFog(final Fog fog) {
         this.fog = fog;
+    }
+
+    public void serialize(final String filePath) {
+        try {
+            SerializationUtils.OBJECT_MAPPER.writeValue(
+                    new File(filePath),
+                    this
+            );
+        } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Scene deserialize(final String filePath) {
+        try {
+            return SerializationUtils.OBJECT_MAPPER.readerFor(Scene.class)
+                    .readValue(new File(filePath));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
