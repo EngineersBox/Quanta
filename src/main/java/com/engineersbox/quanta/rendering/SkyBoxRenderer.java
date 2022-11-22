@@ -30,7 +30,6 @@ public class SkyBoxRenderer {
                 new ShaderModuleData("assets/shaders/scene/skybox.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/scene/skybox.frag", ShaderType.FRAGMENT)
         );
-        this.shader.validate();
         this.viewMatrix = new Matrix4f();
         createUniforms();
     }

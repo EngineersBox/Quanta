@@ -1,6 +1,6 @@
 # TODO
 
-* Scene management with ImGui
+* Scene management/builder with ImGui
   * Add/remove entities from the scene
   * Edit properties of entities
     * Position
@@ -11,6 +11,7 @@
 * Radiosity
 * Volumetric lighting
 * Water
+* Refactor material system to BRDF
 * Scene entity selection
   * Outline with post-processing shader
 * Generify rendering pipeline

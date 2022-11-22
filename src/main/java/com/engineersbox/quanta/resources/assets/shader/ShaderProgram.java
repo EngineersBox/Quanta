@@ -92,14 +92,15 @@ public class ShaderProgram {
         glUseProgram(0);
     }
 
-    public void validate() {
+    public ShaderValidationState validate() {
         glValidateProgram(this.programId);
         if (glGetProgrami(this.programId, GL_VALIDATE_STATUS) == 0) {
-            throw new RuntimeException(String.format(
-                    "[SHADER PROGRAM] Error while validating shader program: %s",
+            return new ShaderValidationState(
+                    false,
                     glGetProgramInfoLog(this.programId, 1024)
-            ));
+            );
         }
+        return new ShaderValidationState(true, null);
     }
 
     public int getProgramId() {

@@ -1,5 +1,8 @@
 package com.engineersbox.quanta.rendering;
 
+import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
 import com.engineersbox.quanta.rendering.indirect.RenderBuffers;
@@ -18,42 +21,36 @@ import static org.lwjgl.opengl.GL30.glBindBufferBase;
 import static org.lwjgl.opengl.GL42.glMemoryBarrier;
 import static org.lwjgl.opengl.GL43.*;
 
-public class AnimationRenderer {
+@RenderHandler(
+        name = AnimationRenderer.RENDERER_NAME,
+        priority = 0,
+        stage = ShaderStage.PRE_PROCESS
+)
+public class AnimationRenderer extends ShaderRenderHandler {
 
-    private final ShaderProgram shaderProgram;
-    private Uniforms uniforms;
+    public static final String RENDERER_NAME = "@quanta__ANIMATION_RENDERER";
 
     public AnimationRenderer() {
-        this.shaderProgram = new ShaderProgram(
+        super(new ShaderProgram(
                 new ShaderModuleData("assets/shaders/animation/animation.comp", ShaderType.COMPUTE)
-        );
-        createUniforms();
-    }
-
-    public void cleanup() {
-        this.shaderProgram.cleanup();
-    }
-
-    private void createUniforms() {
-        this.uniforms = new Uniforms(this.shaderProgram.getProgramId());
+        ));
         Stream.of(
                 "drawParameters.srcOffset",
                 "drawParameters.srcSize",
                 "drawParameters.weightsOffset",
                 "drawParameters.bonesMatricesOffset",
                 "drawParameters.dstOffset"
-        ).forEach(this.uniforms::createUniform);
+        ).forEach(super.uniforms::createUniform);
     }
 
-    public void render(final Scene scene,
-                       final RenderBuffers renderBuffers) {
-        this.shaderProgram.bind();
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, renderBuffers.getBindingPosesBuffer());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, renderBuffers.getBonesIndicesWeightsBuffer());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, renderBuffers.getBonesMatricesBuffer());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, renderBuffers.getDestAnimationBuffer());
+    public void render(final RenderContext context) {
+        super.bind();
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, context.renderBuffers().getBindingPosesBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, context.renderBuffers().getBonesIndicesWeightsBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, context.renderBuffers().getBonesMatricesBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, context.renderBuffers().getDestAnimationBuffer());
         int dstOffset = 0;
-        for (final Model model : scene.getModels().values()) {
+        for (final Model model : context.scene().getModels().values()) {
             if (!model.isAnimated()) {
                 continue;
             }
@@ -62,23 +59,23 @@ public class AnimationRenderer {
                 final Entity entity = animMeshDrawData.entity();
                 final AnimatedFrame frame = entity.getAnimationData().getCurrentFrame();
                 final int groupSize = (int) Math.ceil((float) meshDrawData.sizeInBytes() / (14 * 4));
-                this.uniforms.setUniform(
+                super.uniforms.setUniform(
                         "drawParameters.srcOffset",
                         animMeshDrawData.bindingPoseOffset()
                 );
-                this.uniforms.setUniform(
+                super.uniforms.setUniform(
                         "drawParameters.srcSize",
                         meshDrawData.sizeInBytes() / 4
                 );
-                this.uniforms.setUniform(
+                super.uniforms.setUniform(
                         "drawParameters.weightsOffset",
                         animMeshDrawData.weightsOffset()
                 );
-                this.uniforms.setUniform(
+                super.uniforms.setUniform(
                         "drawParameters.bonesMatricesOffset",
                         frame.getOffset()
                 );
-                this.uniforms.setUniform(
+                super.uniforms.setUniform(
                         "drawParameters.dstOffset",
                         dstOffset
                 );
@@ -87,7 +84,7 @@ public class AnimationRenderer {
             }
         }
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-        this.shaderProgram.unbind();
+        super.unbind();
     }
 
 }

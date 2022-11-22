@@ -25,12 +25,14 @@ public class Config {
     public final Engine.Resources resources;
 
     public static class Features {
+      public final boolean showAxis;
       public final boolean showFPS;
 
       public Features(
           com.typesafe.config.Config c,
           java.lang.String parentPath,
           $TsCfgValidator $tsCfgValidator) {
+        this.showAxis = c.hasPathOrNull("showAxis") && c.getBoolean("showAxis");
         this.showFPS = c.hasPathOrNull("showFPS") && c.getBoolean("showFPS");
       }
     }

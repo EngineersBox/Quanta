@@ -49,7 +49,6 @@ public class GUIRenderer {
                 new ShaderModuleData("assets/shaders/gui/gui.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/gui/gui.frag", ShaderType.FRAGMENT)
         );
-        this.shader.validate();
         createUniforms();
         createUIResources(window);
     }

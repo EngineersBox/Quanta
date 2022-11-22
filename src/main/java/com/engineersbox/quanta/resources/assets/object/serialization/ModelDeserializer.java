@@ -77,8 +77,18 @@ public class ModelDeserializer extends StdDeserializer<Model> {
                     if (isAnimated) {
                         entity.setAnimationData(new AnimationData(model.getAnimations().get(0)));
                     }
-                })).forEach(entities::add);
+                })).map(this::copyFixEntity)
+                .forEach(entities::add);
         return model;
+    }
+
+    public Entity copyFixEntity(final Entity entity) {
+        final Entity newEntity = new Entity(
+                entity.getId(),
+                entity.getModelId()
+        );
+        newEntity.update(entity);
+        return newEntity;
     }
 
 }
