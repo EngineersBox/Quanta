@@ -115,7 +115,7 @@ public class Texture {
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_SRGB_ALPHA,
+                GL_SRGB_ALPHA, // TODO: Conditionally switch between GL_RGBA and GL_SRGB_ALPHA
                 width,
                 height,
                 0,
