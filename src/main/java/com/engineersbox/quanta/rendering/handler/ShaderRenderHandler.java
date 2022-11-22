@@ -16,6 +16,11 @@ public abstract class ShaderRenderHandler {
 
     public abstract void render(final RenderContext context);
 
+    public void setupData(final RenderContext context) {}
+
+    public void resize(final int width,
+                       final int height) {}
+
     public ShaderProgram provideShader() {
         return this.shader;
     }

@@ -1,10 +1,11 @@
 package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.debug.hooks.VariableHook;
-import com.engineersbox.quanta.rendering.deferred.GBuffer;
+import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
-import com.engineersbox.quanta.rendering.indirect.RenderBuffers;
 import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.resources.assets.material.MaterialCache;
 import com.engineersbox.quanta.resources.assets.material.Texture;
@@ -13,7 +14,6 @@ import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
-import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import org.apache.logging.log4j.LogManager;
@@ -34,10 +34,15 @@ import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL40.GL_DRAW_INDIRECT_BUFFER;
 import static org.lwjgl.opengl.GL43.glMultiDrawElementsIndirect;
 
-public class SceneRenderer {
+@RenderHandler(
+        name = SceneRenderer.RENDERER_NAME,
+        priority = 2,
+        stage = ShaderStage.PRE_PROCESS
+)
+public class SceneRenderer extends ShaderRenderHandler {
 
     private static final Logger LOGGER = LogManager.getLogger(SceneRenderer.class);
-
+    public static final String RENDERER_NAME = "@quanta__SCENE_RENDERER";
     public static final int MAX_DRAW_ELEMENTS = 100;
     public static final int MAX_ENTITIES = 50;
     private static final int COMMAND_SIZE = 5 * 4;
@@ -46,37 +51,35 @@ public class SceneRenderer {
     @VariableHook(name = "renderer.show_normals")
     private static boolean SHOW_NORMALS = false;
     private final Map<String, Integer> entitiesIdxMap;
-    private final ShaderProgram shader;
     private int staticDrawCount;
     private int staticRenderBufferHandle;
     private int animDrawCount;
     private int animRenderBufferHandle;
-    private Uniforms uniforms;
 
     public SceneRenderer() {
-        this.shader = new ShaderProgram(
+        super(new ShaderProgram(
                 new ShaderModuleData("assets/shaders/scene/scene.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/scene/scene.frag", ShaderType.FRAGMENT)
-        );
+        ));
         createUniforms();
         this.entitiesIdxMap = new HashMap<>();
     }
 
+    @Override
     public void cleanup() {
-        this.shader.cleanup();
+        super.cleanup();
         glDeleteBuffers(this.staticRenderBufferHandle);
         glDeleteBuffers(this.animRenderBufferHandle);
     }
 
     private void createUniforms() {
-        this.uniforms = new Uniforms(this.shader.getProgramId());
         Stream.of(
                 "projectionMatrix",
                 "viewMatrix",
                 "showNormals"
-        ).forEach(this.uniforms::createUniform);
+        ).forEach(super.uniforms::createUniform);
         for (int i = 0; i < SceneRenderer.MAX_TEXTURES; i++) {
-            this.uniforms.createUniform("textureSampler[" + i + "]");
+            super.uniforms.createUniform("textureSampler[" + i + "]");
         }
         for (int i = 0; i < SceneRenderer.MAX_MATERIALS; i++) {
             final String name = "materials[" + i + "]";
@@ -86,57 +89,56 @@ public class SceneRenderer {
                     name + ".reflectance",
                     name + ".normalMapIdx",
                     name + ".textureIdx"
-            ).forEach(this.uniforms::createUniform);
+            ).forEach(super.uniforms::createUniform);
         }
         for (int i = 0; i < SceneRenderer.MAX_DRAW_ELEMENTS; i++) {
             final String name = "drawElements[" + i + "]";
             Stream.of(
                     name + ".modelMatrixIdx",
                     name + ".materialIdx"
-            ).forEach(this.uniforms::createUniform);
+            ).forEach(super.uniforms::createUniform);
         }
         for (int i = 0; i < SceneRenderer.MAX_ENTITIES; i++) {
-            this.uniforms.createUniform("modelMatrices[" + i + "]");
+            super.uniforms.createUniform("modelMatrices[" + i + "]");
         }
     }
 
-    public void render(final Scene scene,
-                       final RenderBuffers renderBuffers,
-                       final GBuffer gBuffer) {
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, gBuffer.getGBufferId());
+    @Override
+    public void render(final RenderContext context) {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, context.gBuffer().getGBufferId());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, gBuffer.getWidth(), gBuffer.getHeight());
+        glViewport(0, 0, context.gBuffer().getWidth(), context.gBuffer().getHeight());
         glDisable(GL_BLEND);
-        this.shader.bind();
-        this.uniforms.setUniform(
+        super.shader.bind();
+        super.uniforms.setUniform(
                 "projectionMatrix",
-                scene.getProjection().getProjectionMatrix()
+                context.scene().getProjection().getProjectionMatrix()
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "viewMatrix",
-                scene.getCamera().getViewMatrix()
+                context.scene().getCamera().getViewMatrix()
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "showNormals",
                 SHOW_NORMALS
         );
-        final TextureCache textureCache = scene.getTextureCache();
+        final TextureCache textureCache = context.scene().getTextureCache();
         final List<Texture> textures = textureCache.getAll().stream().toList();
         final int numTextures = textures.size();
         if (numTextures > SceneRenderer.MAX_TEXTURES) {
             SceneRenderer.LOGGER.warn("Only " + SceneRenderer.MAX_TEXTURES + " textures can be used");
         }
         for (int i = 0; i < Math.min(SceneRenderer.MAX_TEXTURES, numTextures); i++) {
-            this.uniforms.setUniform("textureSampler[" + i + "]", i);
+            super.uniforms.setUniform("textureSampler[" + i + "]", i);
             final Texture texture = textures.get(i);
             glActiveTexture(GL_TEXTURE0 + i);
             texture.bind();
         }
         int entityIdx = 0;
-        for (final Model model : scene.getModels().values()) {
+        for (final Model model : context.scene().getModels().values()) {
             final List<Entity> entities = model.getEntities();
             for (final Entity entity : entities) {
-                this.uniforms.setUniform(
+                super.uniforms.setUniform(
                         "modelMatrices[" + entityIdx + "]",
                         entity.getModelMatrix()
                 );
@@ -145,7 +147,7 @@ public class SceneRenderer {
         }
         // Static meshes
         int drawElement = 0;
-        List<Model> modelList = scene.getModels()
+        List<Model> modelList = context.scene().getModels()
                 .values()
                 .stream()
                 .filter(Predicate.not(Model::isAnimated))
@@ -155,11 +157,11 @@ public class SceneRenderer {
             for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
                 for (final Entity entity : entities) {
                     final String name = "drawElements[" + drawElement + "]";
-                    this.uniforms.setUniform(
+                    super.uniforms.setUniform(
                             name + ".modelMatrixIdx",
                             this.entitiesIdxMap.get(entity.getId())
                     );
-                    this.uniforms.setUniform(
+                    super.uniforms.setUniform(
                             name + ".materialIdx",
                             meshDrawData.materialIdx()
                     );
@@ -168,7 +170,7 @@ public class SceneRenderer {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.staticRenderBufferHandle);
-        glBindVertexArray(renderBuffers.getStaticVaoId());
+        glBindVertexArray(context.renderBuffers().getStaticVaoId());
         glMultiDrawElementsIndirect(
                 GL_TRIANGLES,
                 GL_UNSIGNED_INT,
@@ -178,7 +180,7 @@ public class SceneRenderer {
         );
         // Animated meshes
         drawElement = 0;
-        modelList = scene.getModels()
+        modelList = context.scene().getModels()
                 .values()
                 .stream()
                 .filter(Model::isAnimated)
@@ -188,11 +190,11 @@ public class SceneRenderer {
                 final AnimMeshDrawData animMeshDrawData = meshDrawData.animMeshDrawData();
                 final Entity entity = animMeshDrawData.entity();
                 final String name = "drawElements[" + drawElement + "]";
-                this.uniforms.setUniform(
+                super.uniforms.setUniform(
                         name + ".modelMatrixIdx",
                         this.entitiesIdxMap.get(entity.getId())
                 );
-                this.uniforms.setUniform(
+                super.uniforms.setUniform(
                         name + ".materialIdx",
                         meshDrawData.materialIdx()
                 );
@@ -200,7 +202,7 @@ public class SceneRenderer {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.animRenderBufferHandle);
-        glBindVertexArray(renderBuffers.getAnimVaoId());
+        glBindVertexArray(context.renderBuffers().getAnimVaoId());
         glMultiDrawElementsIndirect(
                 GL_TRIANGLES,
                 GL_UNSIGNED_INT,
@@ -210,7 +212,7 @@ public class SceneRenderer {
         );
         glBindVertexArray(0);
         glEnable(GL_BLEND);
-        this.shader.unbind();
+        super.shader.unbind();
     }
 
     private void setupAnimCommandBuffer(final Scene scene) {
@@ -249,7 +251,9 @@ public class SceneRenderer {
         MemoryUtil.memFree(commandBuffer);
     }
 
-    public void setupData(final Scene scene) {
+    @Override
+    public void setupData(final RenderContext context) {
+        final Scene scene = context.scene();
         setupEntitiesData(scene);
         setupStaticCommandBuffer(scene);
         setupAnimCommandBuffer(scene);
@@ -279,21 +283,21 @@ public class SceneRenderer {
         for (int i = 0; i < Math.min(SceneRenderer.MAX_TEXTURES, numTextures); i++) {
             texturePosMap.put(textures.get(i).getPath(), i);
         }
-        this.shader.bind();
+        super.bind();
         final List<Material> materialList = materialCache.getMaterials();
         final int numMaterials = materialList.size();
         for (int i = 0; i < numMaterials; i++) {
             final Material material = materialCache.getMaterial(i);
             final String name = "materials[" + i + "]";
-            this.uniforms.setUniform(
+            super.uniforms.setUniform(
                     name + ".diffuse",
                     material.getDiffuseColor()
             );
-            this.uniforms.setUniform(
+            super.uniforms.setUniform(
                     name + ".specular",
                     material.getSpecularColor()
             );
-            this.uniforms.setUniform(
+            super.uniforms.setUniform(
                     name + ".reflectance",
                     material.getReflectance()
             );
@@ -302,18 +306,18 @@ public class SceneRenderer {
             if (normalMapPath != null) {
                 idx = texturePosMap.computeIfAbsent(normalMapPath, k -> 0);
             }
-            this.uniforms.setUniform(
+            super.uniforms.setUniform(
                     name + ".normalMapIdx",
                     idx
             );
             final Texture texture = textureCache.getTexture(material.getTexturePath());
             idx = texturePosMap.computeIfAbsent(texture.getPath(), (final String ignored) -> 0);
-            this.uniforms.setUniform(
+            super.uniforms.setUniform(
                     name + ".textureIdx",
                     idx
             );
         }
-        this.shader.unbind();
+        super.unbind();
     }
 
     private void setupStaticCommandBuffer(final Scene scene) {

@@ -1,5 +1,8 @@
 package com.engineersbox.quanta.rendering;
 
+import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.material.TextureCache;
@@ -19,23 +22,26 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
-public class SkyBoxRenderer {
+@RenderHandler(
+        name = SkyBoxRenderer.RENDERER_NAME,
+        priority = 1,
+        stage = ShaderStage.CORE
+)
+public class SkyBoxRenderer extends ShaderRenderHandler {
 
-    private final ShaderProgram shader;
-    private Uniforms uniforms;
+    public static final String RENDERER_NAME = "@quanta__SKYBOX_RENDERER";
     private final Matrix4f viewMatrix;
 
     public SkyBoxRenderer() {
-        this.shader = new ShaderProgram(
+        super(new ShaderProgram(
                 new ShaderModuleData("assets/shaders/scene/skybox.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/scene/skybox.frag", ShaderType.FRAGMENT)
-        );
+        ));
         this.viewMatrix = new Matrix4f();
         createUniforms();
     }
 
     private void createUniforms() {
-        this.uniforms = new Uniforms(this.shader.getProgramId());
         Stream.of(
                 "projectionMatrix",
                 "viewMatrix",
@@ -43,46 +49,47 @@ public class SkyBoxRenderer {
                 "diffuse",
                 "textureSampler",
                 "hasTexture"
-        ).forEach(this.uniforms::createUniform);
+        ).forEach(super.uniforms::createUniform);
     }
 
-    public void render(final Scene scene) {
-        final SkyBox skyBox = scene.getSkyBox();
+    @Override
+    public void render(final RenderContext context) {
+        final SkyBox skyBox = context.scene().getSkyBox();
         if (skyBox == null) {
             return;
         }
-        this.shader.bind();
-        this.uniforms.setUniform(
+        super.bind();
+        super.uniforms.setUniform(
                 "projectionMatrix",
-                scene.getProjection().getProjectionMatrix()
+                context.scene().getProjection().getProjectionMatrix()
         );
-        this.viewMatrix.set(scene.getCamera().getViewMatrix());
+        this.viewMatrix.set(context.scene().getCamera().getViewMatrix());
         this.viewMatrix.m30(0);
         this.viewMatrix.m31(0);
         this.viewMatrix.m32(0);
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "viewMatrix",
                 this.viewMatrix
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "textureSampler",
                 0
         );
         final Material material = skyBox.getMaterial();
         final Mesh mesh = skyBox.getMesh();
-        final Texture texture = scene.getTextureCache().getTexture(material.getTexturePath());
+        final Texture texture = context.scene().getTextureCache().getTexture(material.getTexturePath());
         glActiveTexture(GL_TEXTURE0);
         texture.bind();
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "diffuse",
                 material.getDiffuseColor()
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "hasTexture",
                 texture.getPath().equals(TextureCache.DEFAULT_TEXTURE) ? 0 : 1
         );
         glBindVertexArray(mesh.getVaoId());
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "modelMatrix",
                 skyBox.getEntity().getModelMatrix()
         );
@@ -93,11 +100,8 @@ public class SkyBoxRenderer {
                 0
         );
         glBindVertexArray(0);
-        this.shader.unbind();
-    }
-
-    public void cleanup() {
-        this.shader.cleanup();
+        super.unbind();
+        Renderer.lightingRenderFinish();
     }
 
 }

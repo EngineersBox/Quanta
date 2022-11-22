@@ -43,6 +43,7 @@ public class AnimationRenderer extends ShaderRenderHandler {
         ).forEach(super.uniforms::createUniform);
     }
 
+    @Override
     public void render(final RenderContext context) {
         super.bind();
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, context.renderBuffers().getBindingPosesBuffer());

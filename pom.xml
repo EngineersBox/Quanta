@@ -31,6 +31,7 @@
         <reflections.version>0.10.2</reflections.version>
         <aspectj.version>1.9.9.1</aspectj.version>
         <aspectj-plugin.version>1.14.0</aspectj-plugin.version>
+        <commons-geometry.version>1.0</commons-geometry.version>
 
         <!-- Maven Compiler Version -->
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
@@ -263,6 +264,22 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>${aspectj.version}</version>
+        </dependency>
+        <!-- Apache Commons Geometry -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-geometry-core</artifactId>
+            <version>${commons-geometry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-geometry-io-euclidean</artifactId>
+            <version>${commons-geometry.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-geometry-io-core</artifactId>
+            <version>${commons-geometry.version}</version>
         </dependency>
     </dependencies>
 

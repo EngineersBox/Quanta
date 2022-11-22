@@ -394,7 +394,10 @@ public class ConsoleWidget implements IGUIInstance {
             }
             final Scene loadedScene = Scene.deserialize(args[1]);
             final ValidationState state = widget.updateVariableValue("engine.scene::" + args[0], loadedScene);
-            widget.engineInitContext.renderer().setupData(loadedScene);
+            widget.engineInitContext.renderer().setupData(
+                    loadedScene,
+                    widget.engineInitContext.window()
+            );
             widget.submitCommand(ExecutedCommand.from(
                     new ColouredString[]{
                             GUITextColour.GREEN.with(command + " "),

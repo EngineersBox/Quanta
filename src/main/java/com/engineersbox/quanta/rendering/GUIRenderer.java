@@ -6,6 +6,9 @@ import com.engineersbox.quanta.debug.hooks.HookValidationException;
 import com.engineersbox.quanta.debug.hooks.HookValidator;
 import com.engineersbox.quanta.debug.hooks.RegisterInstanceVariableHooks;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
+import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.resources.assets.gui.GUIMesh;
 import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
@@ -30,7 +33,14 @@ import static org.lwjgl.opengl.GL14.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
-public class GUIRenderer {
+@RenderHandler(
+        name = GUIRenderer.RENDERER_NAME,
+        priority = 0,
+        stage = ShaderStage.POST_PROCESS
+)
+public class GUIRenderer extends ShaderRenderHandler {
+
+    public static final String RENDERER_NAME = "@quanta__GUI_RENDERER";
 
     private GUIMesh guiMesh;
     @VariableHook(
@@ -38,19 +48,17 @@ public class GUIRenderer {
             hookValidator = "scaleHookValidator"
     )
     private Vector2f scale;
-    private final ShaderProgram shader;
     private Texture texture;
-    private Uniforms uniforms;
     private ImGuiImplGlfw imGuiImplGlfw;
 
     @RegisterInstanceVariableHooks
-    public GUIRenderer(final Window window) {
-        this.shader = new ShaderProgram(
+    public GUIRenderer() {
+        super(new ShaderProgram(
                 new ShaderModuleData("assets/shaders/gui/gui.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/gui/gui.frag", ShaderType.FRAGMENT)
-        );
-        createUniforms();
-        createUIResources(window);
+        ));
+        this.uniforms.createUniform("scale");
+        this.scale = new Vector2f();
     }
 
     @HookValidator(name = "scaleHookValidator")
@@ -68,13 +76,10 @@ public class GUIRenderer {
         );
     }
 
-    private void createUniforms() {
-        this.uniforms = new Uniforms(this.shader.getProgramId());
-        this.uniforms.createUniform("scale");
-        this.scale = new Vector2f();
-    }
-
     private void createUIResources(final Window window) {
+        if (this.imGuiImplGlfw != null) {
+            return;
+        }
         ImGui.createContext();
         this.imGuiImplGlfw = new ImGuiImplGlfw();
         this.imGuiImplGlfw.init(window.getHandle(), true);
@@ -92,13 +97,19 @@ public class GUIRenderer {
         this.guiMesh = new GUIMesh();
     }
 
-    public void render(final Scene scene) {
-        final IGUIInstance guiInstance = scene.getGUIInstance();
+    @Override
+    public void setupData(final RenderContext context) {
+        createUIResources(context.window());
+    }
+
+    @Override
+    public void render(final RenderContext context) {
+        final IGUIInstance guiInstance = context.scene().getGUIInstance();
         if (guiInstance == null) {
             return;
         }
         guiInstance.drawGUI();
-        this.shader.bind();
+        super.bind();
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -112,7 +123,7 @@ public class GUIRenderer {
         final ImGuiIO io = ImGui.getIO();
         this.scale.x = 2.0f / io.getDisplaySizeX();
         this.scale.y = -2.0f / io.getDisplaySizeY();
-        this.uniforms.setUniform("scale", this.scale);
+        super.uniforms.setUniform("scale", this.scale);
         final ImDrawData drawData = ImGui.getDrawData();
         final int numLists = drawData.getCmdListsCount();
         for (int i = 0; i < numLists; i++) {
@@ -133,17 +144,19 @@ public class GUIRenderer {
             glEnable(GL_CULL_FACE);
         }
         glDisable(GL_BLEND);
-        this.shader.unbind();
+        super.unbind();
     }
 
+    @Override
     public void resize(final int width,
                        final int height) {
         final ImGuiIO io = ImGui.getIO();
         io.setDisplaySize(width, height);
     }
 
+    @Override
     public void cleanup() {
-        this.shader.cleanup();
+        super.cleanup();
         this.texture.cleanup();
     }
 }

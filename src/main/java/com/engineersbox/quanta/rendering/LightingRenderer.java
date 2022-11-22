@@ -2,6 +2,9 @@ package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
+import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
+import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.shadow.ShadowCascade;
 import com.engineersbox.quanta.resources.assets.object.QuadMesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
@@ -23,8 +26,14 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
-public class LightingRenderer {
+@RenderHandler(
+        name = LightingRenderer.RENDERER_NAME,
+        priority = 0,
+        stage = ShaderStage.CORE
+)
+public class LightingRenderer extends ShaderRenderHandler {
 
+    public static final String RENDERER_NAME = "@quanta__LIGHTING_RENDERER";
     private static final int MAX_POINT_LIGHTS = 5;
     private static final int MAX_SPOT_LIGHTS = 5;
     @VariableHook(name = "renderer.show_cascades")
@@ -33,22 +42,19 @@ public class LightingRenderer {
     private static boolean SHOW_DEPTH = false;
     @VariableHook(name = "renderer.show_shadows")
     private static boolean SHOW_SHADOWS = false;
-    private final ShaderProgram shader;
 
     private final QuadMesh quadMesh;
-    private Uniforms uniforms;
 
     public LightingRenderer() {
-        this.shader = new ShaderProgram(
+        super(new ShaderProgram(
                 new ShaderModuleData("assets/shaders/lighting/lighting.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/lighting/lighting.frag", ShaderType.FRAGMENT)
-        );
+        ));
         this.quadMesh = new QuadMesh();
         createUniforms();
     }
 
     private void createUniforms() {
-        this.uniforms = new Uniforms(this.shader.getProgramId());
         Stream.of(
                 "albedoSampler",
                 "normalSampler",
@@ -67,7 +73,7 @@ public class LightingRenderer {
                 "showCascades",
                 "showDepth",
                 "showShadows"
-        ).forEach(this.uniforms::createUniform);
+        ).forEach(super.uniforms::createUniform);
 
         for (int i = 0; i < LightingRenderer.MAX_POINT_LIGHTS; i++) {
             final String name = "pointLights[" + i + "]";
@@ -78,7 +84,7 @@ public class LightingRenderer {
                     name + ".att.constant",
                     name + ".att.linear",
                     name + ".att.exponent"
-            ).forEach(this.uniforms::createUniform);
+            ).forEach(super.uniforms::createUniform);
         }
         for (int i = 0; i < LightingRenderer.MAX_SPOT_LIGHTS; i++) {
             final String name = "spotLights[" + i + "]";
@@ -91,93 +97,98 @@ public class LightingRenderer {
                     name + ".pl.att.exponent",
                     name + ".coneDir",
                     name + ".cutoff"
-            ).forEach(this.uniforms::createUniform);
+            ).forEach(super.uniforms::createUniform);
         }
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             Stream.of(
                     "shadowMap_" + i,
                     "shadowCascade[" + i + "]" + ".projectionViewMatrix",
                     "shadowCascade[" + i + "]" + ".splitDistance"
-            ).forEach(this.uniforms::createUniform);
+            ).forEach(super.uniforms::createUniform);
         }
     }
 
-    public void render(final Scene scene, final ShadowRenderer shadowRender, final GBuffer gBuffer) {
+    @Override
+    public void render(final RenderContext context) {
+        Renderer.lightingRenderStart(context.window(), context.gBuffer());
         this.shader.bind();
-
-        updateLights(scene);
+        updateLights(context.scene());
 
         // Bind the G-Buffer textures
-        final int[] textureIds = gBuffer.getTextureIds();
+        final int[] textureIds = context.gBuffer().getTextureIds();
         final int numTextures = textureIds != null ? textureIds.length : 0;
         for (int i = 0; i < numTextures; i++) {
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D, textureIds[i]);
         }
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "showCascades",
                 this.SHOW_CASCADES
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "showDepth",
                 this.SHOW_DEPTH
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "showShadows",
                 this.SHOW_SHADOWS
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "albedoSampler",
                 0
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "normalSampler",
                 1
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "specularSampler",
                 2
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "depthSampler",
                 3
         );
-        final Fog fog = scene.getFog();
-        this.uniforms.setUniform(
+        final Fog fog = context.scene().getFog();
+        super.uniforms.setUniform(
                 "fog.activeFog",
                 fog.isActive() ? 1 : 0
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "fog.color",
                 fog.getColor()
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "fog.density",
                 fog.getDensity()
         );
         final int start = 4;
-        final List<ShadowCascade> cascadeShadows = shadowRender.getShadowCascades();
+        final ShadowRenderer shadowRenderer = (ShadowRenderer) context.attributes().get(ShadowRenderer.RENDERER_NAME);
+        if (shadowRenderer == null) {
+            throw new IllegalStateException("Unbound shadow renderer, cannot invoke lighting renderer");
+        }
+        final List<ShadowCascade> cascadeShadows = shadowRenderer.getShadowCascades();
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             glActiveTexture(GL_TEXTURE0 + start + i);
-            this.uniforms.setUniform("shadowMap_" + i, start + i);
+            super.uniforms.setUniform("shadowMap_" + i, start + i);
             final ShadowCascade cascadeShadow = cascadeShadows.get(i);
-            this.uniforms.setUniform(
+            super.uniforms.setUniform(
                     "shadowCascade[" + i + "]" + ".projectionViewMatrix",
                     cascadeShadow.getProjectionViewMatrix()
             );
-            this.uniforms.setUniform(
+            super.uniforms.setUniform(
                     "shadowCascade[" + i + "]" + ".splitDistance",
                     cascadeShadow.getSplitDistance()
             );
         }
-        shadowRender.getShadowBuffer().bindTextures(GL_TEXTURE0 + start);
-        this.uniforms.setUniform(
+        shadowRenderer.getShadowBuffer().bindTextures(GL_TEXTURE0 + start);
+        super.uniforms.setUniform(
                 "inverseProjectionMatrix",
-                scene.getProjection().getInverseProjectionMatrix()
+                context.scene().getProjection().getInverseProjectionMatrix()
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "inverseViewMatrix",
-                scene.getCamera().getInverseViewMatrix()
+                context.scene().getCamera().getInverseViewMatrix()
         );
         glBindVertexArray(this.quadMesh.getVaoId());
         glDrawElements(
@@ -193,11 +204,11 @@ public class LightingRenderer {
         final Matrix4f viewMatrix = scene.getCamera().getViewMatrix();
         final SceneLights sceneLights = scene.getSceneLights();
         final AmbientLight ambientLight = sceneLights.getAmbientLight();
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "ambientLight.factor",
                 ambientLight.getIntensity()
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "ambientLight.color",
                 ambientLight.getColor()
         );
@@ -205,15 +216,15 @@ public class LightingRenderer {
         final Vector4f auxDir = new Vector4f(directionalLight.getDirection(), 0);
         auxDir.mul(viewMatrix);
         final Vector3f dir = new Vector3f(auxDir.x, auxDir.y, auxDir.z);
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "directionalLight.color",
                 directionalLight.getColor()
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "directionalLight.direction",
                 dir
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 "directionalLight.intensity",
                 directionalLight.getIntensity()
         );
@@ -260,27 +271,27 @@ public class LightingRenderer {
             linear = attenuation.getLinear();
             exponent = attenuation.getExponent();
         }
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 prefix + ".position",
                 lightPosition
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 prefix + ".color",
                 color
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 prefix + ".intensity",
                 intensity
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 prefix + ".att.constant",
                 constant
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 prefix + ".att.linear",
                 linear
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 prefix + ".att.exponent",
                 exponent
         );
@@ -297,18 +308,20 @@ public class LightingRenderer {
             cutoff = spotLight.getCutOff();
             pointLight = spotLight.getPointLight();
         }
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 prefix + ".coneDir",
                 coneDirection
         );
-        this.uniforms.setUniform(
+        super.uniforms.setUniform(
                 prefix + ".coneDir",
                 cutoff
         );
         updatePointLight(pointLight, prefix + ".pl", viewMatrix);
     }
 
+    @Override
     public void cleanup() {
+        super.cleanup();
         this.quadMesh.cleanup();
         this.shader.cleanup();
     }

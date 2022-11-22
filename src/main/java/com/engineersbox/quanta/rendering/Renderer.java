@@ -44,14 +44,8 @@ public class Renderer {
             .forPackages("com.engineersbox.quanta")
     );
 
-    private final SceneRenderer sceneRenderer;
-    private final GUIRenderer guiRenderer;
-    private final SkyBoxRenderer skyBoxRenderer;
-    private final ShadowRenderer shadowRenderer;
     private final GBuffer gBuffer;
-    private final LightingRenderer lightingRenderer;
     private final RenderBuffers renderBuffers;
-    private final AnimationRenderer animationRenderer;
 
     private LinkedMap<String, ShaderRenderHandler> preProcessRenderHandlers;
     private LinkedMap<String, ShaderRenderHandler> coreRenderHandlers;
@@ -60,17 +54,12 @@ public class Renderer {
     private int sceneHash;
 
     public Renderer(final Window window) {
-        this.sceneRenderer = new SceneRenderer();
-        this.guiRenderer = new GUIRenderer(window);
-        this.skyBoxRenderer = new SkyBoxRenderer();
-        this.shadowRenderer = new ShadowRenderer();
         this.gBuffer = new GBuffer(window);
-        this.lightingRenderer = new LightingRenderer();
         this.renderBuffers = new RenderBuffers();
-        this.animationRenderer = new AnimationRenderer();
         this.preProcessRenderHandlers = new LinkedMap<>();
         this.coreRenderHandlers = new LinkedMap<>();
         this.postProcessRenderHandlers = new LinkedMap<>();
+        resolveShaders();
     }
 
     private void resolveShaders() {
@@ -125,14 +114,11 @@ public class Renderer {
     }
 
     public void cleanup() {
-        this.sceneRenderer.cleanup();
-        this.guiRenderer.cleanup();
-        this.skyBoxRenderer.cleanup();
-        this.shadowRenderer.cleanup();
-        this.lightingRenderer.cleanup();
         this.gBuffer.cleanup();
         this.renderBuffers.cleanup();
-        this.animationRenderer.cleanup();
+        this.preProcessRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
+        this.coreRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
+        this.postProcessRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
     }
 
     public static void lightingRenderFinish() {
@@ -150,17 +136,9 @@ public class Renderer {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.getGBufferId());
     }
 
-    public void render(final Window window,
-                       final Scene scene) {
-        if (this.sceneHash != scene.hashCode()) {
-            this.sceneHash = scene.hashCode();
-            this.context = new RenderContext(
-                    scene,
-                    this.renderBuffers,
-                    this.gBuffer,
-                    this.shadowRenderer
-            );
-        }
+    public void render(final Scene scene,
+                       final Window window) {
+        updateContext(scene, window);
         StreamUtils.zipForEach(
                 Arrays.stream(ShaderStage.values()),
                 Stream.of(
@@ -173,18 +151,10 @@ public class Renderer {
                     handlers.forEach(createRenderHandlerConsumer(stage, this.context));
                 }
         );
-
-        this.animationRenderer.render(scene, this.renderBuffers);
-        this.shadowRenderer.render(scene, this.renderBuffers);
-        this.sceneRenderer.render(scene, this.renderBuffers, this.gBuffer);
-        Renderer.lightingRenderStart(window, this.gBuffer);
-        this.lightingRenderer.render(scene, this.shadowRenderer, this.gBuffer);
-        this.skyBoxRenderer.render(scene);
-        Renderer.lightingRenderFinish();
-        if (ConfigHandler.CONFIG.engine.features.showAxis) {
-            renderAxes(scene.getCamera());
+        if (ConfigHandler.CONFIG.engine.features.showAxis
+            && ConfigHandler.CONFIG.engine.glOptions.compatProfile) {
+            renderAxes(scene);
         }
-        this.guiRenderer.render(scene);
     }
 
     private static BiConsumer<String, ShaderRenderHandler> createRenderHandlerConsumer(final ShaderStage stage,
@@ -202,21 +172,21 @@ public class Renderer {
                 );
                 return;
             }
-//            Renderer.LOGGER.debug("[Shader: {}] Invoking {} shader {}", shader.program(), stage, name);
+//            Renderer.LOGGER.debug("[Shader: {}, Stage: {}] Invoking render handler {}", shader.program(), stage, name);
             handler.render(context);
         };
     }
 
-    private void renderAxes(final Camera camera) {
+    private void renderAxes(final Scene scene) {
+        final Camera camera = scene.getCamera();
         glPushMatrix();
-        glTranslatef(0, 0, 0);
         glLoadIdentity();
-        final float rotX = camera.getRotation().x;
-        final float rotY = camera.getRotation().y;
-        final float rotZ = 0;
-        glRotatef(rotX, 1.0f, 0.0f, 0.0f);
-        glRotatef(rotY, 0.0f, 1.0f, 0.0f);
-        glRotatef(rotZ, 0.0f, 0.0f, 1.0f);
+        final double rotX = Math.toDegrees(camera.getRotation().x);
+        final double rotY = Math.toDegrees(camera.getRotation().y);
+        final double rotZ = Math.toDegrees(camera.getRotation().z);
+        glRotated(rotX, 1.0f, 0.0f, 0.0f);
+        glRotated(rotY, 0.0f, 1.0f, 0.0f);
+        glRotated(rotZ, 0.0f, 0.0f, 1.0f);
         glLineWidth(2.0f);
 
         glBegin(GL_LINES);
@@ -237,54 +207,81 @@ public class Renderer {
 
         glEnd();
 
-        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
-            glDisable(GL_CULL_FACE);
-        }
-
-        // Y axis
-        glPushMatrix();
-        glColor3f(1.0f, 0.0f, 0.0f);
-        glRotatef(90.0f, 0.0f,1.0f,0.0f);
-        glTranslatef(0.0f, 0.0f, 0.04f);
-        glut.glutSolidCone(0.007,0.025, 20, 20); // TODO: Add dependency for basic OpenGL shapes
-        glPopMatrix();
-
-        // X axis
-        glPushMatrix();
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glRotatef(90.0f, 0.0f,0.0f,1.0f);
-        glTranslatef(0.0f, 0.00f, 0.04f);
-        glut.glutSolidCone(0.007,0.025, 20, 20);
-        glPopMatrix();
-
-        // Z axis
-        glPushMatrix();
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glRotatef(90.0f, -1.0f,0.0f,0.0f);
-        glTranslatef(0.0f, 0.00f, 0.04f);
-        glut.glutSolidCone(0.007,0.025, 20, 20);
-        glPopMatrix();
-
-        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
-            glEnable(GL_CULL_FACE);
-        }
+//        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
+//            glDisable(GL_CULL_FACE);
+//        }
+//
+//        // Y axis
+//        glPushMatrix();
+//        glColor3f(1.0f, 0.0f, 0.0f);
+//        glRotatef(90.0f, 0.0f,1.0f,0.0f);
+//        glTranslatef(0.0f, 0.0f, 0.04f);
+//        glut.glutSolidCone(0.007,0.025, 20, 20); // TODO: Add dependency for basic OpenGL shapes
+//        glPopMatrix();
+//
+//        // X axis
+//        glPushMatrix();
+//        glColor3f(0.0f, 0.0f, 1.0f);
+//        glRotatef(90.0f, 0.0f,0.0f,1.0f);
+//        glTranslatef(0.0f, 0.00f, 0.04f);
+//        glut.glutSolidCone(0.007,0.025, 20, 20);
+//        glPopMatrix();
+//
+//        // Z axis
+//        glPushMatrix();
+//        glColor3f(0.0f, 1.0f, 0.0f);
+//        glRotatef(90.0f, -1.0f,0.0f,0.0f);
+//        glTranslatef(0.0f, 0.00f, 0.04f);
+//        glut.glutSolidCone(0.007,0.025, 20, 20);
+//        glPopMatrix();
+//
+//        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
+//            glEnable(GL_CULL_FACE);
+//        }
         glPopMatrix();
 
     }
 
-    public void setupData(final Scene scene) {
+    public void setupData(final Scene scene,
+                          final Window window) {
+        updateContext(scene, window);
         this.renderBuffers.loadStaticModels(scene);
         this.renderBuffers.loadAnimatedModels(scene);
-        this.sceneRenderer.setupData(scene);
-        this.shadowRenderer.setupData(scene);
+        StreamUtils.zipForEach(
+                Arrays.stream(ShaderStage.values()),
+                Stream.of(
+                        this.preProcessRenderHandlers,
+                        this.coreRenderHandlers,
+                        this.postProcessRenderHandlers
+                ),
+                (final ShaderStage stage, final LinkedMap<String, ShaderRenderHandler> handlers) -> {
+                    Renderer.LOGGER.info("Invoking data setup for {} render handler", stage);
+                    handlers.forEach((final String name, final ShaderRenderHandler handler) -> handler.setupData(this.context));
+                }
+        );
         new ArrayList<>(scene.getModels().values())
                 .stream()
                 .map(Model::getMeshData)
                 .forEach(List::clear);
     }
 
+    private void updateContext(final Scene scene,
+                               final Window window) {
+        if (this.sceneHash != scene.hashCode()) {
+            this.sceneHash = scene.hashCode();
+            this.context = new RenderContext(
+                    scene,
+                    window,
+                    this.renderBuffers,
+                    this.gBuffer
+            );
+        }
+    }
+
     public void resize(final int width,
                        final int height) {
-        this.guiRenderer.resize(width, height);
+        this.preProcessRenderHandlers.values().forEach((final ShaderRenderHandler handler) -> handler.resize(width, height));
+        this.coreRenderHandlers.values().forEach((final ShaderRenderHandler handler) -> handler.resize(width, height));
+        this.postProcessRenderHandlers.values().forEach((final ShaderRenderHandler handler) -> handler.resize(width, height));
     }
 }
