@@ -53,123 +53,123 @@ public class Main implements IAppLogic {
     public void init(final EngineInitContext context) {
         this.console = new TestGUI(context);
         context.scene().setGUIInstance(this.console);
-//        final String terrainModelId = "terrain";
-//        final Model terrainModel = ModelLoader.loadModel(
-//                terrainModelId,
-//                "assets/models/terrain/terrain.obj",
-//                context.scene().getTextureCache(),
-//                context.scene().getMaterialCache(),
-//                false
-//        );
-//        context.scene().addModel(terrainModel);
-//        final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
-//        terrainEntity.setScale(100.0f);
-//        terrainEntity.updateModelMatrix();
-//        context.scene().addEntity(terrainEntity);
-//
-//        final String bobModelId = "bobModel";
-//        final Model bobModel = ModelLoader.loadModel(
-//                bobModelId,
-//                "assets/models/bob/boblamp.md5mesh",
-//                context.scene().getTextureCache(),
-//                context.scene().getMaterialCache(),
-//                true
-//        );
-//        context.scene().addModel(bobModel);
-//        final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
-//        bobEntity.setScale(0.05f);
-//        bobEntity.updateModelMatrix();
-//        this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
-//        bobEntity.setAnimationData(this.animationData1);
-//        context.scene().addEntity(bobEntity);
-//
-//        final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
-//        bobEntity2.setPosition(2, 0, 0);
-//        bobEntity2.setScale(0.025f);
-//        bobEntity2.updateModelMatrix();
-//        this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
-//        bobEntity2.setAnimationData(this.animationData2);
-//        context.scene().addEntity(bobEntity2);
-//
-//        final Model cubeModel = ModelLoader.loadModel(
-//                "cube-model",
-//                "assets/models/cube/cube.obj",
-//                context.scene().getTextureCache(),
-//                context.scene().getMaterialCache(),
-//                false
-//        );
-//        context.scene().addModel(cubeModel);
-//        this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
-//        this.cubeEntity1.setPosition(0, 2, -1);
-//        this.cubeEntity1.updateModelMatrix();
-//        context.scene().addEntity(this.cubeEntity1);
-//
-//        this.cubeEntity2 = new Entity("cube-entity-2", cubeModel.getId());
-//        this.cubeEntity2.setPosition(-2, 2, -1);
-//        this.cubeEntity2.updateModelMatrix();
-//        context.scene().addEntity(this.cubeEntity2);
-//
-//        context.renderer().setupData(
-//                context.scene(),
-//                context.window()
-//        );
-//
-//        final SceneLights sceneLights = new SceneLights();
-//        final AmbientLight ambientLight = sceneLights.getAmbientLight();
-//        ambientLight.setIntensity(0.5f);
-//        ambientLight.setColor(0.3f, 0.3f, 0.3f);
-//
-//        final DirectionalLight dirLight = sceneLights.getDirectionalLight();
-//        dirLight.setPosition(0, 1, 0);
-//        dirLight.setIntensity(1.0f);
-//        context.scene().setSceneLights(sceneLights);
-//
-//        final SkyBox skyBox = new SkyBox(
-//                "assets/models/skybox/skybox.obj",
-//                context.scene().getTextureCache(),
-//                context.scene().getMaterialCache()
-//        );
-//        skyBox.getEntity().setScale(100);
-//        skyBox.getEntity().updateModelMatrix();
-//        context.scene().setSkyBox(skyBox);
-//
-//        context.scene().setFog(new Fog(
-//                true,
-//                new Vector3f(0.5f, 0.5f, 0.5f),
-//                0.02f
-//        ));
-//
-//        final Camera camera = context.scene().getCamera();
-//        camera.setPosition(-1.5f, 3.0f, 4.5f);
-//        camera.addRotation((float) Math.toRadians(15.0f), (float) Math.toRadians(390.f), 0);
+        final String terrainModelId = "terrain";
+        final Model terrainModel = ModelLoader.loadModel(
+                terrainModelId,
+                "assets/models/terrain/terrain.obj",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
+                false
+        );
+        context.scene().addModel(terrainModel);
+        final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
+        terrainEntity.setScale(100.0f);
+        terrainEntity.updateModelMatrix();
+        context.scene().addEntity(terrainEntity);
+
+        final String bobModelId = "bobModel";
+        final Model bobModel = ModelLoader.loadModel(
+                bobModelId,
+                "assets/models/bob/boblamp.md5mesh",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
+                true
+        );
+        context.scene().addModel(bobModel);
+        final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
+        bobEntity.setScale(0.05f);
+        bobEntity.updateModelMatrix();
+        this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
+        bobEntity.setAnimationData(this.animationData1);
+        context.scene().addEntity(bobEntity);
+
+        final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
+        bobEntity2.setPosition(2, 0, 0);
+        bobEntity2.setScale(0.025f);
+        bobEntity2.updateModelMatrix();
+        this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
+        bobEntity2.setAnimationData(this.animationData2);
+        context.scene().addEntity(bobEntity2);
+
+        final Model cubeModel = ModelLoader.loadModel(
+                "cube-model",
+                "assets/models/cube/cube.obj",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
+                false
+        );
+        context.scene().addModel(cubeModel);
+        this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
+        this.cubeEntity1.setPosition(0, 2, -1);
+        this.cubeEntity1.updateModelMatrix();
+        context.scene().addEntity(this.cubeEntity1);
+
+        this.cubeEntity2 = new Entity("cube-entity-2", cubeModel.getId());
+        this.cubeEntity2.setPosition(-2, 2, -1);
+        this.cubeEntity2.updateModelMatrix();
+        context.scene().addEntity(this.cubeEntity2);
 
         context.renderer().setupData(
                 context.scene(),
                 context.window()
         );
-        context.scene()
-                .getModels()
-                .entrySet()
-                .stream()
-                .filter((final Map.Entry<String, Model> entry) -> entry.getKey().equals("bobModel"))
-                .map(Map.Entry::getValue)
-                .map(Model::getEntities)
-                .map(List::stream)
-                .findFirst()
-                .ifPresent((final Stream<Entity> entities) -> entities.forEach((final Entity entity) -> {
-                    if (entity.getId().equals("bobEntity-1")) {
-                        this.animationData1 = entity.getAnimationData();
-                    } else if (entity.getId().equals("bobEntity-2")) {
-                        this.animationData2 = entity.getAnimationData();
-                    }
-                }));
-        context.scene().getModels().get("cube-model").getEntities().forEach((final Entity entity) -> {
-            if (entity.getId().equals("cube-entity-1")) {
-                this.cubeEntity1 = entity;
-            } else if (entity.getId().equals("cube-entity-2")) {
-                this.cubeEntity2 = entity;
-            }
-        });
+
+        final SceneLights sceneLights = new SceneLights();
+        final AmbientLight ambientLight = sceneLights.getAmbientLight();
+        ambientLight.setIntensity(0.5f);
+        ambientLight.setColor(0.3f, 0.3f, 0.3f);
+
+        final DirectionalLight dirLight = sceneLights.getDirectionalLight();
+        dirLight.setPosition(0, 1, 0);
+        dirLight.setIntensity(1.0f);
+        context.scene().setSceneLights(sceneLights);
+
+        final SkyBox skyBox = new SkyBox(
+                "assets/models/skybox/skybox.obj",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache()
+        );
+        skyBox.getEntity().setScale(100);
+        skyBox.getEntity().updateModelMatrix();
+        context.scene().setSkyBox(skyBox);
+
+        context.scene().setFog(new Fog(
+                true,
+                new Vector3f(0.5f, 0.5f, 0.5f),
+                0.02f
+        ));
+
+        final Camera camera = context.scene().getCamera();
+        camera.setPosition(-1.5f, 3.0f, 4.5f);
+        camera.addRotation((float) Math.toRadians(15.0f), (float) Math.toRadians(390.f), 0);
+
+//        context.renderer().setupData(
+//                context.scene(),
+//                context.window()
+//        );
+//        context.scene()
+//                .getModels()
+//                .entrySet()
+//                .stream()
+//                .filter((final Map.Entry<String, Model> entry) -> entry.getKey().equals("bobModel"))
+//                .map(Map.Entry::getValue)
+//                .map(Model::getEntities)
+//                .map(List::stream)
+//                .findFirst()
+//                .ifPresent((final Stream<Entity> entities) -> entities.forEach((final Entity entity) -> {
+//                    if (entity.getId().equals("bobEntity-1")) {
+//                        this.animationData1 = entity.getAnimationData();
+//                    } else if (entity.getId().equals("bobEntity-2")) {
+//                        this.animationData2 = entity.getAnimationData();
+//                    }
+//                }));
+//        context.scene().getModels().get("cube-model").getEntities().forEach((final Entity entity) -> {
+//            if (entity.getId().equals("cube-entity-1")) {
+//                this.cubeEntity1 = entity;
+//            } else if (entity.getId().equals("cube-entity-2")) {
+//                this.cubeEntity2 = entity;
+//            }
+//        });
         this.lightAngle = 45.001f;
     }
 

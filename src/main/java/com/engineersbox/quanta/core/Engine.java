@@ -46,15 +46,15 @@ public class Engine {
         this.targetUPS = ConfigHandler.CONFIG.video.ups;
         this.appLogic = appLogic;
         this.renderer = new Renderer(this.window);
-//        this.scene = new Scene(
-//                this.window.getWidth(),
-//                this.window.getHeight()
-//        );
-        this.scene = Scene.deserialize("saves/test.json");
-        this.scene.getProjection().updateProjectionMatrix(
+        this.scene = new Scene(
                 this.window.getWidth(),
                 this.window.getHeight()
         );
+//        this.scene = Scene.deserialize("saves/scene.json");
+//        this.scene.getProjection().updateProjectionMatrix(
+//                this.window.getWidth(),
+//                this.window.getHeight()
+//        );
         this.pipelineStatistics = new PipelineStatistics();
         this.pipelineStatistics.init();
         this.appLogic.init(new EngineInitContext(
