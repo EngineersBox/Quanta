@@ -2,15 +2,17 @@ package com.engineersbox.quanta.resources.assets.material;
 
 import com.engineersbox.quanta.resources.config.Config;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
+import com.engineersbox.quanta.resources.loader.ResourceLoader;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
-import static org.lwjgl.stb.STBImage.stbi_image_free;
-import static org.lwjgl.stb.STBImage.stbi_load;
+import static org.lwjgl.stb.STBImage.*;
 
 public class Texture {
 
@@ -25,23 +27,45 @@ public class Texture {
     }
 
     public Texture(final String path) {
+        this(path, false);
+    }
+
+    public Texture(final String path,
+                   final boolean classPathResource) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             this.path = path;
             final IntBuffer w = stack.mallocInt(1);
             final IntBuffer h = stack.mallocInt(1);
             final IntBuffer channels = stack.mallocInt(1);
 
-            final ByteBuffer data = stbi_load(
-                    path,
-                    w, h,
-                    channels,
-                    4
-            );
+            final ByteBuffer data;
+            if (classPathResource) {
+                final ByteBuffer rawData = ResourceLoader.loadResource(path);
+                if (rawData == null) {
+                    throw new IllegalStateException("Unable to find texture at " + path);
+                }
+                data = stbi_load_from_memory(
+                        rawData,
+                        w, h,
+                        channels,
+                        4
+                );
+                MemoryUtil.memFree(rawData);
+            } else {
+                data = stbi_load(
+                        path,
+                        w, h,
+                        channels,
+                        4
+                );
+            }
             if (data == null) {
                 throw new IllegalStateException("Unable to find texture at " + path);
             }
             generateTexture(w.get(), h.get(), data);
             stbi_image_free(data);
+        } catch (final IOException e) {
+            throw new IllegalStateException("Unable to find texture at " + path, e);
         }
     }
 

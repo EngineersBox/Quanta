@@ -6,13 +6,13 @@ import java.util.Map;
 
 public class TextureCache {
 
-    public static final String DEFAULT_TEXTURE = "assets/textures/default_internal.png";
+    public static final String DEFAULT_TEXTURE = "/assets/textures/default_internal.png";
 
     private final Map<String, Texture> textureMap;
 
     public TextureCache() {
         this.textureMap = new HashMap<>();
-        this.textureMap.put(TextureCache.DEFAULT_TEXTURE, new Texture(TextureCache.DEFAULT_TEXTURE));
+        this.textureMap.put(TextureCache.DEFAULT_TEXTURE, new Texture(TextureCache.DEFAULT_TEXTURE, true));
     }
 
     public void cleanup() {
