@@ -14,6 +14,7 @@ import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
+import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import org.apache.logging.log4j.LogManager;
@@ -105,6 +106,9 @@ public class SceneRenderer extends ShaderRenderHandler {
 
     @Override
     public void render(final RenderContext context) {
+        if (ConfigHandler.CONFIG.engine.glOptions.wireframe) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, context.gBuffer().getGBufferId());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, context.gBuffer().getWidth(), context.gBuffer().getHeight());
@@ -213,6 +217,9 @@ public class SceneRenderer extends ShaderRenderHandler {
         glBindVertexArray(0);
         glEnable(GL_BLEND);
         super.shader.unbind();
+        if (ConfigHandler.CONFIG.engine.glOptions.wireframe) {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
     }
 
     private void setupAnimCommandBuffer(final Scene scene) {

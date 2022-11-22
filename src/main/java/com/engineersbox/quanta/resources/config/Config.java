@@ -44,7 +44,7 @@ public class Config {
       public final boolean debugLogs;
       public final boolean geometryFaceCulling;
       public final boolean shadowFaceCulling;
-      public final boolean showTrianges;
+      public final boolean wireframe;
 
       public GlOptions(
           com.typesafe.config.Config c,
@@ -58,7 +58,7 @@ public class Config {
             c.hasPathOrNull("geometryFaceCulling") && c.getBoolean("geometryFaceCulling");
         this.shadowFaceCulling =
             !c.hasPathOrNull("shadowFaceCulling") || c.getBoolean("shadowFaceCulling");
-        this.showTrianges = c.hasPathOrNull("showTrianges") && c.getBoolean("showTrianges");
+        this.wireframe = c.hasPathOrNull("wireframe") && c.getBoolean("wireframe");
       }
     }
 

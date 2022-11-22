@@ -123,7 +123,7 @@ public class CoreDebugInfoWidget implements IGUIInstance {
         ColouredString.renderFormattedString(
                 formatBooleanProperty("Geometry face culling: ", ConfigHandler.CONFIG.engine.glOptions.geometryFaceCulling),
                 formatBooleanProperty("Shadow pass face culling: ", ConfigHandler.CONFIG.engine.glOptions.shadowFaceCulling),
-                formatBooleanProperty("Show triangles: ", ConfigHandler.CONFIG.engine.glOptions.showTrianges),
+                formatBooleanProperty("Show wireframes: ", ConfigHandler.CONFIG.engine.glOptions.wireframe),
                 formatBooleanProperty("Compatibility profile: ", ConfigHandler.CONFIG.engine.glOptions.compatProfile),
                 formatBooleanProperty("Antialiasing: ", ConfigHandler.CONFIG.engine.glOptions.antialiasing),
                 GUITextColour.NORMAL.withFormat(
