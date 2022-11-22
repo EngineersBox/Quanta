@@ -13,6 +13,7 @@ import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
 import com.engineersbox.quanta.resources.assets.shader.Uniforms;
+import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import org.lwjgl.system.MemoryUtil;
@@ -91,6 +92,12 @@ public class ShadowRenderer extends ShaderRenderHandler {
 
     @Override
     public void render(final RenderContext context) {
+        if (ConfigHandler.CONFIG.engine.glOptions.shadowFaceCulling) {
+            if (!ConfigHandler.CONFIG.engine.glOptions.geometryFaceCulling) {
+                glEnable(GL_CULL_FACE);
+            }
+            glCullFace(GL_FRONT);
+        }
         context.attributes().putIfAbsent(ShadowRenderer.RENDERER_NAME, this);
         ShadowCascade.updateCascadeShadows(this.shadowCascades, context.scene());
         glBindFramebuffer(GL_FRAMEBUFFER, this.shadowBuffer.getDepthMapFBO());
@@ -202,6 +209,12 @@ public class ShadowRenderer extends ShaderRenderHandler {
         glBindVertexArray(0);
         super.unbind();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        if (ConfigHandler.CONFIG.engine.glOptions.shadowFaceCulling) {
+            glCullFace(GL_BACK);
+            if (!ConfigHandler.CONFIG.engine.glOptions.geometryFaceCulling) {
+                glDisable(GL_CULL_FACE);
+            }
+        }
     }
 
     private void setupAnimCommandBuffer(final Scene scene) {

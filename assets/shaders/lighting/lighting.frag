@@ -4,7 +4,7 @@ const int MAX_POINT_LIGHTS = 5;
 const int MAX_SPOT_LIGHTS = 5;
 const float SPECULAR_POWER = 10;
 const int NUM_CASCADES = 3;
-const float BIAS = 0.0005;
+const float BIAS = 0.005;
 const float SHADOW_FACTOR = 0.25;
 
 in vec2 outTextCoord;

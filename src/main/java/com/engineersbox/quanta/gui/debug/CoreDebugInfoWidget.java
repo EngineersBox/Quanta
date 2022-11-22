@@ -121,7 +121,8 @@ public class CoreDebugInfoWidget implements IGUIInstance {
         }
         this.indentManager.push(CoreDebugInfoWidget.INDENT_SIZE);
         ColouredString.renderFormattedString(
-                formatBooleanProperty("Cull faces: ", ConfigHandler.CONFIG.engine.glOptions.cullface),
+                formatBooleanProperty("Geometry face culling: ", ConfigHandler.CONFIG.engine.glOptions.geometryFaceCulling),
+                formatBooleanProperty("Shadow pass face culling: ", ConfigHandler.CONFIG.engine.glOptions.shadowFaceCulling),
                 formatBooleanProperty("Show triangles: ", ConfigHandler.CONFIG.engine.glOptions.showTrianges),
                 formatBooleanProperty("Compatibility profile: ", ConfigHandler.CONFIG.engine.glOptions.compatProfile),
                 formatBooleanProperty("Antialiasing: ", ConfigHandler.CONFIG.engine.glOptions.antialiasing),

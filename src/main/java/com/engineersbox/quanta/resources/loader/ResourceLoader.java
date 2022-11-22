@@ -28,43 +28,7 @@ public class ResourceLoader {
         return "/" + filename;
     }
 
-    public static File loadResourceAsFile(final String fileName) throws URISyntaxException, IOException {
-        final URL resource = ResourceLoader.class.getResource(fileName);
-        if (resource == null) {
-            throw new IOException(String.format(
-                    "Could not find resource: %s",
-                    fileName
-            ));
-        }
-        final File fileResource = new File(resource.toURI());
-        if (!fileResource.exists()) {
-            throw new IOException(String.format(
-                    "Could not find resource: %s",
-                    fileName
-            ));
-        }
-        return fileResource;
-    }
-
     public static ByteBuffer loadResource(final String fileName) throws IOException {
-        final URL resource = ResourceLoader.class.getResource(formatFilename(fileName));
-        if (resource == null) {
-            throw new RuntimeException(String.format(
-                    "Could not read resource file %s",
-                    fileName
-            ));
-        }
-        try {
-            if (!new File(resource.toURI()).exists()) {
-                throw new IOException(String.format(
-                        "Could not read resource file %s", fileName
-                ));
-            }
-        } catch (final URISyntaxException e) {
-            throw new IOException(String.format(
-                    "Could not read resource file %s", fileName
-            ), e);
-        }
         try (final InputStream inputStream = ResourceLoader.class.getResourceAsStream(formatFilename(fileName))) {
             if (inputStream == null) {
                 throw new IOException(String.format(

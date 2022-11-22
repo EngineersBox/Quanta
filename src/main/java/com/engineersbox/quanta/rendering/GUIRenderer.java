@@ -114,7 +114,7 @@ public class GUIRenderer extends ShaderRenderHandler {
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_DEPTH_TEST);
-        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
+        if (ConfigHandler.CONFIG.engine.glOptions.geometryFaceCulling) {
             glDisable(GL_CULL_FACE);
         }
         glBindVertexArray(this.guiMesh.getVaoId());
@@ -140,7 +140,7 @@ public class GUIRenderer extends ShaderRenderHandler {
             }
         }
         glEnable(GL_DEPTH_TEST);
-        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
+        if (ConfigHandler.CONFIG.engine.glOptions.geometryFaceCulling) {
             glEnable(GL_CULL_FACE);
         }
         glDisable(GL_BLEND);

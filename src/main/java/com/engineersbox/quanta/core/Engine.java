@@ -73,7 +73,7 @@ public class Engine {
         if (ConfigHandler.CONFIG.engine.glOptions.antialiasing) {
             glEnable(GL_MULTISAMPLE);
         }
-        if (ConfigHandler.CONFIG.engine.glOptions.cullface) {
+        if (ConfigHandler.CONFIG.engine.glOptions.geometryFaceCulling) {
             glEnable(GL_CULL_FACE);
             glCullFace(GL_BACK);
         }

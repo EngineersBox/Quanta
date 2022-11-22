@@ -94,19 +94,7 @@ public class ModelLoader {
                                   final MaterialCache materialCache,
                                   final int flags,
                                   final boolean classPathResource) {
-        final File file;
-        if (classPathResource) {
-            try {
-                file = ResourceLoader.loadResourceAsFile(modelPath);
-            } catch (final URISyntaxException | IOException e) {
-                throw new RuntimeException("Model path does not exist [" + modelPath + "]", e);
-            }
-        } else {
-            file = new File(modelPath);
-        }
-        if (!file.exists()) {
-            throw new RuntimeException("Model path does not exist [" + modelPath + "]");
-        }
+        final File file = new File(modelPath);
         final String modelDir = file.getParent();
         final AIScene aiScene;
         if (classPathResource) {
