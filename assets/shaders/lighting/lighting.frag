@@ -69,9 +69,14 @@ uniform sampler2D shadowMap_0;
 uniform sampler2D shadowMap_1;
 uniform sampler2D shadowMap_2;
 
-uniform int showCascades;
-uniform int showDepth;
-uniform int showShadows;
+uniform bool showCascades;
+uniform bool showDepth;
+uniform bool showShadows;
+
+uniform float farPlane;
+
+uniform bool hdr;
+uniform float exposure;
 
 vec4 calcAmbient(AmbientLight ambientLight, vec4 ambient) {
     return vec4(ambientLight.factor * ambientLight.color, 1) * ambient;
@@ -93,7 +98,8 @@ vec4 calcLightColor(vec4 diffuse, vec4 specular, float reflectance, vec3 lightCo
     specularFactor = pow(specularFactor, SPECULAR_POWER);
     specColor = specular * light_intensity  * specularFactor * reflectance * vec4(lightColor, 1.0);
 
-    return (diffuseColor + specColor);
+    float distance = length(gl_FragCoord.xyz - position);
+    return (diffuseColor + specColor) * (1.0 / (distance * distance));
 }
 
 vec4 calcPointLight(vec4 diffuse, vec4 specular, float reflectance, PointLight light, vec3 position, vec3 normal) {
@@ -103,8 +109,7 @@ vec4 calcPointLight(vec4 diffuse, vec4 specular, float reflectance, PointLight l
 
     // Apply Attenuation
     float distance = length(light_direction);
-    float attenuationInv = light.att.constant + light.att.linear * distance +
-    light.att.exponent * distance * distance;
+    float attenuationInv = light.att.constant + light.att.linear * distance + light.att.exponent * distance * distance;
     return light_color / attenuationInv;
 }
 
@@ -112,14 +117,13 @@ vec4 calcSpotLight(vec4 diffuse, vec4 specular, float reflectance, SpotLight lig
     vec3 light_direction = light.pl.position - position;
     vec3 to_light_dir  = normalize(light_direction);
     vec3 from_light_dir  = -to_light_dir;
-    float spot_alfa = dot(from_light_dir, normalize(light.coneDir));
+    float spot_alpha = dot(from_light_dir, normalize(light.coneDir));
 
     vec4 color = vec4(0, 0, 0, 0);
 
-    if (spot_alfa > light.cutoff)
-    {
+    if (spot_alpha > light.cutoff) {
         color = calcPointLight(diffuse, specular, reflectance, light.pl, position, normal);
-        color *= (1.0 - (1.0 - spot_alfa)/(1.0 - light.cutoff));
+        color *= (1.0 - (1.0 - spot_alpha)/(1.0 - light.cutoff));
     }
     return color;
 }
@@ -169,6 +173,20 @@ float calcShadow(vec4 worldPosition, int idx) {
     return shadow / 9.0;
 }
 
+vec3 applyHDR(vec3 hdrColor) {
+    const float gamma = 2.2;
+    if (hdr) {
+        // reinhard
+        // vec3 result = hdrColor / (hdrColor + vec3(1.0));
+        // exposure
+        vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
+        // also gamma correct while we're at it
+        return pow(result, vec3(1.0 / gamma));
+    } else {
+        return pow(hdrColor, vec3(1.0 / gamma));
+    }
+}
+
 void main() {
     vec4 albedoSamplerValue = texture(albedoSampler, outTextCoord);
     vec3 albedo  = albedoSamplerValue.rgb;
@@ -180,8 +198,8 @@ void main() {
 
     // Retrieve position from depth
     float rawDepth = texture(depthSampler, outTextCoord).x;
-    if (showDepth == 1) {
-        fragColor.rgb = vec3(rawDepth, rawDepth, rawDepth);
+    if (showDepth) {
+        fragColor.rgb = vec3(rawDepth / farPlane);
         return;
     }
     float depth = rawDepth * 2.0 - 1.0;
@@ -203,7 +221,7 @@ void main() {
         }
     }
     float shadowFactor = calcShadow(world_pos, cascadeIndex);
-    if (showShadows == 1) {
+    if (showShadows) {
         fragColor.rgb = vec3(shadowFactor, shadowFactor, shadowFactor);
         return;
     }
@@ -226,8 +244,9 @@ void main() {
     if (fog.activeFog == 1) {
         fragColor = calcFog(view_pos, fragColor, fog, ambientLight.color, directionalLight);
     }
+    fragColor.rgb = applyHDR(fragColor.rgb);
 #define RENDER_CASCADE(r,g,b) fragColor.rgb *= vec3(r,g,b); break;
-    if (showCascades == 1) {
+    if (showCascades) {
         switch (cascadeIndex) {
             case 0:  RENDER_CASCADE( 1.0f, 0.25f, 0.25f)
             case 1:  RENDER_CASCADE(0.25f,  1.0f, 0.25f)

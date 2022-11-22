@@ -12,7 +12,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class GBuffer {
 
-    private static final int TOTAL_TEXTURES = 4;
+    public static final int TOTAL_TEXTURES = 4;
 
     private final int gBufferId;
     private final int height;
@@ -33,17 +33,42 @@ public class GBuffer {
             glBindTexture(GL_TEXTURE_2D, this.textureIds[i]);
             final int attachmentType;
             if (i == GBuffer.TOTAL_TEXTURES - 1) {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, this.width, this.height, 0, GL_DEPTH_COMPONENT, GL_FLOAT,
-                        (ByteBuffer) null);
+                glTexImage2D(
+                        GL_TEXTURE_2D,
+                        0,
+                        GL_DEPTH_COMPONENT32F,
+                        this.width,
+                        this.height,
+                        0,
+                        GL_DEPTH_COMPONENT,
+                        GL_FLOAT,
+                        (ByteBuffer) null
+                );
                 attachmentType = GL_DEPTH_ATTACHMENT;
             } else {
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, this.width, this.height, 0, GL_RGBA, GL_FLOAT, (ByteBuffer) null);
+                glTexImage2D(
+                        GL_TEXTURE_2D,
+                        0,
+                        GL_RGBA32F,
+                        this.width,
+                        this.height,
+                        0,
+                        GL_RGBA,
+                        GL_FLOAT,
+                        (ByteBuffer) null
+                );
                 attachmentType = GL_COLOR_ATTACHMENT0 + i;
             }
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-            glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, GL_TEXTURE_2D, this.textureIds[i], 0);
+            glFramebufferTexture2D(
+                    GL_FRAMEBUFFER,
+                    attachmentType,
+                    GL_TEXTURE_2D,
+                    this.textureIds[i],
+                    0
+            );
         }
 
         try (final MemoryStack stack = MemoryStack.stackPush()) {
@@ -58,24 +83,24 @@ public class GBuffer {
     }
 
     public void cleanup() {
-        glDeleteFramebuffers(gBufferId);
-        Arrays.stream(textureIds).forEach(GL30::glDeleteTextures);
+        glDeleteFramebuffers(this.gBufferId);
+        Arrays.stream(this.textureIds).forEach(GL30::glDeleteTextures);
     }
 
     public int getGBufferId() {
-        return gBufferId;
+        return this.gBufferId;
     }
 
     public int getHeight() {
-        return height;
+        return this.height;
     }
 
     public int[] getTextureIds() {
-        return textureIds;
+        return this.textureIds;
     }
 
     public int getWidth() {
-        return width;
+        return this.width;
     }
 
 }

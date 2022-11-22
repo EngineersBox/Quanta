@@ -11,6 +11,7 @@ import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
 import com.engineersbox.quanta.resources.assets.shader.Uniforms;
+import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.*;
@@ -42,6 +43,10 @@ public class LightingRenderer extends ShaderRenderHandler {
     private static boolean SHOW_DEPTH = false;
     @VariableHook(name = "renderer.show_shadows")
     private static boolean SHOW_SHADOWS = false;
+    @VariableHook(name = "hdr.enable")
+    private static boolean ENABLE_HDR = true;
+    @VariableHook(name = "hdr.exposure")
+    private static float EXPOSURE = 1.0f;
 
     private final QuadMesh quadMesh;
 
@@ -72,7 +77,10 @@ public class LightingRenderer extends ShaderRenderHandler {
                 "fog.density",
                 "showCascades",
                 "showDepth",
-                "showShadows"
+                "showShadows",
+                "farPlane",
+                "hdr",
+                "exposure"
         ).forEach(super.uniforms::createUniform);
 
         for (int i = 0; i < LightingRenderer.MAX_POINT_LIGHTS; i++) {
@@ -122,6 +130,18 @@ public class LightingRenderer extends ShaderRenderHandler {
             glBindTexture(GL_TEXTURE_2D, textureIds[i]);
         }
         super.uniforms.setUniform(
+                "hdr",
+                this.ENABLE_HDR
+        );
+        super.uniforms.setUniform(
+                "exposure",
+                this.EXPOSURE
+        );
+        super.uniforms.setUniform(
+                "farPlane",
+                (float) ConfigHandler.CONFIG.render.camera.zFar
+        );
+        super.uniforms.setUniform(
                 "showCascades",
                 this.SHOW_CASCADES
         );
@@ -162,15 +182,14 @@ public class LightingRenderer extends ShaderRenderHandler {
                 "fog.density",
                 fog.getDensity()
         );
-        final int start = 4;
         final ShadowRenderer shadowRenderer = (ShadowRenderer) context.attributes().get(ShadowRenderer.RENDERER_NAME);
         if (shadowRenderer == null) {
             throw new IllegalStateException("Unbound shadow renderer, cannot invoke lighting renderer");
         }
         final List<ShadowCascade> cascadeShadows = shadowRenderer.getShadowCascades();
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
-            glActiveTexture(GL_TEXTURE0 + start + i);
-            super.uniforms.setUniform("shadowMap_" + i, start + i);
+            glActiveTexture(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES + i);
+            super.uniforms.setUniform("shadowMap_" + i, GBuffer.TOTAL_TEXTURES + i);
             final ShadowCascade cascadeShadow = cascadeShadows.get(i);
             super.uniforms.setUniform(
                     "shadowCascade[" + i + "]" + ".projectionViewMatrix",
@@ -181,7 +200,7 @@ public class LightingRenderer extends ShaderRenderHandler {
                     cascadeShadow.getSplitDistance()
             );
         }
-        shadowRenderer.getShadowBuffer().bindTextures(GL_TEXTURE0 + start);
+        shadowRenderer.getShadowBuffer().bindTextures(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES);
         super.uniforms.setUniform(
                 "inverseProjectionMatrix",
                 context.scene().getProjection().getInverseProjectionMatrix()
@@ -197,7 +216,7 @@ public class LightingRenderer extends ShaderRenderHandler {
                 GL_UNSIGNED_INT,
                 0
         );
-        this.shader.unbind();
+        super.unbind();
     }
 
     private void updateLights(final Scene scene) {

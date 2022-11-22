@@ -5,6 +5,7 @@ import com.engineersbox.quanta.rendering.deferred.GBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
+import com.engineersbox.quanta.rendering.hdr.HDRBuffer;
 import com.engineersbox.quanta.rendering.indirect.RenderBuffers;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.assets.object.Model;
@@ -45,6 +46,7 @@ public class Renderer {
     );
 
     private final GBuffer gBuffer;
+    private final HDRBuffer hdrBuffer;
     private final RenderBuffers renderBuffers;
 
     private LinkedMap<String, ShaderRenderHandler> preProcessRenderHandlers;
@@ -55,6 +57,7 @@ public class Renderer {
 
     public Renderer(final Window window) {
         this.gBuffer = new GBuffer(window);
+        this.hdrBuffer = new HDRBuffer(window, this.gBuffer);
         this.renderBuffers = new RenderBuffers();
         this.preProcessRenderHandlers = new LinkedMap<>();
         this.coreRenderHandlers = new LinkedMap<>();
@@ -115,6 +118,7 @@ public class Renderer {
 
     public void cleanup() {
         this.gBuffer.cleanup();
+        this.hdrBuffer.cleanup();
         this.renderBuffers.cleanup();
         this.preProcessRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
         this.coreRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
@@ -273,7 +277,8 @@ public class Renderer {
                     scene,
                     window,
                     this.renderBuffers,
-                    this.gBuffer
+                    this.gBuffer,
+                    this.hdrBuffer
             );
         }
     }
