@@ -19,3 +19,4 @@
 * Replace usages of `RuntimeException` with custom exceptions
 * Implement frustum culling
 * Implement draw distance control
+* Refactor command registration for console widget
