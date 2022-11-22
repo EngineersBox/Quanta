@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL21.GL_SRGB_ALPHA;
 import static org.lwjgl.opengl.GL30.glGenerateMipmap;
 import static org.lwjgl.stb.STBImage.*;
 
@@ -114,7 +115,7 @@ public class Texture {
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_RGBA,
+                GL_SRGB_ALPHA,
                 width,
                 height,
                 0,

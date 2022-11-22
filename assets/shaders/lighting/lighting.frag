@@ -98,8 +98,8 @@ vec4 calcLightColor(vec4 diffuse, vec4 specular, float reflectance, vec3 lightCo
     specularFactor = pow(specularFactor, SPECULAR_POWER);
     specColor = specular * light_intensity  * specularFactor * reflectance * vec4(lightColor, 1.0);
 
-    float distance = length(gl_FragCoord.xyz - position);
-    return (diffuseColor + specColor) * (1.0 / (distance * distance));
+    // float distance = length(gl_FragCoord.xyz - position);
+    return (diffuseColor + specColor);// * (1.0 / (distance * distance));
 }
 
 vec4 calcPointLight(vec4 diffuse, vec4 specular, float reflectance, PointLight light, vec3 position, vec3 normal) {
@@ -240,11 +240,11 @@ void main() {
     vec4 ambient = calcAmbient(ambientLight, diffuse);
     fragColor = ambient + diffuseSpecularComp;
     fragColor.rgb = fragColor.rgb * shadowFactor;
+    fragColor.rgb = applyHDR(fragColor.rgb);
 
     if (fog.activeFog == 1) {
         fragColor = calcFog(view_pos, fragColor, fog, ambientLight.color, directionalLight);
     }
-    fragColor.rgb = applyHDR(fragColor.rgb);
 #define RENDER_CASCADE(r,g,b) fragColor.rgb *= vec3(r,g,b); break;
     if (showCascades) {
         switch (cascadeIndex) {
