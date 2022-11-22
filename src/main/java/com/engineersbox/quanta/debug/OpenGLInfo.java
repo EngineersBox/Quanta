@@ -29,16 +29,16 @@ public record OpenGLInfo(String version,
     private static final Logger LOGGER = LogManager.getLogger(OpenGLInfo.class);
 
     public void log(final boolean showExtensions) {
-        OpenGLInfo.LOGGER.info("[OPENGL] OpenGL Version: {}", this.version);
-        OpenGLInfo.LOGGER.info("[OPENGL] GLSL Version: {}", this.glslVersion);
-        OpenGLInfo.LOGGER.info("[OPENGL] Vendor: {}", this.vendor);
-        OpenGLInfo.LOGGER.info("[OPENGL] Renderer: {}", this.renderer);
-        OpenGLInfo.LOGGER.info("[OPENGL] Found {} supported Extensions", this.extensions);
+        OpenGLInfo.LOGGER.debug("[OPENGL] OpenGL Version: {}", this.version);
+        OpenGLInfo.LOGGER.debug("[OPENGL] GLSL Version: {}", this.glslVersion);
+        OpenGLInfo.LOGGER.debug("[OPENGL] Vendor: {}", this.vendor);
+        OpenGLInfo.LOGGER.debug("[OPENGL] Renderer: {}", this.renderer);
+        OpenGLInfo.LOGGER.debug("[OPENGL] Found {} supported Extensions", this.extensions);
         if (!showExtensions) {
             return;
         }
         for (int i = 0; i < this.extensions; i++) {
-            OpenGLInfo.LOGGER.info("\t{}. {}", i + 1, glGetStringi(GL_EXTENSIONS, i));
+            OpenGLInfo.LOGGER.trace("\t{}. {}", i + 1, glGetStringi(GL_EXTENSIONS, i));
         }
 
     }

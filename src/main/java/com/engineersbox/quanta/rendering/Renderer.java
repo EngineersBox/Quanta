@@ -87,7 +87,7 @@ public class Renderer {
                         clazz.getAnnotation(RenderHandler.class).name()
                 ), e);
             }
-        }).peek((final ShaderRenderHandler handler) -> {
+        }).map(StreamUtils.passThrough((final ShaderRenderHandler handler) -> {
             final RenderHandler annotation = handler.getClass().getAnnotation(RenderHandler.class);
             Renderer.LOGGER.info(
                     "[SHADER STAGE: {}] Found shader render handler \"{}\" with priority {}",
@@ -95,7 +95,7 @@ public class Renderer {
                     annotation.name(),
                     annotation.priority()
             );
-        }).collect(Collectors.toMap(
+        })).collect(Collectors.toMap(
                 (final ShaderRenderHandler handler) -> handler.getClass().getAnnotation(RenderHandler.class).name(),
                 Function.identity(),
                 (final ShaderRenderHandler handler1, final ShaderRenderHandler handler2) -> {
@@ -168,9 +168,9 @@ public class Renderer {
             final ShaderValidationState validationState = shader.validate();
             if (!validationState.isValid()) {
                 Renderer.LOGGER.warn(
-                        "[Shader: {} Stage: {}] Invalid failed during link or validation, skipping {}. Reason: {}",
-                        stage.name(),
+                        "[Shader: {} Stage: {}] Failed to validate shader, skipping {}. Reason: {}",
                         shader.getProgramId(),
+                        stage,
                         name,
                         validationState.message()
                 );
