@@ -15,10 +15,12 @@ import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.assimp.*;
 import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.*;
 
@@ -106,7 +108,21 @@ public class ModelLoader {
             throw new RuntimeException("Model path does not exist [" + modelPath + "]");
         }
         final String modelDir = file.getParent();
-        final AIScene aiScene = aiImportFile(modelPath, flags); // TODO: Allow imports from resource path
+        final AIScene aiScene;
+        if (classPathResource) {
+            try {
+                final ByteBuffer rawData = ResourceLoader.loadResource(modelPath);
+                if (rawData == null) {
+                    throw new IOException();
+                }
+                aiScene = aiImportFileFromMemory(rawData, flags, modelPath);
+                MemoryUtil.memFree(rawData);
+            } catch (final IOException e) {
+                throw new RuntimeException("Model path does not exist [" + modelPath + "]", e);
+            }
+        } else {
+            aiScene = aiImportFile(modelPath, flags);
+        }
         if (aiScene == null) {
             throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
         }

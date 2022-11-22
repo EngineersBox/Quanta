@@ -112,6 +112,25 @@ public class Main implements IAppLogic {
         this.cubeEntity2.updateModelMatrix();
         context.scene().addEntity(this.cubeEntity2);
 
+        final Cone coneModel = new Cone(
+                "cone-model",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache()
+        );
+        context.scene()
+                .getMaterialCache()
+                .getMaterial(coneModel
+                        .getMeshData()
+                        .get(0)
+                        .getMaterialIdx()
+                ).setDiffuseColor(new Vector4f(1, 0, 0, 1));
+        context.scene().addModel(coneModel);
+        this.coneEntity = new Entity("cone-entity", coneModel.getId());
+        this.coneEntity.setPosition(1, 2, 4);
+        this.coneEntity.setScale(0.25f);
+        this.coneEntity.updateModelMatrix();
+        context.scene().addEntity(coneEntity);
+
         context.renderer().setupData(
                 context.scene(),
                 context.window()
