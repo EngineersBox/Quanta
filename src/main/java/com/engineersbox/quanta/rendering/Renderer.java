@@ -255,7 +255,7 @@ public class Renderer {
                         this.postProcessRenderHandlers
                 ),
                 (final ShaderStage stage, final LinkedMap<String, ShaderRenderHandler> handlers) -> {
-                    Renderer.LOGGER.info("Invoking data setup for {} render handler", stage);
+                    Renderer.LOGGER.info("[SHADER STAGE: {}] Invoking data setup for render handlers", stage);
                     handlers.forEach((final String name, final ShaderRenderHandler handler) -> handler.setupData(this.context));
                 }
         );
