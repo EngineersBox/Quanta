@@ -17,6 +17,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.MapSerializer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +27,8 @@ import java.util.Map;
 
 @JsonDeserialize(using = SceneDeserializer.class)
 public class Scene {
+
+    private static final Logger LOGGER = LogManager.getLogger(Scene.class);
 
     private final Map<String, Model> models;
     private final Projection projection;
@@ -126,21 +130,47 @@ public class Scene {
 
     public void serialize(final String filePath) {
         try {
+            Scene.LOGGER.info("Started serializing scene {} to {}", this, filePath);
+            final long start = System.currentTimeMillis();
             SerializationUtils.OBJECT_MAPPER.writeValue(
                     new File(filePath),
                     this
             );
+            final long end = System.currentTimeMillis();
+            Scene.LOGGER.info(
+                    "Finished serializing scene {} to {}, took {}ms",
+                    this,
+                    filePath,
+                    end - start
+            );
         } catch (final IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(String.format(
+                    "Unable to serialize scene %s to file %s",
+                    this,
+                    filePath
+            ), e);
         }
     }
 
     public static Scene deserialize(final String filePath) {
         try {
-            return SerializationUtils.OBJECT_MAPPER.readerFor(Scene.class)
+            Scene.LOGGER.info("Started deserializing scene from {}", filePath);
+            final long start = System.currentTimeMillis();
+            final Scene scene = SerializationUtils.OBJECT_MAPPER.readerFor(Scene.class)
                     .readValue(new File(filePath));
+            final long end = System.currentTimeMillis();
+            Scene.LOGGER.info(
+                    "Finished deserializing scene from {} to {}, took {}ms",
+                    filePath,
+                    scene,
+                    end - start
+            );
+            return scene;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(String.format(
+                    "Unable to deserialize scene from file %s",
+                    filePath
+            ), e);
         }
     }
 }

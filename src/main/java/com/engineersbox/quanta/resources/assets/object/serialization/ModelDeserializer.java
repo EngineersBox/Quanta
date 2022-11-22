@@ -14,6 +14,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
@@ -77,11 +78,20 @@ public class ModelDeserializer extends StdDeserializer<Model> {
                     if (isAnimated) {
                         entity.setAnimationData(new AnimationData(model.getAnimations().get(0)));
                     }
-                })).map(this::copyFixEntity)
+                })).map(this::copyFixEntity) // BUG: Single short-lived reference used between deserialized objects
                 .forEach(entities::add);
         return model;
     }
 
+    /**
+     * @implNote
+     * The only reason this exists is that for some reason {@link com.fasterxml.jackson.databind.ObjectReader} seems
+     * to create weakly referenced objects via {@code ObjectMapper#reader().forType(TypeReference).readValue(JsonNode)}
+     * and re-uses the reference between separate invocations for the same type.
+     * This causes sequential deserialization of the same object type to end up
+     * with identical state, and they are killed by the GC almost immediately
+     * after the reader is dropped from the current scope. It's completely broken.
+     */
     public Entity copyFixEntity(final Entity entity) {
         final Entity newEntity = new Entity(
                 entity.getId(),

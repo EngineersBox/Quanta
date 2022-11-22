@@ -121,6 +121,13 @@ public class Entity {
         this.rotation.set(other.rotation);
         this.modelMatrix.set(other.modelMatrix);
         this.scale = other.scale;
+        final AnimationData otherAnimationData = other.getAnimationData();
+        if (otherAnimationData != null) {
+            this.animationData = new AnimationData(
+                    otherAnimationData.getCurrentAnimation(),
+                    otherAnimationData.getCurrentFrameIdx()
+            );
+        }
     }
 
 }
