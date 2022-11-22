@@ -4,7 +4,7 @@ const int MAX_POINT_LIGHTS = 5;
 const int MAX_SPOT_LIGHTS = 5;
 const float SPECULAR_POWER = 10;
 const int NUM_CASCADES = 3;
-const float BIAS = 0.005;
+const float BIAS = 0.0001;
 const float SHADOW_FACTOR = 0.25;
 
 in vec2 outTextCoord;
@@ -144,13 +144,13 @@ float textureProj(vec4 shadowCoord, vec2 offset, int idx) {
     if (shadowCoord.z > -1.0 && shadowCoord.z < 1.0) {
         float dist = 0.0;
         if (idx == 0) {
-            dist = texture(shadowMap_0, vec2(shadowCoord.xy + offset)).r;
+            dist = texture(shadowMap_0, vec2(shadowCoord.xy + offset * (1.0 / textureSize(shadowMap_0, 0)))).r;
         } else if (idx == 1) {
-            dist = texture(shadowMap_1, vec2(shadowCoord.xy + offset)).r;
+            dist = texture(shadowMap_1, vec2(shadowCoord.xy + offset * (1.0 / textureSize(shadowMap_0, 0)))).r;
         } else {
-            dist = texture(shadowMap_2, vec2(shadowCoord.xy + offset)).r;
+            dist = texture(shadowMap_2, vec2(shadowCoord.xy + offset * (1.0 / textureSize(shadowMap_0, 0)))).r;
         }
-        if (shadowCoord.w > 0 && dist < shadowCoord.z - BIAS) {
+        if (dist < shadowCoord.z - BIAS) {
             shadow = SHADOW_FACTOR;
         }
     }
@@ -159,10 +159,14 @@ float textureProj(vec4 shadowCoord, vec2 offset, int idx) {
 
 float calcShadow(vec4 worldPosition, int idx) {
     vec4 shadowMapPosition = shadowCascade[idx].projectionViewMatrix * worldPosition;
-    float shadow = 1.0;
+    float shadow = 0.0;
     vec4 shadowCoord = (shadowMapPosition / shadowMapPosition.w) * 0.5 + 0.5;
-    shadow = textureProj(shadowCoord, vec2(0, 0), idx);
-    return shadow;
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            shadow += textureProj(shadowCoord, vec2(x, y), idx);
+        }
+    }
+    return shadow / 9.0;
 }
 
 void main() {
