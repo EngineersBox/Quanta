@@ -8,6 +8,7 @@ import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
+import com.engineersbox.quanta.resources.assets.object.builtin.Cone;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
@@ -21,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +47,7 @@ public class Main implements IAppLogic {
     private AnimationData animationData2;
     private Entity cubeEntity1;
     private Entity cubeEntity2;
+    private Entity coneEntity;
     private float lightAngle;
     private float rotation;
     private TestGUI console;

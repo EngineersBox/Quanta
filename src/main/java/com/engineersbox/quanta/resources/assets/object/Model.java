@@ -19,6 +19,16 @@ public class Model {
     private final List<MeshDrawData> meshDrawData;
 
     public Model(final String id,
+                 final String path) {
+        this(
+                id,
+                path,
+                new ArrayList<>(),
+                new ArrayList<>()
+        );
+    }
+
+    public Model(final String id,
                  final String path,
                  final List<MeshData> meshData,
                  final List<Animation> animations) {

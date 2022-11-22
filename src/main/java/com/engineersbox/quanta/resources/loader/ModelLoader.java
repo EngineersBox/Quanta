@@ -17,6 +17,8 @@ import org.lwjgl.assimp.*;
 import org.lwjgl.system.MemoryStack;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.IntBuffer;
 import java.util.*;
 
@@ -41,6 +43,22 @@ public class ModelLoader {
                 modelPath,
                 textureCache,
                 materialCache,
+                animated,
+                false
+        );
+    }
+
+    public static Model loadModel(final String modelId,
+                                  final String modelPath,
+                                  final TextureCache textureCache,
+                                  final MaterialCache materialCache,
+                                  final boolean animated,
+                                  final boolean classPathResource) {
+        return ModelLoader.loadModel(
+                modelId,
+                modelPath,
+                textureCache,
+                materialCache,
                 aiProcess_GenSmoothNormals
                         | aiProcess_JoinIdenticalVertices
                         | aiProcess_Triangulate
@@ -48,7 +66,8 @@ public class ModelLoader {
                         | aiProcess_CalcTangentSpace
                         | aiProcess_LimitBoneWeights
                         | aiProcess_GenBoundingBoxes
-                        | (animated ? 0 : aiProcess_PreTransformVertices)
+                        | (animated ? 0 : aiProcess_PreTransformVertices),
+                classPathResource
         );
     }
 
@@ -57,12 +76,37 @@ public class ModelLoader {
                                   final TextureCache textureCache,
                                   final MaterialCache materialCache,
                                   final int flags) {
-        final File file = new File(modelPath);
+        return ModelLoader.loadModel(
+                modelId,
+                modelPath,
+                textureCache,
+                materialCache,
+                flags,
+                false
+        );
+    }
+
+    public static Model loadModel(final String modelId,
+                                  final String modelPath,
+                                  final TextureCache textureCache,
+                                  final MaterialCache materialCache,
+                                  final int flags,
+                                  final boolean classPathResource) {
+        final File file;
+        if (classPathResource) {
+            try {
+                file = ResourceLoader.loadResourceAsFile(modelPath);
+            } catch (final URISyntaxException | IOException e) {
+                throw new RuntimeException("Model path does not exist [" + modelPath + "]", e);
+            }
+        } else {
+            file = new File(modelPath);
+        }
         if (!file.exists()) {
             throw new RuntimeException("Model path does not exist [" + modelPath + "]");
         }
         final String modelDir = file.getParent();
-        final AIScene aiScene = aiImportFile(modelPath, flags);
+        final AIScene aiScene = aiImportFile(modelPath, flags); // TODO: Allow imports from resource path
         if (aiScene == null) {
             throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
         }

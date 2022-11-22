@@ -28,6 +28,24 @@ public class ResourceLoader {
         return "/" + filename;
     }
 
+    public static File loadResourceAsFile(final String fileName) throws URISyntaxException, IOException {
+        final URL resource = ResourceLoader.class.getResource(fileName);
+        if (resource == null) {
+            throw new IOException(String.format(
+                    "Could not find resource: %s",
+                    fileName
+            ));
+        }
+        final File fileResource = new File(resource.toURI());
+        if (!fileResource.exists()) {
+            throw new IOException(String.format(
+                    "Could not find resource: %s",
+                    fileName
+            ));
+        }
+        return fileResource;
+    }
+
     public static ByteBuffer loadResource(final String fileName) throws IOException {
         final URL resource = ResourceLoader.class.getResource(formatFilename(fileName));
         if (resource == null) {
