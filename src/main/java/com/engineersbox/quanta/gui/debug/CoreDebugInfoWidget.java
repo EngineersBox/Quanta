@@ -196,11 +196,18 @@ public class CoreDebugInfoWidget implements IGUIInstance {
         }
         this.indentManager.push(CoreDebugInfoWidget.INDENT_SIZE);
         ColouredString.renderFormattedString(
-                GUITextColour.NORMAL.withFormat(
-                        "Near/far: %f/%f%n",
-                        ConfigHandler.CONFIG.render.camera.zNear,
-                        ConfigHandler.CONFIG.render.camera.zFar
-                ),
+                GUITextColour.NORMAL.withFormat("Clipping planes: [%n"),
+                new ColouredString[]{
+                        GUITextColour.NORMAL.withFormat(
+                                " Near: %f%n",
+                                ConfigHandler.CONFIG.render.camera.zNear
+                        ),
+                        GUITextColour.NORMAL.withFormat(
+                                " Far: %f%n",
+                                ConfigHandler.CONFIG.render.camera.zFar
+                        )
+                },
+                GUITextColour.NORMAL.withFormat("]%n"),
                 GUITextColour.NORMAL.withFormat(
                         "FOV: %f%n",
                         ConfigHandler.CONFIG.render.camera.fov
@@ -208,15 +215,15 @@ public class CoreDebugInfoWidget implements IGUIInstance {
                 GUITextColour.NORMAL.withFormat("Position: [%n"),
                 new ColouredString[]{
                         GUITextColour.NORMAL.withFormat(
-                                "  X: %f%n",
+                                " X: %f%n",
                                 this.camera.getPosition().x
                         ),
                         GUITextColour.NORMAL.withFormat(
-                                "  Y: %f%n",
+                                " Y: %f%n",
                                 this.camera.getPosition().y
                         ),
                         GUITextColour.NORMAL.withFormat(
-                                "  Z: %f%n",
+                                " Z: %f%n",
                                 this.camera.getPosition().z
                         )
                 },
@@ -224,15 +231,15 @@ public class CoreDebugInfoWidget implements IGUIInstance {
                 GUITextColour.NORMAL.withFormat("Rotation: [%n"),
                 new ColouredString[]{
                         GUITextColour.NORMAL.withFormat(
-                                "  Pitch: %f%n",
+                                " Pitch: %f%n",
                                 this.camera.getRotation().x
                         ),
                         GUITextColour.NORMAL.withFormat(
-                                "  Yaw: %f%n",
+                                " Yaw: %f%n",
                                 this.camera.getRotation().y
                         ),
                         GUITextColour.NORMAL.withFormat(
-                                "  Roll: %f%n",
+                                " Roll: %f%n",
                                 this.camera.getRotation().z
                         )
                 },

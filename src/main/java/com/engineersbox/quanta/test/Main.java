@@ -15,6 +15,7 @@ import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.SkyBox;
+import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
@@ -26,6 +27,7 @@ import org.apache.commons.numbers.core.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 
 import static org.lwjgl.glfw.GLFW.*;
@@ -189,11 +191,11 @@ public class Main implements IAppLogic {
         skyBox.getEntity().updateModelMatrix();
         context.scene().setSkyBox(skyBox);
 
-//        context.scene().setFog(new Fog(
-//                true,
-//                new Vector3f(0.5f, 0.5f, 0.5f),
-//                0.02f
-//        ));
+        context.scene().setFog(new Fog(
+                true,
+                new Vector3f(0.5f, 0.5f, 0.5f),
+                0.02f
+        ));
 
         final Camera camera = context.scene().getCamera();
         camera.setPosition(-1.5f, 3.0f, 4.5f);
