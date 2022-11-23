@@ -10,9 +10,11 @@ import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.assets.object.builtin.GeometryBuffer;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
+import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.SkyBox;
+import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
@@ -24,6 +26,7 @@ import org.apache.commons.numbers.core.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
+import org.joml.Vector3f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -145,20 +148,20 @@ public class Main implements IAppLogic {
         );
         context.scene().addModel(testGeoModel);
         final Entity testGeoEntity = new Entity("test-geometry-entity", testGeoModel.getId());
-        testGeoEntity.setScale(100.0f);
+        testGeoEntity.setScale(1000.0f);
         context.scene().addEntity(testGeoEntity);
 
-//        final Model sponzaModel = ModelLoader.loadModel(
-//                "sponza-model",
-//                "assets/models/sponza_simple/sponza.obj",
-//                context.scene().getTextureCache(),
-//                context.scene().getMaterialCache(),
-//                false
-//        );
-//        context.scene().addModel(sponzaModel);
-//        this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
-//        this.sponzaEntity.setScale(0.00001f);
-//        context.scene().addEntity(this.sponzaEntity);
+        final Model sponzaModel = ModelLoader.loadModel(
+                "sponza-model",
+                "assets/models/sponza_simple/sponza.obj",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
+                false
+        );
+        context.scene().addModel(sponzaModel);
+        this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
+        this.sponzaEntity.setScale(0.00001f);
+        context.scene().addEntity(this.sponzaEntity);
 
         context.renderer().setupData(
                 context.scene(),
@@ -171,7 +174,7 @@ public class Main implements IAppLogic {
         ambientLight.setColor(0.3f, 0.3f, 0.3f);
 
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();
-        dirLight.setPosition(0, 2000, 0);
+        dirLight.setPosition(100, 2000, 0);
         dirLight.setIntensity(1.0f);
         context.scene().setSceneLights(sceneLights);
 
