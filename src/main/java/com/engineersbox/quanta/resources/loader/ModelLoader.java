@@ -114,20 +114,89 @@ public class ModelLoader {
         if (aiScene == null) {
             throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
         }
+        return ModelLoader.processModel(
+                modelId,
+                aiScene,
+                modelDir,
+                modelPath,
+                textureCache,
+                materialCache
+        );
+    }
+
+    public static Model loadModel(final String modelId,
+                                  final ByteBuffer byteBuffer,
+                                  final TextureCache textureCache,
+                                  final MaterialCache materialCache,
+                                  final boolean animated) {
+        return ModelLoader.loadModel(
+                modelId,
+                byteBuffer,
+                textureCache,
+                materialCache,
+                aiProcess_GenSmoothNormals
+                        | aiProcess_JoinIdenticalVertices
+                        | aiProcess_Triangulate
+                        | aiProcess_FixInfacingNormals
+                        | aiProcess_CalcTangentSpace
+                        | aiProcess_LimitBoneWeights
+                        | aiProcess_GenBoundingBoxes
+                        | (animated ? 0 : aiProcess_PreTransformVertices)
+        );
+    }
+
+    public static Model loadModel(final String modelId,
+                                  final ByteBuffer byteBuffer,
+                                  final TextureCache textureCache,
+                                  final MaterialCache materialCache,
+                                  final int flags) {
+        final String modelPath = "<IN MEMORY>";
+        final AIScene aiScene;
+        try {
+            if (byteBuffer == null) {
+                throw new IOException();
+            }
+            aiScene = aiImportFileFromMemory(byteBuffer, flags, modelPath);
+        } catch (final IOException e) {
+            throw new RuntimeException("Model path does not exist [" + modelPath + "]", e);
+        }
+        if (aiScene == null) {
+            throw new RuntimeException("Error loading model [modelPath: " + modelPath + "]");
+        }
+        return ModelLoader.processModel(
+                modelId,
+                aiScene,
+                null,
+                modelPath,
+                textureCache,
+                materialCache
+        );
+    }
+
+    public static Model processModel(final String modelId,
+                                     final AIScene aiScene,
+                                     final String modelDir,
+                                     final String modelPath,
+                                     final TextureCache textureCache,
+                                     final MaterialCache materialCache) {
         final int numMaterials = aiScene.mNumMaterials();
         final PointerBuffer aiMaterials = aiScene.mMaterials();
-        if (aiMaterials == null) {
+        if (numMaterials > 0 && aiMaterials == null) {
             throw new RuntimeException(String.format(
                     "Expected materials for model [%s], got none",
                     modelId
             ));
         }
         final List<Material> materialList = new ArrayList<>();
-        for (int i = 0; i < numMaterials; i++) {
-            final AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
-            final Material material = ModelLoader.processMaterial(aiMaterial, modelDir, textureCache);
-            materialCache.addMaterial(material);
-            materialList.add(material);
+        if (modelDir == null) {
+            materialList.add(new Material());
+        } else {
+            for (int i = 0; i < numMaterials; i++) {
+                final AIMaterial aiMaterial = AIMaterial.create(aiMaterials.get(i));
+                final Material material = ModelLoader.processMaterial(aiMaterial, modelDir, textureCache);
+                materialCache.addMaterial(material);
+                materialList.add(material);
+            }
         }
         final int numMeshes = aiScene.mNumMeshes();
         final PointerBuffer aiMeshes = aiScene.mMeshes();
@@ -308,7 +377,7 @@ public class ModelLoader {
     private static float[] processBiTangents(final AIMesh aiMesh, final float[] normals) {
         final AIVector3D.Buffer buffer = aiMesh.mBitangents();
         if (buffer == null) {
-            throw new RuntimeException("Expected bi-tangents in model, found none");
+            return new float[normals.length];
         }
         float[] data = new float[buffer.remaining() * 3];
         int pos = 0;
@@ -524,6 +593,9 @@ public class ModelLoader {
     private static float[] processTangents(final AIMesh aiMesh,
                                            final float[] normals) {
         final AIVector3D.Buffer buffer = aiMesh.mTangents();
+        if (buffer == null) {
+            return new float[normals.length];
+        }
         float[] data = new float[buffer.remaining() * 3];
         int pos = 0;
         while (buffer.remaining() > 0) {

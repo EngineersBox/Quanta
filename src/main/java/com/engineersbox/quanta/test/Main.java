@@ -8,25 +8,22 @@ import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
-import com.engineersbox.quanta.resources.assets.object.builtin.Cone;
+import com.engineersbox.quanta.resources.assets.object.builtin.GeometryBuffer;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
-import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.SkyBox;
-import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
+import org.apache.commons.geometry.euclidean.threed.RegionBSPTree3D;
+import org.apache.commons.geometry.euclidean.threed.Vector3D;
+import org.apache.commons.geometry.euclidean.threed.shape.Parallelepiped;
+import org.apache.commons.geometry.euclidean.threed.shape.Sphere;
+import org.apache.commons.numbers.core.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -132,17 +129,36 @@ public class Main implements IAppLogic {
 //        this.coneEntity.updateModelMatrix();
 //        context.scene().addEntity(coneEntity);
 
-        final Model sponzaModel = ModelLoader.loadModel(
-                "sponza-model",
-                "assets/models/sponza_simple/sponza.obj",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache(),
-                false
+        final Precision.DoubleEquivalence precision = Precision.doubleEquivalenceOfEpsilon(1e-6);
+        final RegionBSPTree3D tree = Parallelepiped.unitCube(precision).toTree();
+        final Sphere sphere = Sphere.from(
+                Vector3D.ZERO,
+                0.65,
+                precision
         );
-        context.scene().addModel(sponzaModel);
-        this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
-        this.sponzaEntity.setScale(0.00001f);
-        context.scene().addEntity(this.sponzaEntity);
+        tree.difference(sphere.toTree(3));
+        final GeometryBuffer geoBuffer = new GeometryBuffer(tree.toTriangleMesh(precision));
+        final Model testGeoModel = geoBuffer.getModel(
+                "test-geomtry-model",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache()
+        );
+        context.scene().addModel(testGeoModel);
+        final Entity testGeoEntity = new Entity("test-geometry-entity", testGeoModel.getId());
+        testGeoEntity.setScale(100.0f);
+        context.scene().addEntity(testGeoEntity);
+
+//        final Model sponzaModel = ModelLoader.loadModel(
+//                "sponza-model",
+//                "assets/models/sponza_simple/sponza.obj",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache(),
+//                false
+//        );
+//        context.scene().addModel(sponzaModel);
+//        this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
+//        this.sponzaEntity.setScale(0.00001f);
+//        context.scene().addEntity(this.sponzaEntity);
 
         context.renderer().setupData(
                 context.scene(),
