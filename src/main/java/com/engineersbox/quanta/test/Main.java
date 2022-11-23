@@ -194,7 +194,7 @@ public class Main implements IAppLogic {
         context.scene().setFog(new Fog(
                 true,
                 new Vector3f(0.5f, 0.5f, 0.5f),
-                0.02f
+                0.005f
         ));
 
         final Camera camera = context.scene().getCamera();
