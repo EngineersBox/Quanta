@@ -113,6 +113,14 @@ public class SceneRenderer extends ShaderRenderHandler {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, context.gBuffer().getWidth(), context.gBuffer().getHeight());
         glDisable(GL_BLEND);
+//        glEnable(GL_BLEND);
+//        glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
+//        glBlendFuncSeparate(
+//                GL_SRC_ALPHA,
+//                GL_ONE_MINUS_SRC_ALPHA,
+//                GL_ONE,
+//                GL_ONE_MINUS_SRC_ALPHA
+//        );
         super.shader.bind();
         super.uniforms.setUniform(
                 "projectionMatrix",

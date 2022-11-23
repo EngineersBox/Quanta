@@ -95,8 +95,7 @@ vec4 calcLightColor(vec4 diffuse, vec4 specular, float reflectance, vec3 lightCo
     specularFactor = pow(specularFactor, SPECULAR_POWER);
     specColor = specular * light_intensity  * specularFactor * reflectance * vec4(lightColor, 1.0);
 
-    // float distance = length(gl_FragCoord.xyz - position);
-    return (diffuseColor + specColor);// * (1.0 / (distance * distance));
+    return (diffuseColor + specColor);
 }
 
 vec4 calcPointLight(vec4 diffuse, vec4 specular, float reflectance, PointLight light, vec3 position, vec3 normal) {

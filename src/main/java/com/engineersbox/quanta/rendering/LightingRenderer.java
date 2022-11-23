@@ -128,7 +128,7 @@ public class LightingRenderer extends ShaderRenderHandler {
         glViewport(0, 0, window.getWidth(), window.getHeight());
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
-        glBlendFunc(GL_ONE, GL_ONE);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.getGBufferId());
     }
 
