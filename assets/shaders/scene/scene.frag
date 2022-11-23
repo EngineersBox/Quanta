@@ -39,6 +39,9 @@ vec3 calcNormal(int idx, vec3 normal, vec3 tangent, vec3 bitangent, vec2 textCoo
 void main() {
     Material material = materials[outMaterialIdx];
     vec4 text_color = texture(textureSampler[material.textureIdx], outTextCoord);
+    if (text_color.a < 0.1) {
+        discard;
+    }
     vec4 diffuse = text_color + material.diffuse;
     if (diffuse.a < 0.5) {
         discard;

@@ -7,7 +7,7 @@
     * Scale
     * Material values
     * Culling
-* Transparency support
+* Partial transparency blending support
 * Radiosity
 * Volumetric lighting
 * Water
