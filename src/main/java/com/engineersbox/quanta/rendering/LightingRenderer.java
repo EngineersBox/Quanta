@@ -4,6 +4,7 @@ import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.hdr.HDRBuffer;
@@ -33,7 +34,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 @RenderHandler(
         name = LightingRenderer.RENDERER_NAME,
-        priority = 0,
+        priority = RenderPriority.DEFAULT,
         stage = ShaderStage.CORE
 )
 public class LightingRenderer extends ShaderRenderHandler {

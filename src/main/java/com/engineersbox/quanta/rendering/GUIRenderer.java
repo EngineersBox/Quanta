@@ -7,6 +7,7 @@ import com.engineersbox.quanta.debug.hooks.HookValidator;
 import com.engineersbox.quanta.debug.hooks.RegisterInstanceVariableHooks;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.resources.assets.gui.GUIMesh;
@@ -35,7 +36,7 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 @RenderHandler(
         name = GUIRenderer.RENDERER_NAME,
-        priority = Integer.MAX_VALUE / 2, // Put it way ahead, but leave some room if for some reason we need to render after GUI
+        priority = RenderPriority.SOFT_MAX, // Put it way ahead, but leave some room if for some reason we need to render after GUI
         stage = ShaderStage.POST_PROCESS
 )
 public class GUIRenderer extends ShaderRenderHandler {

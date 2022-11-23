@@ -224,7 +224,7 @@ public class Main implements IAppLogic {
 //            }
 //        });
         this.lightAngleX = 45.001f;
-        this.lightAngleZ = 45.001f;
+        this.lightAngleZ = 0f;
     }
 
     @Override

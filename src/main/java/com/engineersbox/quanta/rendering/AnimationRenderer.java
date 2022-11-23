@@ -1,6 +1,7 @@
 package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
@@ -23,7 +24,7 @@ import static org.lwjgl.opengl.GL43.*;
 
 @RenderHandler(
         name = AnimationRenderer.RENDERER_NAME,
-        priority = 0,
+        priority = RenderPriority.DEFAULT,
         stage = ShaderStage.PRE_PROCESS
 )
 public class AnimationRenderer extends ShaderRenderHandler {

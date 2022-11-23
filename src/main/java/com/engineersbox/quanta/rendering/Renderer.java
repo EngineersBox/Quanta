@@ -3,6 +3,7 @@ package com.engineersbox.quanta.rendering;
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.hdr.HDRBuffer;
@@ -86,11 +87,13 @@ public class Renderer {
             }
         }).map(StreamUtils.passThrough((final ShaderRenderHandler handler) -> {
             final RenderHandler annotation = handler.getClass().getAnnotation(RenderHandler.class);
+            final String priorityName = RenderPriority.convertToName(annotation.priority());
             Renderer.LOGGER.info(
-                    "[SHADER STAGE: {}] Found shader render handler \"{}\" with priority {}",
+                    "[SHADER STAGE: {}] Found shader render handler \"{}\" with priority {}{}",
                     annotation.stage(),
                     annotation.name(),
-                    annotation.priority()
+                    annotation.priority(),
+                    priorityName == null ? "" : " (" + priorityName + ")"
             );
         })).collect(Collectors.toMap(
                 (final ShaderRenderHandler handler) -> handler.getClass().getAnnotation(RenderHandler.class).name(),
