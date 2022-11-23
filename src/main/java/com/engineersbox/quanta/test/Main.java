@@ -8,6 +8,7 @@ import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
+import com.engineersbox.quanta.resources.assets.object.builtin.Cone;
 import com.engineersbox.quanta.resources.assets.object.builtin.GeometryBuffer;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
@@ -25,6 +26,7 @@ import org.apache.commons.numbers.core.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
+import org.joml.Vector4f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -94,42 +96,42 @@ public class Main implements IAppLogic {
         bobEntity2.setAnimationData(this.animationData2);
         context.scene().addEntity(bobEntity2);
 //
-//        final Model cubeModel = ModelLoader.loadModel(
-//                "cube-model",
-//                "assets/models/cube/cube.obj",
-//                context.scene().getTextureCache(),
-//                context.scene().getMaterialCache(),
-//                false
-//        );
-//        context.scene().addModel(cubeModel);
-//        this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
-//        this.cubeEntity1.setPosition(0, 2, -1);
-//        this.cubeEntity1.updateModelMatrix();
-//        context.scene().addEntity(this.cubeEntity1);
-//
-//        this.cubeEntity2 = new Entity("cube-entity-2", cubeModel.getId());
-//        this.cubeEntity2.setPosition(-2, 2, -1);
-//        this.cubeEntity2.updateModelMatrix();
-//        context.scene().addEntity(this.cubeEntity2);
-//
-//        final Cone coneModel = new Cone(
-//                "cone-model",
-//                context.scene().getTextureCache(),
-//                context.scene().getMaterialCache()
-//        );
-//        context.scene()
-//                .getMaterialCache()
-//                .getMaterial(coneModel
-//                        .getMeshData()
-//                        .get(0)
-//                        .getMaterialIdx()
-//                ).setDiffuseColor(new Vector4f(1, 0, 0, 1));
-//        context.scene().addModel(coneModel);
-//        this.coneEntity = new Entity("cone-entity", coneModel.getId());
-//        this.coneEntity.setPosition(1, 2, 4);
-//        this.coneEntity.setScale(0.25f);
-//        this.coneEntity.updateModelMatrix();
-//        context.scene().addEntity(coneEntity);
+        final Model cubeModel = ModelLoader.loadModel(
+                "cube-model",
+                "assets/models/cube/cube.obj",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
+                false
+        );
+        context.scene().addModel(cubeModel);
+        this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
+        this.cubeEntity1.setPosition(0, 2, -1);
+        this.cubeEntity1.updateModelMatrix();
+        context.scene().addEntity(this.cubeEntity1);
+
+        this.cubeEntity2 = new Entity("cube-entity-2", cubeModel.getId());
+        this.cubeEntity2.setPosition(-2, 2, -1);
+        this.cubeEntity2.updateModelMatrix();
+        context.scene().addEntity(this.cubeEntity2);
+
+        final Cone coneModel = new Cone(
+                "cone-model",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache()
+        );
+        context.scene()
+                .getMaterialCache()
+                .getMaterial(coneModel
+                        .getMeshData()
+                        .get(0)
+                        .getMaterialIdx()
+                ).setDiffuseColor(new Vector4f(1, 0, 0, 1));
+        context.scene().addModel(coneModel);
+        this.coneEntity = new Entity("cone-entity", coneModel.getId());
+        this.coneEntity.setPosition(1, 2, 4);
+        this.coneEntity.setScale(0.25f);
+        this.coneEntity.updateModelMatrix();
+        context.scene().addEntity(coneEntity);
 
         final Precision.DoubleEquivalence precision = Precision.doubleEquivalenceOfEpsilon(1e-6);
         final RegionBSPTree3D tree = Parallelepiped.unitCube(precision).toTree();
@@ -147,7 +149,8 @@ public class Main implements IAppLogic {
         );
         context.scene().addModel(testGeoModel);
         final Entity testGeoEntity = new Entity("test-geometry-entity", testGeoModel.getId());
-        testGeoEntity.setScale(1000.0f);
+        testGeoEntity.setPosition(40, 4, 4);
+        testGeoEntity.setScale(5000.0f);
         context.scene().addEntity(testGeoEntity);
 
         final Model sponzaModel = ModelLoader.loadModel(
@@ -300,15 +303,15 @@ public class Main implements IAppLogic {
         if (diffTimeMillis % 2 == 0) {
             animationData2.nextFrame();
         }
-//        this.rotation += 1.5;
-//        if (this.rotation > 360) {
-//            this.rotation = 0;
-//        }
-//        this.cubeEntity1.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
-//        this.cubeEntity1.updateModelMatrix();
-//
-//        this.cubeEntity2.setRotation(1, 1, 1, (float) Math.toRadians(360 - this.rotation));
-//        this.cubeEntity2.updateModelMatrix();
+        this.rotation += 1.5;
+        if (this.rotation > 360) {
+            this.rotation = 0;
+        }
+        this.cubeEntity1.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
+        this.cubeEntity1.updateModelMatrix();
+
+        this.cubeEntity2.setRotation(1, 1, 1, (float) Math.toRadians(360 - this.rotation));
+        this.cubeEntity2.updateModelMatrix();
     }
 
     @Override
