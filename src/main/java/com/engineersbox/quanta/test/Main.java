@@ -162,7 +162,7 @@ public class Main implements IAppLogic {
         );
         context.scene().addModel(sponzaModel);
         this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
-        this.sponzaEntity.setScale(0.01f);
+        this.sponzaEntity.setScale(0.001f);
         context.scene().addEntity(this.sponzaEntity);
 
         context.renderer().setupData(
@@ -176,7 +176,7 @@ public class Main implements IAppLogic {
         ambientLight.setColor(0.3f, 0.3f, 0.3f);
 
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();
-        dirLight.setPosition(200, 200, 0);
+        dirLight.setPosition(0, 60, 0);
         dirLight.setIntensity(1.0f);
         context.scene().setSceneLights(sceneLights);
 
@@ -185,7 +185,7 @@ public class Main implements IAppLogic {
                 context.scene().getTextureCache(),
                 context.scene().getMaterialCache()
         );
-        skyBox.getEntity().setScale(2000);
+        skyBox.getEntity().setScale(200);
         skyBox.getEntity().updateModelMatrix();
         context.scene().setSkyBox(skyBox);
 
