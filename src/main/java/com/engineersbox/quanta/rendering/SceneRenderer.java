@@ -47,8 +47,8 @@ public class SceneRenderer extends ShaderRenderHandler {
     public static final int MAX_DRAW_ELEMENTS = 100;
     public static final int MAX_ENTITIES = 50;
     private static final int COMMAND_SIZE = 5 * 4;
-    private static final int MAX_MATERIALS = 30;
-    private static final int MAX_TEXTURES = 30;
+    private static final int MAX_MATERIALS = 100;
+    private static final int MAX_TEXTURES = 100;
     @VariableHook(name = "renderer.show_normals")
     private static boolean SHOW_NORMALS = false;
     private final Map<String, Integer> entitiesIdxMap;

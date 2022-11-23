@@ -14,7 +14,6 @@ import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.SkyBox;
-import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
@@ -26,7 +25,6 @@ import org.apache.commons.numbers.core.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
-import org.joml.Vector3f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -49,7 +47,8 @@ public class Main implements IAppLogic {
     private Entity cubeEntity2;
     private Entity coneEntity;
     private Entity sponzaEntity;
-    private float lightAngle;
+    private float lightAngleX;
+    private float lightAngleZ;
     private float rotation;
     private TestGUI console;
 
@@ -71,29 +70,29 @@ public class Main implements IAppLogic {
 //        terrainEntity.updateModelMatrix();
 //        context.scene().addEntity(terrainEntity);
 //
-//        final String bobModelId = "bobModel";
-//        final Model bobModel = ModelLoader.loadModel(
-//                bobModelId,
-//                "assets/models/bob/boblamp.md5mesh",
-//                context.scene().getTextureCache(),
-//                context.scene().getMaterialCache(),
-//                true
-//        );
-//        context.scene().addModel(bobModel);
-//        final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
-//        bobEntity.setScale(0.05f);
-//        bobEntity.updateModelMatrix();
-//        this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
-//        bobEntity.setAnimationData(this.animationData1);
-//        context.scene().addEntity(bobEntity);
-//
-//        final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
-//        bobEntity2.setPosition(2, 0, 0);
-//        bobEntity2.setScale(0.025f);
-//        bobEntity2.updateModelMatrix();
-//        this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
-//        bobEntity2.setAnimationData(this.animationData2);
-//        context.scene().addEntity(bobEntity2);
+        final String bobModelId = "bobModel";
+        final Model bobModel = ModelLoader.loadModel(
+                bobModelId,
+                "assets/models/bob/boblamp.md5mesh",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
+                true
+        );
+        context.scene().addModel(bobModel);
+        final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
+        bobEntity.setScale(0.05f);
+        bobEntity.updateModelMatrix();
+        this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
+        bobEntity.setAnimationData(this.animationData1);
+        context.scene().addEntity(bobEntity);
+
+        final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
+        bobEntity2.setPosition(2, 0, 0);
+        bobEntity2.setScale(0.025f);
+        bobEntity2.updateModelMatrix();
+        this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
+        bobEntity2.setAnimationData(this.animationData2);
+        context.scene().addEntity(bobEntity2);
 //
 //        final Model cubeModel = ModelLoader.loadModel(
 //                "cube-model",
@@ -160,7 +159,7 @@ public class Main implements IAppLogic {
         );
         context.scene().addModel(sponzaModel);
         this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
-        this.sponzaEntity.setScale(0.00001f);
+        this.sponzaEntity.setScale(0.01f);
         context.scene().addEntity(this.sponzaEntity);
 
         context.renderer().setupData(
@@ -174,7 +173,7 @@ public class Main implements IAppLogic {
         ambientLight.setColor(0.3f, 0.3f, 0.3f);
 
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();
-        dirLight.setPosition(100, 2000, 0);
+        dirLight.setPosition(200, 200, 0);
         dirLight.setIntensity(1.0f);
         context.scene().setSceneLights(sceneLights);
 
@@ -224,7 +223,8 @@ public class Main implements IAppLogic {
 //                this.cubeEntity2 = entity;
 //            }
 //        });
-        this.lightAngle = 45.001f;
+        this.lightAngleX = 45.001f;
+        this.lightAngleZ = 45.001f;
     }
 
     @Override
@@ -253,14 +253,25 @@ public class Main implements IAppLogic {
             camera.moveDown(move);
         }
         if (window.isKeyPressed(GLFW_KEY_LEFT)) {
-            this.lightAngle -= 2.5f;
-            if (this.lightAngle < -90) {
-                this.lightAngle = -90;
+            this.lightAngleX -= 2.5f;
+            if (this.lightAngleX < -90) {
+                this.lightAngleX = -90;
             }
         } else if (window.isKeyPressed(GLFW_KEY_RIGHT)) {
-            this.lightAngle += 2.5f;
-            if (this.lightAngle > 90) {
-                this.lightAngle = 90;
+            this.lightAngleX += 2.5f;
+            if (this.lightAngleX > 90) {
+                this.lightAngleX = 90;
+            }
+        }
+        if (window.isKeyPressed(GLFW_KEY_UP)) {
+            this.lightAngleZ -= 2.5f;
+            if (this.lightAngleZ < -90) {
+                this.lightAngleZ = -90;
+            }
+        } else if (window.isKeyPressed(GLFW_KEY_DOWN)) {
+            this.lightAngleZ += 2.5f;
+            if (this.lightAngleZ > 90) {
+                this.lightAngleZ = 90;
             }
         }
         final MouseInput mouseInput = window.getMouseInput();
@@ -274,19 +285,21 @@ public class Main implements IAppLogic {
         }
         final SceneLights sceneLights = scene.getSceneLights();
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();
-        final double angRad = Math.toRadians(this.lightAngle);
-        dirLight.getDirection().x = (float) Math.sin(angRad);
-        dirLight.getDirection().y = (float) Math.cos(angRad);
+        final double angRadX = Math.toRadians(this.lightAngleX);
+        final double angRadZ = Math.toRadians(this.lightAngleZ);
+        dirLight.getDirection().x = (float) Math.sin(angRadX);
+        dirLight.getDirection().z = (float) Math.sin(angRadZ);
+        dirLight.getDirection().y = (float) Math.cos(angRadX);
     }
 
     @Override
     public void update(final Window window,
                        final Scene scene,
                        final long diffTimeMillis) {
-//        animationData1.nextFrame();
-//        if (diffTimeMillis % 2 == 0) {
-//            animationData2.nextFrame();
-//        }
+        animationData1.nextFrame();
+        if (diffTimeMillis % 2 == 0) {
+            animationData2.nextFrame();
+        }
 //        this.rotation += 1.5;
 //        if (this.rotation > 360) {
 //            this.rotation = 0;

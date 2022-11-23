@@ -1,7 +1,7 @@
 #version 330
 
-const int MAX_MATERIALS  = 30;
-const int MAX_TEXTURES = 30;
+const int MAX_MATERIALS  = 100;
+const int MAX_TEXTURES = 100;
 
 in vec3 outNormal;
 in vec3 outTangent;
