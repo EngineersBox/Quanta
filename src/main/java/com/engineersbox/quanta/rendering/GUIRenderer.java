@@ -35,7 +35,7 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 @RenderHandler(
         name = GUIRenderer.RENDERER_NAME,
-        priority = 0,
+        priority = Integer.MAX_VALUE / 2, // Put it way ahead, but leave some room if for some reason we need to render after GUI
         stage = ShaderStage.POST_PROCESS
 )
 public class GUIRenderer extends ShaderRenderHandler {

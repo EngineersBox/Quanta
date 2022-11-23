@@ -19,7 +19,7 @@ import static org.lwjgl.opengl.GL30.*;
 @RenderHandler(
         name = HDRRenderer.RENDERER_NAME,
         priority = 2,
-        stage = ShaderStage.CORE
+        stage = ShaderStage.POST_PROCESS
 )
 public class HDRRenderer extends ShaderRenderHandler {
 
@@ -34,8 +34,8 @@ public class HDRRenderer extends ShaderRenderHandler {
 
     public HDRRenderer() {
         super(new ShaderProgram(
-                new ShaderModuleData("assets/shaders/lighting/hdr.vert", ShaderType.VERTEX),
-                new ShaderModuleData("assets/shaders/lighting/hdr.frag", ShaderType.FRAGMENT)
+                new ShaderModuleData("assets/shaders/postprocessing/hdr.vert", ShaderType.VERTEX),
+                new ShaderModuleData("assets/shaders/postprocessing/hdr.frag", ShaderType.FRAGMENT)
         ));
         createUniforms();
         this.quadMesh = new QuadMesh();
