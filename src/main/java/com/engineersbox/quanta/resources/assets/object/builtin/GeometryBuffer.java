@@ -15,6 +15,7 @@ import org.lwjgl.system.MemoryUtil;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
 
 public class GeometryBuffer {
 
@@ -22,6 +23,10 @@ public class GeometryBuffer {
 
     public GeometryBuffer(final TriangleMesh mesh) {
         this.mesh = mesh;
+    }
+
+    public void writeToFile(final String path) {
+        IO3D.write(this.mesh, Path.of(path));
     }
 
     public ByteBuffer getRaw() {
