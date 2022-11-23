@@ -43,10 +43,10 @@ public class LightingRenderer extends ShaderRenderHandler {
     private static boolean SHOW_DEPTH = false;
     @VariableHook(name = "renderer.show_shadows")
     private static boolean SHOW_SHADOWS = false;
-    @VariableHook(name = "hdr.enable")
-    private static boolean ENABLE_HDR = true;
-    @VariableHook(name = "hdr.exposure")
-    private static float EXPOSURE = 1.0f;
+//    @VariableHook(name = "hdr.enable")
+//    private static boolean ENABLE_HDR = true;
+//    @VariableHook(name = "hdr.exposure")
+//    private static float EXPOSURE = 1.0f;
 
     private final QuadMesh quadMesh;
 
@@ -78,9 +78,9 @@ public class LightingRenderer extends ShaderRenderHandler {
                 "showCascades",
                 "showDepth",
                 "showShadows",
-                "farPlane",
-                "hdr",
-                "exposure"
+                "farPlane"
+//                "hdr",
+//                "exposure"
         ).forEach(super.uniforms::createUniform);
 
         for (int i = 0; i < LightingRenderer.MAX_POINT_LIGHTS; i++) {
@@ -118,7 +118,11 @@ public class LightingRenderer extends ShaderRenderHandler {
 
     @Override
     public void render(final RenderContext context) {
-        Renderer.lightingRenderStart(context.window(), context.gBuffer());
+        Renderer.lightingRenderStart(
+                context.window(),
+                context.gBuffer(),
+                context.hdrBuffer()
+        );
         this.shader.bind();
         updateLights(context.scene());
 
@@ -129,14 +133,14 @@ public class LightingRenderer extends ShaderRenderHandler {
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D, textureIds[i]);
         }
-        super.uniforms.setUniform(
-                "hdr",
-                this.ENABLE_HDR
-        );
-        super.uniforms.setUniform(
-                "exposure",
-                this.EXPOSURE
-        );
+//        super.uniforms.setUniform(
+//                "hdr",
+//                this.ENABLE_HDR
+//        );
+//        super.uniforms.setUniform(
+//                "exposure",
+//                this.EXPOSURE
+//        );
         super.uniforms.setUniform(
                 "farPlane",
                 (float) ConfigHandler.CONFIG.render.camera.zFar

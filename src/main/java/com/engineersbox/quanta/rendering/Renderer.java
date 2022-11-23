@@ -57,7 +57,7 @@ public class Renderer {
 
     public Renderer(final Window window) {
         this.gBuffer = new GBuffer(window);
-        this.hdrBuffer = new HDRBuffer(window, this.gBuffer);
+        this.hdrBuffer = new HDRBuffer(window);
         this.renderBuffers = new RenderBuffers();
         this.preProcessRenderHandlers = new LinkedMap<>();
         this.coreRenderHandlers = new LinkedMap<>();
@@ -130,8 +130,9 @@ public class Renderer {
     }
 
     public static void lightingRenderStart(final Window window,
-                                            final GBuffer gBuffer) {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                                           final GBuffer gBuffer,
+                                           final HDRBuffer hdrBuffer) {
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrBuffer.getFboId());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, window.getWidth(), window.getHeight());
         glEnable(GL_BLEND);

@@ -21,7 +21,4 @@
 * Implement draw distance control
 * Refactor command registration for console widget
 * Shader graph
-* Move HDR implementation out of lighting pass and into separate HDR pass
-  * Move HDR function out of `lighting.frag` and into `hdr.frag`
-  * Figure out how to consolidate multi-pass results from lighting pass into single buffer for HDR pass (possibly `glBlitFramebuffer(...)`?)
 * Implement bloom filter

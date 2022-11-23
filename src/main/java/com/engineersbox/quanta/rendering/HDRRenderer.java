@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.rendering;
 
+import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
@@ -15,14 +16,19 @@ import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL30.*;
 
-//@RenderHandler(
-//        name = HDRRenderer.RENDERER_NAME,
-//        priority = 2,
-//        stage = ShaderStage.CORE
-//)
+@RenderHandler(
+        name = HDRRenderer.RENDERER_NAME,
+        priority = 2,
+        stage = ShaderStage.CORE
+)
 public class HDRRenderer extends ShaderRenderHandler {
 
     public static final String RENDERER_NAME = "@quanta__HDR_RENDERER";
+
+    @VariableHook(name = "hdr.enable")
+    private static boolean ENABLE_HDR = true;
+    @VariableHook(name = "hdr.exposure")
+    private static float EXPOSURE = 1.0f;
 
     private final QuadMesh quadMesh;
 
@@ -33,6 +39,12 @@ public class HDRRenderer extends ShaderRenderHandler {
         ));
         createUniforms();
         this.quadMesh = new QuadMesh();
+        super.bind();
+        super.uniforms.setUniform(
+                "hdrBuffer",
+                0
+        );
+        super.unbind();
     }
 
     private void createUniforms() {
@@ -52,11 +64,11 @@ public class HDRRenderer extends ShaderRenderHandler {
         glBindTexture(GL_TEXTURE_2D, context.hdrBuffer().getColourBufferId());
         super.uniforms.setUniform(
                 "hdr",
-                true
+                this.ENABLE_HDR
         );
         super.uniforms.setUniform(
                 "exposure",
-                1.0f
+                this.EXPOSURE
         );
         glBindVertexArray(this.quadMesh.getVaoId());
         glDrawElements(
@@ -65,6 +77,7 @@ public class HDRRenderer extends ShaderRenderHandler {
                 GL_UNSIGNED_INT,
                 0
         );
+        glBindVertexArray(0);
         super.unbind();
     }
 

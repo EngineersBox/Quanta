@@ -75,9 +75,6 @@ uniform bool showShadows;
 
 uniform float farPlane;
 
-uniform bool hdr;
-uniform float exposure;
-
 vec4 calcAmbient(AmbientLight ambientLight, vec4 ambient) {
     return vec4(ambientLight.factor * ambientLight.color, 1) * ambient;
 }
@@ -173,20 +170,6 @@ float calcShadow(vec4 worldPosition, int idx) {
     return shadow / 9.0;
 }
 
-vec3 applyHDR(vec3 hdrColor) {
-    const float gamma = 2.2;
-    if (hdr) {
-        // reinhard
-        // vec3 result = hdrColor / (hdrColor + vec3(1.0));
-        // exposure
-        vec3 result = vec3(1.0) - exp(-hdrColor * exposure);
-        // also gamma correct while we're at it
-        return pow(result, vec3(1.0 / gamma));
-    } else {
-        return pow(hdrColor, vec3(1.0 / gamma));
-    }
-}
-
 void main() {
     vec4 albedoSamplerValue = texture(albedoSampler, outTextCoord);
     vec3 albedo  = albedoSamplerValue.rgb;
@@ -240,7 +223,6 @@ void main() {
     vec4 ambient = calcAmbient(ambientLight, diffuse);
     fragColor = ambient + diffuseSpecularComp;
     fragColor.rgb = fragColor.rgb * shadowFactor;
-    fragColor.rgb = applyHDR(fragColor.rgb);
 
     if (fog.activeFog == 1) {
         fragColor = calcFog(view_pos, fragColor, fog, ambientLight.color, directionalLight);
