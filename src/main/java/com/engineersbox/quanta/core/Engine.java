@@ -24,12 +24,12 @@ public class Engine {
     private final Renderer renderer;
     private boolean running;
     @VariableHook(name = "engine.scene")
-    private final Scene scene;
+    private Scene scene;
     private final int targetFPS;
     private final int targetUPS;
     private final PipelineStatistics pipelineStatistics;
     @VariableHook(name = "engine.capture_pipeline_stats")
-    private final boolean capturePipelineStats = false;
+    private boolean capturePipelineStats = false;
 
     @RegisterInstanceVariableHooks
     public Engine(final String title,

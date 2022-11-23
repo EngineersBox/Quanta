@@ -48,6 +48,7 @@ public class Main implements IAppLogic {
     private Entity cubeEntity1;
     private Entity cubeEntity2;
     private Entity coneEntity;
+    private Entity sponzaEntity;
     private float lightAngle;
     private float rotation;
     private TestGUI console;
@@ -56,80 +57,92 @@ public class Main implements IAppLogic {
     public void init(final EngineInitContext context) {
         this.console = new TestGUI(context);
         context.scene().setGUIInstance(this.console);
-        final String terrainModelId = "terrain";
-        final Model terrainModel = ModelLoader.loadModel(
-                terrainModelId,
-                "assets/models/terrain/terrain.obj",
+//        final String terrainModelId = "terrain";
+//        final Model terrainModel = ModelLoader.loadModel(
+//                terrainModelId,
+//                "assets/models/terrain/terrain.obj",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache(),
+//                false
+//        );
+//        context.scene().addModel(terrainModel);
+//        final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
+//        terrainEntity.setScale(100.0f);
+//        terrainEntity.updateModelMatrix();
+//        context.scene().addEntity(terrainEntity);
+//
+//        final String bobModelId = "bobModel";
+//        final Model bobModel = ModelLoader.loadModel(
+//                bobModelId,
+//                "assets/models/bob/boblamp.md5mesh",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache(),
+//                true
+//        );
+//        context.scene().addModel(bobModel);
+//        final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
+//        bobEntity.setScale(0.05f);
+//        bobEntity.updateModelMatrix();
+//        this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
+//        bobEntity.setAnimationData(this.animationData1);
+//        context.scene().addEntity(bobEntity);
+//
+//        final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
+//        bobEntity2.setPosition(2, 0, 0);
+//        bobEntity2.setScale(0.025f);
+//        bobEntity2.updateModelMatrix();
+//        this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
+//        bobEntity2.setAnimationData(this.animationData2);
+//        context.scene().addEntity(bobEntity2);
+//
+//        final Model cubeModel = ModelLoader.loadModel(
+//                "cube-model",
+//                "assets/models/cube/cube.obj",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache(),
+//                false
+//        );
+//        context.scene().addModel(cubeModel);
+//        this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
+//        this.cubeEntity1.setPosition(0, 2, -1);
+//        this.cubeEntity1.updateModelMatrix();
+//        context.scene().addEntity(this.cubeEntity1);
+//
+//        this.cubeEntity2 = new Entity("cube-entity-2", cubeModel.getId());
+//        this.cubeEntity2.setPosition(-2, 2, -1);
+//        this.cubeEntity2.updateModelMatrix();
+//        context.scene().addEntity(this.cubeEntity2);
+//
+//        final Cone coneModel = new Cone(
+//                "cone-model",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache()
+//        );
+//        context.scene()
+//                .getMaterialCache()
+//                .getMaterial(coneModel
+//                        .getMeshData()
+//                        .get(0)
+//                        .getMaterialIdx()
+//                ).setDiffuseColor(new Vector4f(1, 0, 0, 1));
+//        context.scene().addModel(coneModel);
+//        this.coneEntity = new Entity("cone-entity", coneModel.getId());
+//        this.coneEntity.setPosition(1, 2, 4);
+//        this.coneEntity.setScale(0.25f);
+//        this.coneEntity.updateModelMatrix();
+//        context.scene().addEntity(coneEntity);
+
+        final Model sponzaModel = ModelLoader.loadModel(
+                "sponza-model",
+                "assets/models/sponza_simple/sponza.obj",
                 context.scene().getTextureCache(),
                 context.scene().getMaterialCache(),
                 false
         );
-        context.scene().addModel(terrainModel);
-        final Entity terrainEntity = new Entity("terrainEntity", terrainModelId);
-        terrainEntity.setScale(100.0f);
-        terrainEntity.updateModelMatrix();
-        context.scene().addEntity(terrainEntity);
-
-        final String bobModelId = "bobModel";
-        final Model bobModel = ModelLoader.loadModel(
-                bobModelId,
-                "assets/models/bob/boblamp.md5mesh",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache(),
-                true
-        );
-        context.scene().addModel(bobModel);
-        final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
-        bobEntity.setScale(0.05f);
-        bobEntity.updateModelMatrix();
-        this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
-        bobEntity.setAnimationData(this.animationData1);
-        context.scene().addEntity(bobEntity);
-
-        final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
-        bobEntity2.setPosition(2, 0, 0);
-        bobEntity2.setScale(0.025f);
-        bobEntity2.updateModelMatrix();
-        this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
-        bobEntity2.setAnimationData(this.animationData2);
-        context.scene().addEntity(bobEntity2);
-
-        final Model cubeModel = ModelLoader.loadModel(
-                "cube-model",
-                "assets/models/cube/cube.obj",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache(),
-                false
-        );
-        context.scene().addModel(cubeModel);
-        this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
-        this.cubeEntity1.setPosition(0, 2, -1);
-        this.cubeEntity1.updateModelMatrix();
-        context.scene().addEntity(this.cubeEntity1);
-
-        this.cubeEntity2 = new Entity("cube-entity-2", cubeModel.getId());
-        this.cubeEntity2.setPosition(-2, 2, -1);
-        this.cubeEntity2.updateModelMatrix();
-        context.scene().addEntity(this.cubeEntity2);
-
-        final Cone coneModel = new Cone(
-                "cone-model",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache()
-        );
-        context.scene()
-                .getMaterialCache()
-                .getMaterial(coneModel
-                        .getMeshData()
-                        .get(0)
-                        .getMaterialIdx()
-                ).setDiffuseColor(new Vector4f(1, 0, 0, 1));
-        context.scene().addModel(coneModel);
-        this.coneEntity = new Entity("cone-entity", coneModel.getId());
-        this.coneEntity.setPosition(1, 2, 4);
-        this.coneEntity.setScale(0.25f);
-        this.coneEntity.updateModelMatrix();
-        context.scene().addEntity(coneEntity);
+        context.scene().addModel(sponzaModel);
+        this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
+        this.sponzaEntity.setScale(0.00001f);
+        context.scene().addEntity(this.sponzaEntity);
 
         context.renderer().setupData(
                 context.scene(),
@@ -142,7 +155,7 @@ public class Main implements IAppLogic {
         ambientLight.setColor(0.3f, 0.3f, 0.3f);
 
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();
-        dirLight.setPosition(0, 1, 0);
+        dirLight.setPosition(0, 2000, 0);
         dirLight.setIntensity(1.0f);
         context.scene().setSceneLights(sceneLights);
 
@@ -151,15 +164,15 @@ public class Main implements IAppLogic {
                 context.scene().getTextureCache(),
                 context.scene().getMaterialCache()
         );
-        skyBox.getEntity().setScale(100);
+        skyBox.getEntity().setScale(2000);
         skyBox.getEntity().updateModelMatrix();
         context.scene().setSkyBox(skyBox);
 
-        context.scene().setFog(new Fog(
-                true,
-                new Vector3f(0.5f, 0.5f, 0.5f),
-                0.02f
-        ));
+//        context.scene().setFog(new Fog(
+//                true,
+//                new Vector3f(0.5f, 0.5f, 0.5f),
+//                0.02f
+//        ));
 
         final Camera camera = context.scene().getCamera();
         camera.setPosition(-1.5f, 3.0f, 4.5f);
@@ -251,19 +264,19 @@ public class Main implements IAppLogic {
     public void update(final Window window,
                        final Scene scene,
                        final long diffTimeMillis) {
-        animationData1.nextFrame();
-        if (diffTimeMillis % 2 == 0) {
-            animationData2.nextFrame();
-        }
-        this.rotation += 1.5;
-        if (this.rotation > 360) {
-            this.rotation = 0;
-        }
-        this.cubeEntity1.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
-        this.cubeEntity1.updateModelMatrix();
-
-        this.cubeEntity2.setRotation(1, 1, 1, (float) Math.toRadians(360 - this.rotation));
-        this.cubeEntity2.updateModelMatrix();
+//        animationData1.nextFrame();
+//        if (diffTimeMillis % 2 == 0) {
+//            animationData2.nextFrame();
+//        }
+//        this.rotation += 1.5;
+//        if (this.rotation > 360) {
+//            this.rotation = 0;
+//        }
+//        this.cubeEntity1.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
+//        this.cubeEntity1.updateModelMatrix();
+//
+//        this.cubeEntity2.setRotation(1, 1, 1, (float) Math.toRadians(360 - this.rotation));
+//        this.cubeEntity2.updateModelMatrix();
     }
 
     @Override
