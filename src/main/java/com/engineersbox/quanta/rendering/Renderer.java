@@ -33,9 +33,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
-import static org.lwjgl.opengl.GL14.glBlendEquation;
-import static org.lwjgl.opengl.GL30.*;
 
 public class Renderer {
 
@@ -123,22 +120,6 @@ public class Renderer {
         this.preProcessRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
         this.coreRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
         this.postProcessRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
-    }
-
-    public static void lightingRenderFinish() {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    }
-
-    public static void lightingRenderStart(final Window window,
-                                           final GBuffer gBuffer,
-                                           final HDRBuffer hdrBuffer) {
-        glBindFramebuffer(GL_FRAMEBUFFER, hdrBuffer.getFboId());
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, window.getWidth(), window.getHeight());
-        glEnable(GL_BLEND);
-        glBlendEquation(GL_FUNC_ADD);
-        glBlendFunc(GL_ONE, GL_ONE);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.getGBufferId());
     }
 
     public void render(final Scene scene,

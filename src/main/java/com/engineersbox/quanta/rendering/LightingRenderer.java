@@ -1,10 +1,12 @@
 package com.engineersbox.quanta.rendering;
 
+import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
+import com.engineersbox.quanta.rendering.hdr.HDRBuffer;
 import com.engineersbox.quanta.rendering.shadow.ShadowCascade;
 import com.engineersbox.quanta.resources.assets.object.QuadMesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
@@ -25,7 +27,9 @@ import java.util.stream.Stream;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL14.GL_FUNC_ADD;
+import static org.lwjgl.opengl.GL14.glBlendEquation;
+import static org.lwjgl.opengl.GL30.*;
 
 @RenderHandler(
         name = LightingRenderer.RENDERER_NAME,
@@ -116,9 +120,21 @@ public class LightingRenderer extends ShaderRenderHandler {
         }
     }
 
+    private void lightingRenderStart(final Window window,
+                                     final GBuffer gBuffer,
+                                     final HDRBuffer hdrBuffer) {
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrBuffer.getFboId());
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, window.getWidth(), window.getHeight());
+        glEnable(GL_BLEND);
+        glBlendEquation(GL_FUNC_ADD);
+        glBlendFunc(GL_ONE, GL_ONE);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer.getGBufferId());
+    }
+
     @Override
     public void render(final RenderContext context) {
-        Renderer.lightingRenderStart(
+        lightingRenderStart(
                 context.window(),
                 context.gBuffer(),
                 context.hdrBuffer()

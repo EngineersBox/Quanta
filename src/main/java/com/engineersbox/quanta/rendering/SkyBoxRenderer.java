@@ -101,7 +101,11 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
         );
         glBindVertexArray(0);
         super.unbind();
-        Renderer.lightingRenderFinish();
+        lightingRenderFinish();
+    }
+
+    private void lightingRenderFinish() {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
 }
