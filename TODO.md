@@ -22,3 +22,4 @@
 * Refactor command registration for console widget
 * Shader graph
 * Fix console widget texture bindings/active texture not stencilling properly
+* Implement SSAO
