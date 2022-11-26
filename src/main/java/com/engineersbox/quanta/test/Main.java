@@ -151,8 +151,8 @@ public class Main implements IAppLogic {
         );
         context.scene().addModel(testGeoModel);
         final Entity testGeoEntity = new Entity("test-geometry-entity", testGeoModel.getId());
-        testGeoEntity.setPosition(40, 4, 4);
-        testGeoEntity.setScale(5000.0f);
+        testGeoEntity.setPosition(4, 4, -4);
+        testGeoEntity.updateModelMatrix();
         context.scene().addEntity(testGeoEntity);
 
         final Model sponzaModel = ModelLoader.loadModel(
@@ -164,8 +164,20 @@ public class Main implements IAppLogic {
         );
         context.scene().addModel(sponzaModel);
         this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
-        this.sponzaEntity.setScale(0.001f);
         context.scene().addEntity(this.sponzaEntity);
+
+        final Model windowModel = ModelLoader.loadModel(
+                "window",
+                "assets/models/window/window.obj",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
+                false
+        );
+        context.scene().addModel(windowModel);
+        final Entity windowEntity = new Entity("window-entity", windowModel.getId());
+        windowEntity.setPosition(0, 3, -3);
+        windowEntity.updateModelMatrix();
+        context.scene().addEntity(windowEntity);
 
         context.renderer().setupData(
                 context.scene(),

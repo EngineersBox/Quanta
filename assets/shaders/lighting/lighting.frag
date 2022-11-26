@@ -170,12 +170,11 @@ float calcShadow(vec4 worldPosition, int idx) {
 }
 
 void main() {
-    vec4 albedoSamplerValue = texture(albedoSampler, outTextCoord);
-    vec3 albedo  = albedoSamplerValue.rgb;
-    vec4 diffuse = vec4(albedo, 1);
+    vec4 diffuse = texture(albedoSampler, outTextCoord);
+    vec4 normalTexel = texture(normalSampler, outTextCoord);
 
-    float reflectance = albedoSamplerValue.a;
-    vec3 normal = normalize(2.0 * texture(normalSampler, outTextCoord).rgb  - 1.0);
+    float reflectance = normalTexel.a;
+    vec3 normal = normalize(2.0 * normalTexel.rgb  - 1.0);
     vec4 specular = texture(specularSampler, outTextCoord);
 
     // Retrieve position from depth

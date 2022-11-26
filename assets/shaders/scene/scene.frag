@@ -43,7 +43,7 @@ void main() {
         discard;
     }
     vec4 diffuse = text_color + material.diffuse;
-    if (diffuse.a < 0.5) {
+    if (diffuse.a < 1.0) {
         discard;
     }
     vec4 specular = text_color + material.specular;
@@ -54,10 +54,10 @@ void main() {
     }
 
     if (showNormals == 1) {
-        buffAlbedo = vec4(0.5 * normal + 0.5, material.reflectance);
+        buffAlbedo = vec4(0.5 * normal + 0.5, 1.0);
     } else {
-        buffAlbedo = vec4(diffuse.xyz, material.reflectance);
+        buffAlbedo = diffuse;
     }
-    buffNormal   = vec4(0.5 * normal + 0.5, 1.0);
+    buffNormal   = vec4(0.5 * normal + 0.5, material.reflectance);
     buffSpecular = specular;
 }
