@@ -66,9 +66,10 @@ public class HDRBuffer {
             throw new RuntimeException("Unable to create framebuffer");
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
         this.pingPongFBOs = new int[2];
-        glGenFramebuffers(this.pingPongFBOs);
         this.pingPongColourBuffers = new int[2];
+        glGenFramebuffers(this.pingPongFBOs);
         glGenTextures(this.pingPongColourBuffers);
         for (int i = 0; i < pingPongFBOs.length; i++) {
             glBindFramebuffer(GL_FRAMEBUFFER, this.pingPongFBOs[i]);

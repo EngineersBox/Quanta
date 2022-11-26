@@ -80,6 +80,7 @@ public class BlurRenderer extends ShaderRenderHandler {
                     GL_UNSIGNED_INT,
                     0
             );
+            glBindVertexArray(0);
             horizontal = !horizontal;
             if (firstIteration) {
                 firstIteration = false;
