@@ -26,10 +26,8 @@ public class BlurRenderer extends ShaderRenderHandler {
 
     public static final String RENDERER_NAME = "@quanta__BLUR_RENDERER";
 
-    @VariableHook(name = "bloom.blur_amount")
+    @VariableHook(name = "lighting.bloom.blur_amount")
     private static int BLUR_AMOUNT = 10;
-    @VariableHook(name = "bloom.blur_horizontal")
-    private static boolean BLUR_HORIZONTAL = true;
 
     private final QuadMesh quadMesh;
 
@@ -58,7 +56,7 @@ public class BlurRenderer extends ShaderRenderHandler {
     @Override
     public void render(final RenderContext context) {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        boolean horizontal = BLUR_HORIZONTAL;
+        boolean horizontal = BloomRenderer.BLUR_HORIZONTAL;
         boolean firstIteration = true;
         final HDRBuffer buffer = context.hdrBuffer();
         super.bind();

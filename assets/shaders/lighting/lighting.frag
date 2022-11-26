@@ -4,9 +4,9 @@ const int MAX_POINT_LIGHTS = 5;
 const int MAX_SPOT_LIGHTS = 5;
 const float SPECULAR_POWER = 10;
 const int NUM_CASCADES = 3;
-const float BIAS = 0.0005;
-const float SHADOW_FACTOR = 0.25;
-const vec3 brightnessThreshold = vec3(0.2126, 0.7152, 0.0722);
+// const float BIAS = 0.0005;
+// const float SHADOW_FACTOR = 0.25;
+// const vec3 brightnessThreshold = vec3(0.2126, 0.7152, 0.0722);
 
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
@@ -77,6 +77,9 @@ uniform bool showDepth;
 uniform bool showShadows;
 
 uniform float farPlane;
+uniform float shadowFactor;
+uniform float shadowBias;
+uniform vec3 brightnessThreshold;
 
 vec4 calcAmbient(AmbientLight ambientLight, vec4 ambient) {
     return vec4(ambientLight.factor * ambientLight.color, 1) * ambient;
@@ -153,8 +156,8 @@ float textureProj(vec4 shadowCoord, vec2 offset, int idx) {
         } else {
             dist = texture(shadowMap_2, vec2(shadowCoord.xy + offset * (1.0 / textureSize(shadowMap_0, 0)))).r;
         }
-        if (dist < shadowCoord.z - BIAS) {
-            shadow = SHADOW_FACTOR;
+        if (dist < shadowCoord.z - shadowBias) {
+            shadow = shadowFactor;
         }
     }
     return shadow;

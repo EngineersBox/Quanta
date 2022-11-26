@@ -28,11 +28,11 @@ public class BloomRenderer extends ShaderRenderHandler {
 
     public static final String RENDERER_NAME = "@quanta__BLOOM_RENDERER";
 
-    @VariableHook(name = "bloom.filter_horizontal")
-    private static boolean BLUR_HORIZONTAL = true;
-    @VariableHook(name = "bloom.enable")
+    @VariableHook(name = "lighting.bloom.filter_horizontal")
+    public static boolean BLUR_HORIZONTAL = true;
+    @VariableHook(name = "lighting.bloom.enable")
     private static boolean BLOOM_ENABLE = true;
-    @VariableHook(name = "hdr.exposure")
+    @VariableHook(name = "lighting.hdr.exposure")
     private static float EXPOSURE = 1.0f;
 
     private final QuadMesh quadMesh;

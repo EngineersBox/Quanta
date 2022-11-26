@@ -1,6 +1,8 @@
 package com.engineersbox.quanta.rendering.renderers.core;
 
 import com.engineersbox.quanta.core.Window;
+import com.engineersbox.quanta.debug.hooks.HookValidationException;
+import com.engineersbox.quanta.debug.hooks.HookValidator;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
@@ -20,6 +22,7 @@ import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.*;
 import org.joml.Matrix4f;
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -43,16 +46,41 @@ public class LightingRenderer extends ShaderRenderHandler {
     public static final String RENDERER_NAME = "@quanta__LIGHTING_RENDERER";
     private static final int MAX_POINT_LIGHTS = 5;
     private static final int MAX_SPOT_LIGHTS = 5;
-    @VariableHook(name = "renderer.show_cascades")
+    @VariableHook(name = "lighting.shadows.show_cascades")
     private static boolean SHOW_CASCADES = false;
     @VariableHook(name = "renderer.show_depth")
     private static boolean SHOW_DEPTH = false;
-    @VariableHook(name = "renderer.show_shadows")
+    @VariableHook(name = "lighting.shadows.only")
     private static boolean SHOW_SHADOWS = false;
-//    @VariableHook(name = "hdr.enable")
-//    private static boolean ENABLE_HDR = true;
-//    @VariableHook(name = "hdr.exposure")
-//    private static float EXPOSURE = 1.0f;
+    @VariableHook(name = "lighting.shadows.factor")
+    private static float SHADOW_FACTOR = 0.25f;
+    @VariableHook(name = "lighting.shadows.bias")
+    private static float SHADOW_BIAS = 0.0005f;
+    @VariableHook(
+            name = "lighting.bloom.brightness_threshold",
+            hookValidator = "brightnessThresholdValidator"
+    )
+    public static Vector3f BRIGHTNESS_THRESHOLD = new Vector3f(0.2126f, 0.7152f, 0.0722f);
+
+    @HookValidator(name = "brightnessThresholdValidator")
+    public static Object scaleHookValidator(final String value) throws HookValidationException {
+        if (value == null) {
+            throw new HookValidationException("Expected non-null value");
+        }
+        final String[] splitValue = value.split(",");
+        if (splitValue.length != 3) {
+            throw new HookValidationException("Invalid vector values, expected format: <float>,<float>,<float>");
+        }
+        try {
+            return new Vector3f(
+                    Float.parseFloat(splitValue[0]),
+                    Float.parseFloat(splitValue[1]),
+                    Float.parseFloat(splitValue[2])
+            );
+        } catch (final NumberFormatException e) {
+            throw new HookValidationException(e.getMessage());
+        }
+    }
 
     private final QuadMesh quadMesh;
 
@@ -84,9 +112,10 @@ public class LightingRenderer extends ShaderRenderHandler {
                 "showCascades",
                 "showDepth",
                 "showShadows",
-                "farPlane"
-//                "hdr",
-//                "exposure"
+                "farPlane",
+                "shadowFactor",
+                "shadowBias",
+                "brightnessThreshold"
         ).forEach(super.uniforms::createUniform);
 
         for (int i = 0; i < LightingRenderer.MAX_POINT_LIGHTS; i++) {
@@ -174,6 +203,18 @@ public class LightingRenderer extends ShaderRenderHandler {
         super.uniforms.setUniform(
                 "showShadows",
                 this.SHOW_SHADOWS
+        );
+        super.uniforms.setUniform(
+                "shadowBias",
+                this.SHADOW_BIAS
+        );
+        super.uniforms.setUniform(
+                "shadowFactor",
+                this.SHADOW_FACTOR
+        );
+        super.uniforms.setUniform(
+                "brightnessThreshold",
+                this.BRIGHTNESS_THRESHOLD
         );
         super.uniforms.setUniform(
                 "albedoSampler",

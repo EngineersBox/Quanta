@@ -43,15 +43,10 @@ public class GUIRenderer extends ShaderRenderHandler {
     public static final String RENDERER_NAME = "@quanta__GUI_RENDERER";
 
     private GUIMesh guiMesh;
-    @VariableHook(
-            name = "test",
-            hookValidator = "scaleHookValidator"
-    )
-    private Vector2f scale;
+    private final Vector2f scale;
     private Texture texture;
     private ImGuiImplGlfw imGuiImplGlfw;
 
-    @RegisterInstanceVariableHooks
     public GUIRenderer() {
         super(new ShaderProgram(
                 new ShaderModuleData("assets/shaders/gui/gui.vert", ShaderType.VERTEX),
@@ -59,21 +54,6 @@ public class GUIRenderer extends ShaderRenderHandler {
         ));
         this.uniforms.createUniform("scale");
         this.scale = new Vector2f();
-    }
-
-    @HookValidator(name = "scaleHookValidator")
-    public static Object scaleHookValidator(final String value) throws HookValidationException {
-        if (value == null) {
-            throw new HookValidationException("Expected non-null value");
-        }
-        final String[] splitValue = value.split(",");
-        if (splitValue.length < 2) {
-            throw new HookValidationException("Invalid vector values, expected format: <int>,<int>");
-        }
-        return new Vector2f(
-                Float.parseFloat(splitValue[0]),
-                Float.parseFloat(splitValue[1])
-        );
     }
 
     private void createUIResources(final Window window) {

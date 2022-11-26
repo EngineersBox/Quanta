@@ -13,7 +13,7 @@ void main() {
     const float gamma = 2.2;
     vec3 hdrColor = texture(scene, TexCoords).rgb;      
     vec3 bloomColor = texture(bloomBlur, TexCoords).rgb;
-    if(bloom) {
+    if (bloom) {
         hdrColor += bloomColor; // additive blending
     }
     // tone mapping

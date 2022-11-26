@@ -252,22 +252,22 @@ public class ConsoleWidget implements IGUIInstance {
         return VariableHooksState.resolveVariableHooksFields(false).flatMap((final Field field) -> {
             final VariableHook annotation = field.getAnnotation(VariableHook.class);
             if (Modifier.isStatic(field.getModifiers())) {
-                return Stream.of(new ColouredString(
-                        GUITextColour.NORMAL,
-                        String.format(
-                                " - [%s] %s%n",
-                                field.getType().getSimpleName(),
+                return Stream.of(
+                        GUITextColour.NORMAL.with(" - ["),
+                        GUITextColour.CYAN.with(field.getType().getSimpleName()),
+                        GUITextColour.NORMAL.withFormat(
+                                "] %s%n",
                                 annotation.name()
                         )
-                ));
+                );
             }
             return VariableHooksState.FIELD_INSTANCE_MAPPINGS.get(field)
                     .stream()
-                    .map((final Object instance) -> new ColouredString(
-                            GUITextColour.NORMAL,
-                            String.format(
-                                    " - [%s] %s::%s%n",
-                                    field.getType().getSimpleName(),
+                    .flatMap((final Object instance) -> Stream.of(
+                            GUITextColour.NORMAL.with(" - ["),
+                            GUITextColour.CYAN.with(field.getType().getSimpleName()),
+                            GUITextColour.NORMAL.withFormat(
+                                    "] %s::%s%n",
                                     annotation.name(),
                                     InstanceIdentifierProvider.deriveInstanceID(instance)
                             )

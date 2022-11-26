@@ -48,7 +48,8 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
                 "modelMatrix",
                 "diffuse",
                 "textureSampler",
-                "hasTexture"
+                "hasTexture",
+                "brightnessThreshold"
         ).forEach(super.uniforms::createUniform);
     }
 
@@ -74,6 +75,10 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
         super.uniforms.setUniform(
                 "textureSampler",
                 0
+        );
+        super.uniforms.setUniform(
+                "brightnessThreshold",
+                LightingRenderer.BRIGHTNESS_THRESHOLD
         );
         final Material material = skyBox.getMaterial();
         final Mesh mesh = skyBox.getMesh();
