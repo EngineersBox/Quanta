@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 @RenderHandler(
         name = BloomRenderer.RENDERER_NAME,
@@ -89,6 +90,7 @@ public class BloomRenderer extends ShaderRenderHandler {
                 GL_UNSIGNED_INT,
                 0
         );
+        glBindVertexArray(0);
         super.shader.unbind();
     }
 }

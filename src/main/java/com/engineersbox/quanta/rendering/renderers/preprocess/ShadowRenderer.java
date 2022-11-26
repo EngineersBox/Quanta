@@ -42,7 +42,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
     public static final String RENDERER_NAME = "@quanta__SHADOW_RENDERER";
 
     private static final int COMMAND_SIZE = 5 * 4;
-    private final ArrayList<ShadowCascade> shadowCascades;
+    private final List<ShadowCascade> shadowCascades;
     private final Map<String, Integer> entitiesIdxMap;
     private final ShadowBuffer shadowBuffer;
     private int staticDrawCount;
