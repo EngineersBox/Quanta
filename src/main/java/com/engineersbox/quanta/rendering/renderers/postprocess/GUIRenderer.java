@@ -136,6 +136,7 @@ public class GUIRenderer extends ShaderRenderHandler {
                 final int indices = idxBufferOffset * ImDrawData.SIZEOF_IM_DRAW_IDX;
 
                 this.texture.bind();
+                glActiveTexture(GL_TEXTURE0);
                 glDrawElements(GL_TRIANGLES, elemCount, GL_UNSIGNED_SHORT, indices);
             }
         }
