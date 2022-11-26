@@ -125,7 +125,7 @@ public class LightingRenderer extends ShaderRenderHandler {
     private void lightingRenderStart(final Window window,
                                      final GBuffer gBuffer,
                                      final HDRBuffer hdrBuffer) {
-        glBindFramebuffer(GL_FRAMEBUFFER, hdrBuffer.getFboId());
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, hdrBuffer.getFboId());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glViewport(0, 0, window.getWidth(), window.getHeight());
         glEnable(GL_BLEND);

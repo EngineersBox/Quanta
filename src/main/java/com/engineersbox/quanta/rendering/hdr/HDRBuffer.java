@@ -18,6 +18,7 @@ public class HDRBuffer {
         this.hdrFboId = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, this.hdrFboId);
         this.colourBuffers = new int[2];
+        glGenTextures(this.colourBuffers);
         for (int i = 0; i < colourBuffers.length; i++) {
             glBindTexture(GL_TEXTURE_2D, this.colourBuffers[i]);
             glTexImage2D(
@@ -68,8 +69,8 @@ public class HDRBuffer {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         this.pingPongFBOs = new int[2];
-        this.pingPongColourBuffers = new int[2];
         glGenFramebuffers(this.pingPongFBOs);
+        this.pingPongColourBuffers = new int[2];
         glGenTextures(this.pingPongColourBuffers);
         for (int i = 0; i < pingPongFBOs.length; i++) {
             glBindFramebuffer(GL_FRAMEBUFFER, this.pingPongFBOs[i]);
