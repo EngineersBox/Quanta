@@ -6,6 +6,7 @@ import com.engineersbox.quanta.core.IAppLogic;
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.rendering.view.Camera;
+import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.assets.object.builtin.Cone;
@@ -178,6 +179,26 @@ public class Main implements IAppLogic {
         windowEntity.setPosition(0, 3, -3);
         windowEntity.updateModelMatrix();
         context.scene().addEntity(windowEntity);
+
+        final Model sphereModel = ModelLoader.loadModel(
+                "sphere-model",
+                "assets/models/sphere.obj",
+                context.scene().getTextureCache(),
+                context.scene().getMaterialCache(),
+                false,
+                true
+        );
+        context.scene().addModel(sphereModel);
+        final Material sphereMaterial = context.scene().getMaterialCache().getMaterial(sphereModel.getMeshData().get(0).getMaterialIdx());
+        sphereMaterial.setAmbientColor(new Vector4f(0.8f, 0.7f, 0.9f, 1.0f));
+        sphereMaterial.setDiffuseColor(new Vector4f(0.8f, 0.7f, 0.9f, 1.0f));
+        sphereMaterial.setReflectance(0.95f);
+        sphereMaterial.setSpecularColor(new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+        final Entity sphereEntity = new Entity("sphere-entity", sphereModel.getId());
+        sphereEntity.setPosition(-5, 2, 1);
+        sphereEntity.setScale(0.5f);
+        sphereEntity.updateModelMatrix();
+        context.scene().addEntity(sphereEntity);
 
         context.renderer().setupData(
                 context.scene(),

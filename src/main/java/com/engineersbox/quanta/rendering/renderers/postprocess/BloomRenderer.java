@@ -92,5 +92,6 @@ public class BloomRenderer extends ShaderRenderHandler {
         );
         glBindVertexArray(0);
         super.shader.unbind();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 }
