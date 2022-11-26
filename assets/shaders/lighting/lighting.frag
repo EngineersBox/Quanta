@@ -6,9 +6,12 @@ const float SPECULAR_POWER = 10;
 const int NUM_CASCADES = 3;
 const float BIAS = 0.0005;
 const float SHADOW_FACTOR = 0.25;
+const vec3 brightnessThreshold = vec3(0.2126, 0.7152, 0.0722);
+
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 in vec2 outTextCoord;
-out vec4 fragColor;
 
 struct Attenuation {
     float constant;
@@ -180,7 +183,7 @@ void main() {
     // Retrieve position from depth
     float rawDepth = texture(depthSampler, outTextCoord).x;
     if (showDepth) {
-        fragColor.rgb = vec3(rawDepth / farPlane);
+        FragColor.rgb = vec3(rawDepth / farPlane);
         return;
     }
     float depth = rawDepth * 2.0 - 1.0;
@@ -203,7 +206,7 @@ void main() {
     }
     float shadowFactor = calcShadow(world_pos, cascadeIndex);
     if (showShadows) {
-        fragColor.rgb = vec3(shadowFactor, shadowFactor, shadowFactor);
+        FragColor.rgb = vec3(shadowFactor, shadowFactor, shadowFactor);
         return;
     }
 
@@ -219,13 +222,18 @@ void main() {
         }
     }
     vec4 ambient = calcAmbient(ambientLight, diffuse);
-    fragColor = ambient + diffuseSpecularComp;
-    fragColor.rgb = fragColor.rgb * shadowFactor;
-
+    FragColor = ambient + diffuseSpecularComp;
+    FragColor.rgb = FragColor.rgb * shadowFactor;
     if (fog.activeFog == 1) {
-        fragColor = calcFog(view_pos, fragColor, fog, ambientLight.color, directionalLight);
+        FragColor = calcFog(view_pos, FragColor, fog, ambientLight.color, directionalLight);
     }
-#define RENDER_CASCADE(r,g,b) fragColor.rgb *= vec3(r,g,b); break;
+    float brightness = dot(FragColor.rgb, brightnessThreshold);
+    if (brightness > 1.0) {
+        BrightColor = vec4(FragColor.rgb, 1.0);
+    } else {
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+    }
+#define RENDER_CASCADE(r,g,b) FragColor.rgb *= vec3(r,g,b); break;
     if (showCascades) {
         switch (cascadeIndex) {
             case 0:  RENDER_CASCADE( 1.0f, 0.25f, 0.25f)
