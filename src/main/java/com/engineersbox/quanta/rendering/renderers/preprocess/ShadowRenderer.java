@@ -1,18 +1,19 @@
-package com.engineersbox.quanta.rendering;
+package com.engineersbox.quanta.rendering.renderers.preprocess;
 
+import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
-import com.engineersbox.quanta.rendering.indirect.RenderBuffers;
+import com.engineersbox.quanta.rendering.renderers.core.SceneRenderer;
 import com.engineersbox.quanta.rendering.shadow.ShadowBuffer;
 import com.engineersbox.quanta.rendering.shadow.ShadowCascade;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
-import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
@@ -33,7 +34,7 @@ import static org.lwjgl.opengl.GL43.glMultiDrawElementsIndirect;
 
 @RenderHandler(
         name = ShadowRenderer.RENDERER_NAME,
-        priority = 1,
+        priority = RenderPriority.DEFAULT + 1,
         stage = ShaderStage.PRE_PROCESS
 )
 public class ShadowRenderer extends ShaderRenderHandler {

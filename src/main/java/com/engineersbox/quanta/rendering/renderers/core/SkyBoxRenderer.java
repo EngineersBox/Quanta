@@ -1,6 +1,8 @@
-package com.engineersbox.quanta.rendering;
+package com.engineersbox.quanta.rendering.renderers.core;
 
+import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.resources.assets.material.Material;
@@ -10,8 +12,6 @@ import com.engineersbox.quanta.resources.assets.object.Mesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
-import com.engineersbox.quanta.resources.assets.shader.Uniforms;
-import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.SkyBox;
 import org.joml.Matrix4f;
 
@@ -24,7 +24,7 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 @RenderHandler(
         name = SkyBoxRenderer.RENDERER_NAME,
-        priority = 1,
+        priority = RenderPriority.DEFAULT + 2,
         stage = ShaderStage.CORE
 )
 public class SkyBoxRenderer extends ShaderRenderHandler {

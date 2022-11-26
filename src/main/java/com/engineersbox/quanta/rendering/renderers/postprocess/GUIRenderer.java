@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.rendering;
+package com.engineersbox.quanta.rendering.renderers.postprocess;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.gui.IGUIInstance;
@@ -6,6 +6,7 @@ import com.engineersbox.quanta.debug.hooks.HookValidationException;
 import com.engineersbox.quanta.debug.hooks.HookValidator;
 import com.engineersbox.quanta.debug.hooks.RegisterInstanceVariableHooks;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
+import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
@@ -15,9 +16,7 @@ import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
-import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
-import com.engineersbox.quanta.scene.Scene;
 import imgui.ImDrawData;
 import imgui.ImFontAtlas;
 import imgui.ImGui;

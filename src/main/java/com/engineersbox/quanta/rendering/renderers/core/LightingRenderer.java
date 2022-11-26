@@ -1,19 +1,20 @@
-package com.engineersbox.quanta.rendering;
+package com.engineersbox.quanta.rendering.renderers.core;
 
 import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
+import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.deferred.GBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.hdr.HDRBuffer;
+import com.engineersbox.quanta.rendering.renderers.preprocess.ShadowRenderer;
 import com.engineersbox.quanta.rendering.shadow.ShadowCascade;
 import com.engineersbox.quanta.resources.assets.object.QuadMesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
-import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
@@ -34,7 +35,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 @RenderHandler(
         name = LightingRenderer.RENDERER_NAME,
-        priority = RenderPriority.DEFAULT,
+        priority = RenderPriority.DEFAULT + 1,
         stage = ShaderStage.CORE
 )
 public class LightingRenderer extends ShaderRenderHandler {

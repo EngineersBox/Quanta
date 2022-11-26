@@ -1,7 +1,9 @@
-package com.engineersbox.quanta.rendering;
+package com.engineersbox.quanta.rendering.renderers.core;
 
 import com.engineersbox.quanta.debug.hooks.VariableHook;
+import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
@@ -37,8 +39,8 @@ import static org.lwjgl.opengl.GL43.glMultiDrawElementsIndirect;
 
 @RenderHandler(
         name = SceneRenderer.RENDERER_NAME,
-        priority = 2,
-        stage = ShaderStage.PRE_PROCESS
+        priority = RenderPriority.DEFAULT,
+        stage = ShaderStage.CORE
 )
 public class SceneRenderer extends ShaderRenderHandler {
 

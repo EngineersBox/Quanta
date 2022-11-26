@@ -1,7 +1,9 @@
-package com.engineersbox.quanta.rendering;
+package com.engineersbox.quanta.rendering.renderers.postprocess;
 
 import com.engineersbox.quanta.debug.hooks.VariableHook;
+import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
+import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.hdr.HDRBuffer;
@@ -18,7 +20,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 @RenderHandler(
         name = BloomRenderer.RENDERER_NAME,
-        priority = 1,
+        priority = RenderPriority.DEFAULT + 1,
         stage = ShaderStage.POST_PROCESS
 )
 public class BloomRenderer extends ShaderRenderHandler {

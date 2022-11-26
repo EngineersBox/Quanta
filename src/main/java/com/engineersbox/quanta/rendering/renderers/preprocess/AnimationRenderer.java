@@ -1,20 +1,18 @@
-package com.engineersbox.quanta.rendering;
+package com.engineersbox.quanta.rendering.renderers.preprocess;
 
+import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
-import com.engineersbox.quanta.rendering.indirect.RenderBuffers;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimatedFrame;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
-import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.scene.Entity;
-import com.engineersbox.quanta.scene.Scene;
 
 import java.util.stream.Stream;
 
