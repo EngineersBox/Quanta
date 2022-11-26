@@ -1,18 +1,19 @@
 package com.engineersbox.quanta.gui.format;
 
+import com.engineersbox.quanta.resources.config.ConfigHandler;
 import imgui.ImColor;
 
 public enum GUITextColour {
-    ORANGE(ImColor.rgbToColor("#f59762")),
-    YELLOW(ImColor.rgbToColor("#ffd866")),
-    RED(ImColor.rgbToColor("#ff6188")),
-    CYAN(ImColor.rgbToColor("#78dce8")),
-    BLUE(ImColor.rgbToColor("#4763d6")),
-    GRAY(ImColor.rgbToColor("#939293")),
-    DARK_GRAY(ImColor.rgbToColor("#636263")),
-    GREEN(ImColor.rgbToColor("#a9dc76")),
-    MAGENTA(ImColor.rgbToColor("#ab9df2")),
-    NORMAL(ImColor.rgbToColor("#fcfcfa"));
+    ORANGE(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.orange)),
+    YELLOW(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.yellow)),
+    RED(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.red)),
+    CYAN(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.cyan)),
+    BLUE(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.blue)),
+    GRAY(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.gray)),
+    DARK_GRAY(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.darkGray)),
+    GREEN(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.green)),
+    MAGENTA(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.magenta)),
+    NORMAL(ImColor.rgbToColor(ConfigHandler.CONFIG.gui.colours.normal));
 
     private final int colour;
 

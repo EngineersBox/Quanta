@@ -3,6 +3,7 @@ package com.engineersbox.quanta.resources.config;
 public class Config {
   public final Config.Engine engine;
   public final Config.Game game;
+  public final Config.Gui gui;
   public final Config.Mouse mouse;
   public final Config.Render render;
   public final Config.Sound sound;
@@ -134,6 +135,52 @@ public class Config {
         java.lang.String parentPath,
         $TsCfgValidator $tsCfgValidator) {
       this.movementSpeed = c.hasPathOrNull("movementSpeed") ? c.getDouble("movementSpeed") : 0.005;
+    }
+  }
+
+  public static class Gui {
+    public final Gui.Colours colours;
+
+    public static class Colours {
+      public final java.lang.String blue;
+      public final java.lang.String cyan;
+      public final java.lang.String darkGray;
+      public final java.lang.String gray;
+      public final java.lang.String green;
+      public final java.lang.String magenta;
+      public final java.lang.String normal;
+      public final java.lang.String orange;
+      public final java.lang.String red;
+      public final java.lang.String yellow;
+
+      public Colours(
+          com.typesafe.config.Config c,
+          java.lang.String parentPath,
+          $TsCfgValidator $tsCfgValidator) {
+        this.blue = c.hasPathOrNull("blue") ? c.getString("blue") : "#4763d6";
+        this.cyan = c.hasPathOrNull("cyan") ? c.getString("cyan") : "#78dce8";
+        this.darkGray = c.hasPathOrNull("darkGray") ? c.getString("darkGray") : "#636263";
+        this.gray = c.hasPathOrNull("gray") ? c.getString("gray") : "#939293";
+        this.green = c.hasPathOrNull("green") ? c.getString("green") : "#a9dc76";
+        this.magenta = c.hasPathOrNull("magenta") ? c.getString("magenta") : "#ab9df2";
+        this.normal = c.hasPathOrNull("normal") ? c.getString("normal") : "#fcfcfa";
+        this.orange = c.hasPathOrNull("orange") ? c.getString("orange") : "#f59762";
+        this.red = c.hasPathOrNull("red") ? c.getString("red") : "#ff6188";
+        this.yellow = c.hasPathOrNull("yellow") ? c.getString("yellow") : "#ffd866";
+      }
+    }
+
+    public Gui(
+        com.typesafe.config.Config c,
+        java.lang.String parentPath,
+        $TsCfgValidator $tsCfgValidator) {
+      this.colours =
+          c.hasPathOrNull("colours")
+              ? new Gui.Colours(c.getConfig("colours"), parentPath + "colours.", $tsCfgValidator)
+              : new Gui.Colours(
+                  com.typesafe.config.ConfigFactory.parseString("colours{}"),
+                  parentPath + "colours.",
+                  $tsCfgValidator);
     }
   }
 
@@ -295,6 +342,13 @@ public class Config {
             : new Config.Game(
                 com.typesafe.config.ConfigFactory.parseString("game{}"),
                 parentPath + "game.",
+                $tsCfgValidator);
+    this.gui =
+        c.hasPathOrNull("gui")
+            ? new Config.Gui(c.getConfig("gui"), parentPath + "gui.", $tsCfgValidator)
+            : new Config.Gui(
+                com.typesafe.config.ConfigFactory.parseString("gui{}"),
+                parentPath + "gui.",
                 $tsCfgValidator);
     this.mouse =
         c.hasPathOrNull("mouse")
