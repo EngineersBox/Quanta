@@ -42,6 +42,7 @@ public class Config {
       public final int aaSamples;
       public final boolean antialiasing;
       public final boolean compatProfile;
+      public final boolean debug;
       public final boolean debugLogs;
       public final boolean geometryFaceCulling;
       public final boolean shadowFaceCulling;
@@ -54,6 +55,7 @@ public class Config {
         this.aaSamples = c.hasPathOrNull("aaSamples") ? c.getInt("aaSamples") : 4;
         this.antialiasing = !c.hasPathOrNull("antialiasing") || c.getBoolean("antialiasing");
         this.compatProfile = !c.hasPathOrNull("compatProfile") || c.getBoolean("compatProfile");
+        this.debug = c.hasPathOrNull("debug") && c.getBoolean("debug");
         this.debugLogs = c.hasPathOrNull("debugLogs") && c.getBoolean("debugLogs");
         this.geometryFaceCulling =
             c.hasPathOrNull("geometryFaceCulling") && c.getBoolean("geometryFaceCulling");

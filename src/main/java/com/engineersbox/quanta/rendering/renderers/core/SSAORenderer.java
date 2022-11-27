@@ -1,6 +1,7 @@
 package com.engineersbox.quanta.rendering.renderers.core;
 
 import com.engineersbox.quanta.rendering.RenderContext;
+import com.engineersbox.quanta.rendering.buffers.GBuffer;
 import com.engineersbox.quanta.rendering.buffers.SSAOBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
@@ -111,14 +112,14 @@ public class SSAORenderer extends ShaderRenderHandler {
                 context.scene().getProjection().getProjectionMatrix()
         );
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, context.gBuffer().getTextureIds()[0]);
+        glBindTexture(GL_TEXTURE_2D, context.gBuffer().getTextureIds()[3]);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, context.gBuffer().getTextureIds()[1]);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, context.ssaoBuffer().getNoiseTexture());
         this.quadMesh.render();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         super.unbind("SSAO");
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     private void renderSSAOBlur(final RenderContext context) {
@@ -126,10 +127,10 @@ public class SSAORenderer extends ShaderRenderHandler {
         glClear(GL_COLOR_BUFFER_BIT);
         super.bind("SSAO Blur");
         glActiveTexture(GL_TEXTURE0);
-        glBindFramebuffer(GL_TEXTURE_2D, context.ssaoBuffer().getColourBuffer());
+        glBindTexture(GL_TEXTURE_2D, context.ssaoBuffer().getColourBuffer());
         this.quadMesh.render();
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         super.unbind("SSAO Blur");
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     @Override

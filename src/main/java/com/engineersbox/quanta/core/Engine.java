@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.core;
 
+import com.engineersbox.quanta.debug.LoggerCompat;
 import com.engineersbox.quanta.debug.OpenGLInfo;
 import com.engineersbox.quanta.debug.PipelineStatistics;
 import com.engineersbox.quanta.debug.hooks.RegisterInstanceVariableHooks;
@@ -8,9 +9,12 @@ import com.engineersbox.quanta.gui.IGUIInstance;
 import com.engineersbox.quanta.rendering.Renderer;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.Callback;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.GL_MULTISAMPLE;
@@ -30,6 +34,7 @@ public class Engine {
     private final PipelineStatistics pipelineStatistics;
     @VariableHook(name = "engine.capture_pipeline_stats")
     private boolean capturePipelineStats = false;
+    private Callback debugCallback;
 
     @RegisterInstanceVariableHooks
     public Engine(final String title,
@@ -69,6 +74,12 @@ public class Engine {
 
     private void init() {
         GL.createCapabilities();
+        if (ConfigHandler.CONFIG.engine.glOptions.debug) {
+            this.debugCallback = LoggerCompat.registerGLErrorLogger(
+                    Engine.LOGGER,
+                    Level.ERROR
+            );
+        }
         glEnable(GL_DEPTH_TEST);
         if (ConfigHandler.CONFIG.engine.glOptions.antialiasing) {
             glEnable(GL_MULTISAMPLE);
@@ -131,6 +142,9 @@ public class Engine {
         this.appLogic.cleanup();
         this.renderer.cleanup();
         this.window.cleanup();
+        if (ConfigHandler.CONFIG.engine.glOptions.debug && this.debugCallback != null) {
+            this.debugCallback.free();
+        }
     }
 
     public void resize() {

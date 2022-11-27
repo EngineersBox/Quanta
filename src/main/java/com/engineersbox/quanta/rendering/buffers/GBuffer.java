@@ -12,7 +12,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 public class GBuffer {
 
-    public static final int TOTAL_TEXTURES = 4;
+    public static final int TOTAL_TEXTURES = 5;
 
     private final int gBufferId;
     private final int height;

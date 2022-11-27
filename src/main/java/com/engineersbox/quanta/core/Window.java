@@ -1,7 +1,9 @@
 package com.engineersbox.quanta.core;
 
+import com.engineersbox.quanta.debug.LoggerCompat;
 import com.engineersbox.quanta.input.MouseInput;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.PointerBuffer;
@@ -33,6 +35,7 @@ public class Window {
     public Window(final String title,
                   final Callable<Void> resizeHandler) {
         this.resizeHandler = resizeHandler;
+        LoggerCompat.registerGLFWErrorLogger(Window.LOGGER, Level.ERROR);
         if (!glfwInit()) {
             throw new IllegalStateException("Unable to initialise GLFW");
         }
@@ -48,6 +51,9 @@ public class Window {
                 ));
             }
             glfwWindowHint(GLFW_SAMPLES, ConfigHandler.CONFIG.engine.glOptions.aaSamples);
+        }
+        if (ConfigHandler.CONFIG.engine.glOptions.debug) {
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         }
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);

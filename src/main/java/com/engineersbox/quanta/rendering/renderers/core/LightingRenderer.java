@@ -179,12 +179,12 @@ public class LightingRenderer extends ShaderRenderHandler {
 
         // Bind the G-Buffer textures
         final int[] textureIds = context.gBuffer().getTextureIds();
-        final int numTextures = textureIds != null ? textureIds.length : 0;
-        for (int i = 0; i < numTextures; i++) {
+        final int[] bindingTextureIds = new int[]{0,1,2,4};
+        for (int i = 0; i < bindingTextureIds.length; i++) {
             glActiveTexture(GL_TEXTURE0 + i);
-            glBindTexture(GL_TEXTURE_2D, textureIds[i]);
+            glBindTexture(GL_TEXTURE_2D, textureIds[bindingTextureIds[i]]);
         }
-        glActiveTexture(GL_TEXTURE0 + numTextures);
+        glActiveTexture(GL_TEXTURE0 + bindingTextureIds.length);
         glBindTexture(GL_TEXTURE_2D, context.ssaoBuffer().getColourBufferBlur());
         uniforms.setUniform(
                 "farPlane",
@@ -254,7 +254,10 @@ public class LightingRenderer extends ShaderRenderHandler {
         final List<ShadowCascade> cascadeShadows = shadowRenderer.getShadowCascades();
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             glActiveTexture(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES + i);
-            uniforms.setUniform("shadowMap_" + i, GBuffer.TOTAL_TEXTURES + 1 + i);
+            uniforms.setUniform(
+                    "shadowMap_" + i,
+                    GBuffer.TOTAL_TEXTURES + i
+            );
             final ShadowCascade cascadeShadow = cascadeShadows.get(i);
             uniforms.setUniform(
                     "shadowCascade[" + i + "]" + ".projectionViewMatrix",
@@ -265,7 +268,8 @@ public class LightingRenderer extends ShaderRenderHandler {
                     cascadeShadow.getSplitDistance()
             );
         }
-        shadowRenderer.getShadowBuffer().bindTextures(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES + 1);
+        shadowRenderer.getShadowBuffer()
+                .bindTextures(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES);
         uniforms.setUniform(
                 "inverseProjectionMatrix",
                 context.scene().getProjection().getInverseProjectionMatrix()

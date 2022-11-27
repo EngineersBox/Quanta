@@ -86,7 +86,7 @@ public class SSAOBuffer {
 
     private int generateNoiseTexture() {
         final float[] noise = new float[16 * 3];
-        for (int i = 0; i < 16; i++) {
+        for (int i = 0; i < noise.length; i += 3) {
             noise[i] = (float) RANDOM.nextUniform(0.0, 1.0) * 2.0f - 1.0f;
             noise[i + 1] = (float) RANDOM.nextUniform(0.0, 1.0) * 2.0f - 1.0f;
             noise[i + 2] = 0.0f;

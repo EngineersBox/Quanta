@@ -14,6 +14,7 @@ flat in uint outMaterialIdx;
 layout (location = 0) out vec4 buffAlbedo;
 layout (location = 1) out vec4 buffNormal;
 layout (location = 2) out vec4 buffSpecular;
+layout (location = 3) out vec4 buffPosition;
 
 struct Material {
     vec4 diffuse;
@@ -37,6 +38,7 @@ vec3 calcNormal(int idx, vec3 normal, vec3 tangent, vec3 bitangent, vec2 textCoo
 }
 
 void main() {
+    buffPosition = outViewPosition;
     Material material = materials[outMaterialIdx];
     vec4 text_color = texture(textureSampler[material.textureIdx], outTextCoord);
     if (text_color.a < 0.1) {
