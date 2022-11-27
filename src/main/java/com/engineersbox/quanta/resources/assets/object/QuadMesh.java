@@ -74,6 +74,17 @@ public class QuadMesh {
         }
     }
 
+    public void render() {
+        glBindVertexArray(getVaoId());
+        glDrawElements(
+                GL_TRIANGLES,
+                getVertexCount(),
+                GL_UNSIGNED_INT,
+                0
+        );
+        glBindVertexArray(0);
+    }
+
     public void cleanup() {
         this.vboIds.forEach(GL30::glDeleteBuffers);
         glDeleteVertexArrays(this.vaoId);

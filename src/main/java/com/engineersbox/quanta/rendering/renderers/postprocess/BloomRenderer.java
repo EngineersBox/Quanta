@@ -22,7 +22,7 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 @RenderHandler(
         name = BloomRenderer.RENDERER_NAME,
-        priority = RenderPriority.DEFAULT + 1,
+        priority = RenderPriority.DEFAULT,
         stage = ShaderStage.POST_PROCESS
 )
 public class BloomRenderer extends ShaderRenderHandler {
@@ -31,6 +31,8 @@ public class BloomRenderer extends ShaderRenderHandler {
 
     @VariableHook(name = "lighting.bloom.filter_horizontal")
     public static boolean BLUR_HORIZONTAL = true;
+    @VariableHook(name = "lighting.bloom.blur_amount")
+    private static int BLUR_AMOUNT = 10;
     @VariableHook(name = "lighting.bloom.enable")
     private static boolean BLOOM_ENABLE = true;
     @VariableHook(name = "lighting.hdr.exposure")
@@ -39,13 +41,28 @@ public class BloomRenderer extends ShaderRenderHandler {
     private final QuadMesh quadMesh;
 
     public BloomRenderer() {
-        super(new ShaderProgram(
-                "Bloom Final",
-                new ShaderModuleData("assets/shaders/postprocessing/bloom.vert", ShaderType.VERTEX),
-                new ShaderModuleData("assets/shaders/postprocessing/bloom.frag", ShaderType.FRAGMENT)
-        ));
+        super(
+                new ShaderProgram(
+                        "Bloom Blur",
+                        new ShaderModuleData("assets/shaders/postprocessing/blur.vert", ShaderType.VERTEX),
+                        new ShaderModuleData("assets/shaders/postprocessing/blur.frag", ShaderType.FRAGMENT)
+                ),
+                new ShaderProgram(
+                        "Bloom Final",
+                        new ShaderModuleData("assets/shaders/postprocessing/bloom.vert", ShaderType.VERTEX),
+                        new ShaderModuleData("assets/shaders/postprocessing/bloom.frag", ShaderType.FRAGMENT)
+                )
+        );
         createUniforms();
+
         this.quadMesh = new QuadMesh();
+        super.bind("Bloom Blur");
+        super.getUniforms("Bloom Blur").setUniform(
+                "image",
+                0
+        );
+        super.unbind("Bloom Blur");
+
         super.bind("Bloom Final");
         final Uniforms uniforms = super.getUniforms("Bloom Final");
         uniforms.setUniform(
@@ -60,7 +77,12 @@ public class BloomRenderer extends ShaderRenderHandler {
     }
 
     private void createUniforms() {
-        final Uniforms uniforms = super.getUniforms("Bloom Final");
+        Uniforms uniforms = super.getUniforms("Bloom Blur");
+        Stream.of(
+                "image",
+                "horizontal"
+        ).forEach(uniforms::createUniform);
+        uniforms = super.getUniforms("Bloom Final");
         Stream.of(
                 "scene",
                 "bloomBlur",
@@ -71,6 +93,11 @@ public class BloomRenderer extends ShaderRenderHandler {
 
     @Override
     public void render(final RenderContext context) {
+        renderBlur(context);
+        renderBloom(context);
+    }
+
+    private void renderBloom(final RenderContext context) {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         final HDRBuffer buffer = context.hdrBuffer();
@@ -88,16 +115,37 @@ public class BloomRenderer extends ShaderRenderHandler {
                 "exposure",
                 EXPOSURE
         );
-        glBindVertexArray(this.quadMesh.getVaoId());
-        glDrawElements(
-                GL_TRIANGLES,
-                this.quadMesh.getVertexCount(),
-                GL_UNSIGNED_INT,
-                0
-        );
-        glBindVertexArray(0);
+        this.quadMesh.render();
         super.unbind("Bloom Final");
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    private void renderBlur(final RenderContext context) {
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        boolean horizontal = BloomRenderer.BLUR_HORIZONTAL;
+        boolean firstIteration = true;
+        final HDRBuffer buffer = context.hdrBuffer();
+        super.bind("Bloom Blur");
+        final Uniforms uniforms = super.getUniforms("Bloom Blur");
+        for (int i = 0; i < BLUR_AMOUNT; i++) {
+            glBindFramebuffer(GL_FRAMEBUFFER, buffer.getPingPongFBOs()[horizontal ? 1 : 0]);
+            uniforms.setUniform(
+                    "horizontal",
+                    horizontal
+            );
+            glBindTexture(
+                    GL_TEXTURE_2D,
+                    firstIteration
+                            ? buffer.getColourBuffers()[1]
+                            : buffer.getPingPongColourBuffers()[!horizontal ? 1 : 0]
+            );  // bind texture of other framebuffer (or scene if first iteration)
+            this.quadMesh.render();
+            horizontal = !horizontal;
+            if (firstIteration) {
+                firstIteration = false;
+            }
+        }
+        super.unbind("Bloom Blur");
     }
 
     @Override

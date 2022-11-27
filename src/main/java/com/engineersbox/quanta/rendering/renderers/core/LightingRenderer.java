@@ -268,13 +268,7 @@ public class LightingRenderer extends ShaderRenderHandler {
                 "inverseViewMatrix",
                 context.scene().getCamera().getInverseViewMatrix()
         );
-        glBindVertexArray(this.quadMesh.getVaoId());
-        glDrawElements(
-                GL_TRIANGLES,
-                this.quadMesh.getVertexCount(),
-                GL_UNSIGNED_INT,
-                0
-        );
+        this.quadMesh.render();
         super.unbind("Lighting");
     }
 
