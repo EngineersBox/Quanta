@@ -12,6 +12,7 @@ import com.engineersbox.quanta.resources.assets.object.Mesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
+import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.scene.SkyBox;
 import org.joml.Matrix4f;
 
@@ -34,6 +35,7 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
 
     public SkyBoxRenderer() {
         super(new ShaderProgram(
+                "Skybox",
                 new ShaderModuleData("assets/shaders/scene/skybox.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/scene/skybox.frag", ShaderType.FRAGMENT)
         ));
@@ -42,6 +44,7 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
     }
 
     private void createUniforms() {
+        final Uniforms uniforms = super.getUniforms("Skybox");
         Stream.of(
                 "projectionMatrix",
                 "viewMatrix",
@@ -50,7 +53,7 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
                 "textureSampler",
                 "hasTexture",
                 "brightnessThreshold"
-        ).forEach(super.uniforms::createUniform);
+        ).forEach(uniforms::createUniform);
     }
 
     @Override
@@ -59,8 +62,9 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
         if (skyBox == null) {
             return;
         }
-        super.bind();
-        super.uniforms.setUniform(
+        super.bind("Skybox");
+        final Uniforms uniforms = super.getUniforms("Skybox");
+        uniforms.setUniform(
                 "projectionMatrix",
                 context.scene().getProjection().getProjectionMatrix()
         );
@@ -68,15 +72,15 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
         this.viewMatrix.m30(0);
         this.viewMatrix.m31(0);
         this.viewMatrix.m32(0);
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "viewMatrix",
                 this.viewMatrix
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "textureSampler",
                 0
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "brightnessThreshold",
                 LightingRenderer.BRIGHTNESS_THRESHOLD
         );
@@ -85,16 +89,16 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
         final Texture texture = context.scene().getTextureCache().getTexture(material.getTexturePath());
         glActiveTexture(GL_TEXTURE0);
         texture.bind();
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "diffuse",
                 material.getDiffuseColor()
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "hasTexture",
                 texture.getPath().equals(TextureCache.DEFAULT_TEXTURE) ? 0 : 1
         );
         glBindVertexArray(mesh.getVaoId());
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "modelMatrix",
                 skyBox.getEntity().getModelMatrix()
         );
@@ -105,7 +109,7 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
                 0
         );
         glBindVertexArray(0);
-        super.unbind();
+        super.unbind("Skybox");
         lightingRenderFinish();
     }
 

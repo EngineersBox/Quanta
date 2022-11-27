@@ -11,6 +11,7 @@ import com.engineersbox.quanta.resources.assets.object.QuadMesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
+import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 
 import java.util.stream.Stream;
 
@@ -39,30 +40,33 @@ public class BloomRenderer extends ShaderRenderHandler {
 
     public BloomRenderer() {
         super(new ShaderProgram(
+                "Bloom Final",
                 new ShaderModuleData("assets/shaders/postprocessing/bloom.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/postprocessing/bloom.frag", ShaderType.FRAGMENT)
         ));
         createUniforms();
         this.quadMesh = new QuadMesh();
-        super.bind();
-        super.uniforms.setUniform(
+        super.bind("Bloom Final");
+        final Uniforms uniforms = super.getUniforms("Bloom Final");
+        uniforms.setUniform(
                 "scene",
                 0
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "bloomBlur",
                 1
         );
-        super.unbind();
+        super.unbind("Bloom Final");
     }
 
     private void createUniforms() {
+        final Uniforms uniforms = super.getUniforms("Bloom Final");
         Stream.of(
                 "scene",
                 "bloomBlur",
                 "bloom",
                 "exposure"
-        ).forEach(super.uniforms::createUniform);
+        ).forEach(uniforms::createUniform);
     }
 
     @Override
@@ -70,16 +74,17 @@ public class BloomRenderer extends ShaderRenderHandler {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         final HDRBuffer buffer = context.hdrBuffer();
-        super.shader.bind();
+        super.bind("Bloom Final");
+        final Uniforms uniforms = super.getUniforms("Bloom Final");
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, buffer.getColourBuffers()[0]);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, buffer.getPingPongColourBuffers()[!BLUR_HORIZONTAL ? 1 : 0]);
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "bloom",
                 BLOOM_ENABLE
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "exposure",
                 EXPOSURE
         );
@@ -91,7 +96,13 @@ public class BloomRenderer extends ShaderRenderHandler {
                 0
         );
         glBindVertexArray(0);
-        super.shader.unbind();
+        super.unbind("Bloom Final");
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        this.quadMesh.cleanup();
     }
 }

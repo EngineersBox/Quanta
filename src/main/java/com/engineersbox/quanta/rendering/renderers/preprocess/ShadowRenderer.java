@@ -14,6 +14,7 @@ import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
+import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
@@ -52,6 +53,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
 
     public ShadowRenderer() {
         super(new ShaderProgram(
+                "Shadow",
                 new ShaderModuleData("assets/shaders/shadow/shadow.vert", ShaderType.VERTEX)
         ));
         this.shadowBuffer = new ShadowBuffer();
@@ -65,13 +67,14 @@ public class ShadowRenderer extends ShaderRenderHandler {
             final ShadowCascade shadowCascade = new ShadowCascade();
             this.shadowCascades.add(shadowCascade);
         }
-        super.uniforms.createUniform("projectionViewMatrix");
+        final Uniforms uniforms = super.getUniforms("Shadow");
+        uniforms.createUniform("projectionViewMatrix");
         for (int i = 0; i < SceneRenderer.MAX_DRAW_ELEMENTS; i++) {
             final String name = "drawElements[" + i + "]";
-            super.uniforms.createUniform(name + ".modelMatrixIdx");
+            uniforms.createUniform(name + ".modelMatrixIdx");
         }
         for (int i = 0; i < SceneRenderer.MAX_ENTITIES; i++) {
-            super.uniforms.createUniform("modelMatrices[" + i + "]");
+            uniforms.createUniform("modelMatrices[" + i + "]");
         }
     }
 
@@ -103,12 +106,13 @@ public class ShadowRenderer extends ShaderRenderHandler {
         ShadowCascade.updateCascadeShadows(this.shadowCascades, context.scene());
         glBindFramebuffer(GL_FRAMEBUFFER, this.shadowBuffer.getDepthMapFBO());
         glViewport(0, 0, ShadowBuffer.SHADOW_MAP_WIDTH, ShadowBuffer.SHADOW_MAP_HEIGHT);
-        super.bind();
+        super.bind("Shadow");
+        final Uniforms uniforms = super.getUniforms("Shadow");
         int entityIdx = 0;
         for (final Model model : context.scene().getModels().values()) {
             final List<Entity> entities = model.getEntities();
             for (final Entity entity : entities) {
-                super.uniforms.setUniform("modelMatrices[" + entityIdx + "]", entity.getModelMatrix());
+                uniforms.setUniform("modelMatrices[" + entityIdx + "]", entity.getModelMatrix());
                 entityIdx++;
             }
         }
@@ -134,7 +138,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
             for (final MeshDrawData ignored : model.getMeshDrawData()) {
                 for (final Entity entity : entities) {
                     final String name = "drawElements[" + drawElement + "]";
-                    super.uniforms.setUniform(
+                    uniforms.setUniform(
                             name + ".modelMatrixIdx",
                             this.entitiesIdxMap.get(entity.getId())
                     );
@@ -153,7 +157,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
                     0
             );
             final ShadowCascade shadowCascade = this.shadowCascades.get(i);
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     "projectionViewMatrix",
                     shadowCascade.getProjectionViewMatrix()
             );
@@ -177,7 +181,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
                 final AnimMeshDrawData animMeshDrawData = meshDrawData.animMeshDrawData();
                 final Entity entity = animMeshDrawData.entity();
                 final String name = "drawElements[" + drawElement + "]";
-                super.uniforms.setUniform(
+                uniforms.setUniform(
                         name + ".modelMatrixIdx",
                         this.entitiesIdxMap.get(entity.getId())
                 );
@@ -195,7 +199,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
                     0
             );
             final ShadowCascade shadowCascade = this.shadowCascades.get(i);
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     "projectionViewMatrix",
                     shadowCascade.getProjectionViewMatrix()
             );
@@ -208,7 +212,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
             );
         }
         glBindVertexArray(0);
-        super.unbind();
+        super.unbind("Shadow");
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         if (ConfigHandler.CONFIG.engine.glOptions.shadowFaceCulling) {
             glCullFace(GL_BACK);

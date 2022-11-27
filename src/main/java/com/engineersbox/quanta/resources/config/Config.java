@@ -212,6 +212,7 @@ public class Config {
   public static class Render {
     public final Render.Camera camera;
     public final Render.Shadows shadows;
+    public final boolean ssao;
     public final Render.Texture texture;
 
     public static class Camera {
@@ -276,6 +277,7 @@ public class Config {
                   com.typesafe.config.ConfigFactory.parseString("shadows{}"),
                   parentPath + "shadows.",
                   $tsCfgValidator);
+      this.ssao = !c.hasPathOrNull("ssao") || c.getBoolean("ssao");
       this.texture =
           c.hasPathOrNull("texture")
               ? new Render.Texture(c.getConfig("texture"), parentPath + "texture.", $tsCfgValidator)

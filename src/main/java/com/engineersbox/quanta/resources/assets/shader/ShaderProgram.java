@@ -12,13 +12,19 @@ import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderProgram {
 
+    private final String name;
     private final int programId;
+    private boolean bound;
 
-    public ShaderProgram(final ShaderModuleData... shaderModuleData) {
-        this(List.of(shaderModuleData));
+    public ShaderProgram(final String name,
+                         final ShaderModuleData... shaderModuleData) {
+        this(name, List.of(shaderModuleData));
     }
 
-    public ShaderProgram(final List<ShaderModuleData> shaderModuleData) {
+    public ShaderProgram(final String name,
+                         final List<ShaderModuleData> shaderModuleData) {
+        this.name = name;
+        this.bound = false;
         validateUniqueShaderTypes(shaderModuleData);
         this.programId = glCreateProgram();
         if (this.programId == 0) {
@@ -85,11 +91,19 @@ public class ShaderProgram {
     }
 
     public void bind() {
+        if (this.bound) {
+            throw new IllegalStateException("Shader already bound");
+        }
         glUseProgram(this.programId);
+        this.bound = true;
     }
 
     public void unbind() {
+        if (!this.bound) {
+            throw new IllegalStateException("Shader is not currently bound");
+        }
         glUseProgram(0);
+        this.bound = false;
     }
 
     public ShaderValidationState validate() {
@@ -107,8 +121,11 @@ public class ShaderProgram {
         return this.programId;
     }
 
+    public String getName() {
+        return this.name;
+    }
+
     public void cleanup() {
-        unbind();
         if (this.programId != 0) {
             glDeleteProgram(this.programId);
         }

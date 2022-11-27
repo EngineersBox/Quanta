@@ -16,6 +16,7 @@ import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
+import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
@@ -61,6 +62,7 @@ public class SceneRenderer extends ShaderRenderHandler {
 
     public SceneRenderer() {
         super(new ShaderProgram(
+                "Scene",
                 new ShaderModuleData("assets/shaders/scene/scene.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/scene/scene.frag", ShaderType.FRAGMENT)
         ));
@@ -76,13 +78,14 @@ public class SceneRenderer extends ShaderRenderHandler {
     }
 
     private void createUniforms() {
+        final Uniforms uniforms = super.getUniforms("Scene");
         Stream.of(
                 "projectionMatrix",
                 "viewMatrix",
                 "showNormals"
-        ).forEach(super.uniforms::createUniform);
+        ).forEach(uniforms::createUniform);
         for (int i = 0; i < SceneRenderer.MAX_TEXTURES; i++) {
-            super.uniforms.createUniform("textureSampler[" + i + "]");
+            uniforms.createUniform("textureSampler[" + i + "]");
         }
         for (int i = 0; i < SceneRenderer.MAX_MATERIALS; i++) {
             final String name = "materials[" + i + "]";
@@ -92,17 +95,17 @@ public class SceneRenderer extends ShaderRenderHandler {
                     name + ".reflectance",
                     name + ".normalMapIdx",
                     name + ".textureIdx"
-            ).forEach(super.uniforms::createUniform);
+            ).forEach(uniforms::createUniform);
         }
         for (int i = 0; i < SceneRenderer.MAX_DRAW_ELEMENTS; i++) {
             final String name = "drawElements[" + i + "]";
             Stream.of(
                     name + ".modelMatrixIdx",
                     name + ".materialIdx"
-            ).forEach(super.uniforms::createUniform);
+            ).forEach(uniforms::createUniform);
         }
         for (int i = 0; i < SceneRenderer.MAX_ENTITIES; i++) {
-            super.uniforms.createUniform("modelMatrices[" + i + "]");
+            uniforms.createUniform("modelMatrices[" + i + "]");
         }
     }
 
@@ -123,16 +126,17 @@ public class SceneRenderer extends ShaderRenderHandler {
 //                GL_ONE,
 //                GL_ONE_MINUS_SRC_ALPHA
 //        );
-        super.shader.bind();
-        super.uniforms.setUniform(
+        super.bind("Scene");
+        final Uniforms uniforms = super.getUniforms("Scene");
+        uniforms.setUniform(
                 "projectionMatrix",
                 context.scene().getProjection().getProjectionMatrix()
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "viewMatrix",
                 context.scene().getCamera().getViewMatrix()
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "showNormals",
                 SHOW_NORMALS
         );
@@ -143,7 +147,7 @@ public class SceneRenderer extends ShaderRenderHandler {
             SceneRenderer.LOGGER.warn("Only " + SceneRenderer.MAX_TEXTURES + " textures can be used");
         }
         for (int i = 0; i < Math.min(SceneRenderer.MAX_TEXTURES, numTextures); i++) {
-            super.uniforms.setUniform("textureSampler[" + i + "]", i);
+            uniforms.setUniform("textureSampler[" + i + "]", i);
             final Texture texture = textures.get(i);
             glActiveTexture(GL_TEXTURE0 + i);
             texture.bind();
@@ -152,7 +156,7 @@ public class SceneRenderer extends ShaderRenderHandler {
         for (final Model model : context.scene().getModels().values()) {
             final List<Entity> entities = model.getEntities();
             for (final Entity entity : entities) {
-                super.uniforms.setUniform(
+                uniforms.setUniform(
                         "modelMatrices[" + entityIdx + "]",
                         entity.getModelMatrix()
                 );
@@ -171,11 +175,11 @@ public class SceneRenderer extends ShaderRenderHandler {
             for (final MeshDrawData meshDrawData : model.getMeshDrawData()) {
                 for (final Entity entity : entities) {
                     final String name = "drawElements[" + drawElement + "]";
-                    super.uniforms.setUniform(
+                    uniforms.setUniform(
                             name + ".modelMatrixIdx",
                             this.entitiesIdxMap.get(entity.getId())
                     );
-                    super.uniforms.setUniform(
+                    uniforms.setUniform(
                             name + ".materialIdx",
                             meshDrawData.materialIdx()
                     );
@@ -204,11 +208,11 @@ public class SceneRenderer extends ShaderRenderHandler {
                 final AnimMeshDrawData animMeshDrawData = meshDrawData.animMeshDrawData();
                 final Entity entity = animMeshDrawData.entity();
                 final String name = "drawElements[" + drawElement + "]";
-                super.uniforms.setUniform(
+                uniforms.setUniform(
                         name + ".modelMatrixIdx",
                         this.entitiesIdxMap.get(entity.getId())
                 );
-                super.uniforms.setUniform(
+                uniforms.setUniform(
                         name + ".materialIdx",
                         meshDrawData.materialIdx()
                 );
@@ -226,7 +230,7 @@ public class SceneRenderer extends ShaderRenderHandler {
         );
         glBindVertexArray(0);
         glEnable(GL_BLEND);
-        super.shader.unbind();
+        super.unbind("Scene");
         if (ConfigHandler.CONFIG.engine.glOptions.wireframe) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
@@ -300,21 +304,22 @@ public class SceneRenderer extends ShaderRenderHandler {
         for (int i = 0; i < Math.min(SceneRenderer.MAX_TEXTURES, numTextures); i++) {
             texturePosMap.put(textures.get(i).getPath(), i);
         }
-        super.bind();
+        super.bind("Scene");
+        final Uniforms uniforms = super.getUniforms("Scene");
         final List<Material> materialList = materialCache.getMaterials();
         final int numMaterials = materialList.size();
         for (int i = 0; i < numMaterials; i++) {
             final Material material = materialCache.getMaterial(i);
             final String name = "materials[" + i + "]";
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     name + ".diffuse",
                     material.getDiffuseColor()
             );
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     name + ".specular",
                     material.getSpecularColor()
             );
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     name + ".reflectance",
                     material.getReflectance()
             );
@@ -323,18 +328,18 @@ public class SceneRenderer extends ShaderRenderHandler {
             if (normalMapPath != null) {
                 idx = texturePosMap.computeIfAbsent(normalMapPath, k -> 0);
             }
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     name + ".normalMapIdx",
                     idx
             );
             final Texture texture = textureCache.getTexture(material.getTexturePath());
             idx = texturePosMap.computeIfAbsent(texture.getPath(), (final String ignored) -> 0);
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     name + ".textureIdx",
                     idx
             );
         }
-        super.unbind();
+        super.unbind("Scene");
     }
 
     private void setupStaticCommandBuffer(final Scene scene) {

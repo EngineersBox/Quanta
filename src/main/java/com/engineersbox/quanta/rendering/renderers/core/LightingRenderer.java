@@ -17,6 +17,7 @@ import com.engineersbox.quanta.resources.assets.object.QuadMesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
+import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
@@ -86,6 +87,7 @@ public class LightingRenderer extends ShaderRenderHandler {
 
     public LightingRenderer() {
         super(new ShaderProgram(
+                "Lighting",
                 new ShaderModuleData("assets/shaders/lighting/lighting.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/lighting/lighting.frag", ShaderType.FRAGMENT)
         ));
@@ -94,6 +96,7 @@ public class LightingRenderer extends ShaderRenderHandler {
     }
 
     private void createUniforms() {
+        final Uniforms uniforms = super.getUniforms("Lighting");
         Stream.of(
                 "albedoSampler",
                 "normalSampler",
@@ -116,7 +119,7 @@ public class LightingRenderer extends ShaderRenderHandler {
                 "shadowFactor",
                 "shadowBias",
                 "brightnessThreshold"
-        ).forEach(super.uniforms::createUniform);
+        ).forEach(uniforms::createUniform);
 
         for (int i = 0; i < LightingRenderer.MAX_POINT_LIGHTS; i++) {
             final String name = "pointLights[" + i + "]";
@@ -127,7 +130,7 @@ public class LightingRenderer extends ShaderRenderHandler {
                     name + ".att.constant",
                     name + ".att.linear",
                     name + ".att.exponent"
-            ).forEach(super.uniforms::createUniform);
+            ).forEach(uniforms::createUniform);
         }
         for (int i = 0; i < LightingRenderer.MAX_SPOT_LIGHTS; i++) {
             final String name = "spotLights[" + i + "]";
@@ -140,14 +143,14 @@ public class LightingRenderer extends ShaderRenderHandler {
                     name + ".pl.att.exponent",
                     name + ".coneDir",
                     name + ".cutoff"
-            ).forEach(super.uniforms::createUniform);
+            ).forEach(uniforms::createUniform);
         }
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             Stream.of(
                     "shadowMap_" + i,
                     "shadowCascade[" + i + "]" + ".projectionViewMatrix",
                     "shadowCascade[" + i + "]" + ".splitDistance"
-            ).forEach(super.uniforms::createUniform);
+            ).forEach(uniforms::createUniform);
         }
     }
 
@@ -170,7 +173,8 @@ public class LightingRenderer extends ShaderRenderHandler {
                 context.gBuffer(),
                 context.hdrBuffer()
         );
-        this.shader.bind();
+        super.bind("Lighting");
+        final Uniforms uniforms = super.getUniforms("Lighting");
         updateLights(context.scene());
 
         // Bind the G-Buffer textures
@@ -180,68 +184,60 @@ public class LightingRenderer extends ShaderRenderHandler {
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D, textureIds[i]);
         }
-//        super.uniforms.setUniform(
-//                "hdr",
-//                this.ENABLE_HDR
-//        );
-//        super.uniforms.setUniform(
-//                "exposure",
-//                this.EXPOSURE
-//        );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "farPlane",
                 (float) ConfigHandler.CONFIG.render.camera.zFar
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "showCascades",
                 this.SHOW_CASCADES
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "showDepth",
                 this.SHOW_DEPTH
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "showShadows",
                 this.SHOW_SHADOWS
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "shadowBias",
                 this.SHADOW_BIAS
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "shadowFactor",
                 this.SHADOW_FACTOR
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "brightnessThreshold",
                 this.BRIGHTNESS_THRESHOLD
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "albedoSampler",
                 0
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "normalSampler",
                 1
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "specularSampler",
                 2
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "depthSampler",
                 3
         );
         final Fog fog = context.scene().getFog();
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "fog.activeFog",
                 fog.isActive() ? 1 : 0
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "fog.color",
                 fog.getColor()
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "fog.density",
                 fog.getDensity()
         );
@@ -252,23 +248,23 @@ public class LightingRenderer extends ShaderRenderHandler {
         final List<ShadowCascade> cascadeShadows = shadowRenderer.getShadowCascades();
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             glActiveTexture(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES + i);
-            super.uniforms.setUniform("shadowMap_" + i, GBuffer.TOTAL_TEXTURES + i);
+            uniforms.setUniform("shadowMap_" + i, GBuffer.TOTAL_TEXTURES + i);
             final ShadowCascade cascadeShadow = cascadeShadows.get(i);
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     "shadowCascade[" + i + "]" + ".projectionViewMatrix",
                     cascadeShadow.getProjectionViewMatrix()
             );
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     "shadowCascade[" + i + "]" + ".splitDistance",
                     cascadeShadow.getSplitDistance()
             );
         }
         shadowRenderer.getShadowBuffer().bindTextures(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES);
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "inverseProjectionMatrix",
                 context.scene().getProjection().getInverseProjectionMatrix()
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "inverseViewMatrix",
                 context.scene().getCamera().getInverseViewMatrix()
         );
@@ -279,18 +275,19 @@ public class LightingRenderer extends ShaderRenderHandler {
                 GL_UNSIGNED_INT,
                 0
         );
-        super.unbind();
+        super.unbind("Lighting");
     }
 
     private void updateLights(final Scene scene) {
+        final Uniforms uniforms = super.getUniforms("Lighting");
         final Matrix4f viewMatrix = scene.getCamera().getViewMatrix();
         final SceneLights sceneLights = scene.getSceneLights();
         final AmbientLight ambientLight = sceneLights.getAmbientLight();
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "ambientLight.factor",
                 ambientLight.getIntensity()
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "ambientLight.color",
                 ambientLight.getColor()
         );
@@ -298,15 +295,15 @@ public class LightingRenderer extends ShaderRenderHandler {
         final Vector4f auxDir = new Vector4f(directionalLight.getDirection(), 0);
         auxDir.mul(viewMatrix);
         final Vector3f dir = new Vector3f(auxDir.x, auxDir.y, auxDir.z);
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "directionalLight.color",
                 directionalLight.getColor()
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "directionalLight.direction",
                 dir
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 "directionalLight.intensity",
                 directionalLight.getIntensity()
         );
@@ -335,6 +332,7 @@ public class LightingRenderer extends ShaderRenderHandler {
     private void updatePointLight(final PointLight pointLight,
                                   final String prefix,
                                   final Matrix4f viewMatrix) {
+        final Uniforms uniforms = super.getUniforms("Lighting");
         final Vector4f aux = new Vector4f();
         final Vector3f lightPosition = new Vector3f();
         final Vector3f color = new Vector3f();
@@ -353,27 +351,27 @@ public class LightingRenderer extends ShaderRenderHandler {
             linear = attenuation.getLinear();
             exponent = attenuation.getExponent();
         }
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 prefix + ".position",
                 lightPosition
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 prefix + ".color",
                 color
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 prefix + ".intensity",
                 intensity
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 prefix + ".att.constant",
                 constant
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 prefix + ".att.linear",
                 linear
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 prefix + ".att.exponent",
                 exponent
         );
@@ -382,6 +380,7 @@ public class LightingRenderer extends ShaderRenderHandler {
     private void updateSpotLight(final SpotLight spotLight,
                                  final String prefix,
                                  final Matrix4f viewMatrix) {
+        final Uniforms uniforms = super.getUniforms("Lighting");
         PointLight pointLight = null;
         Vector3f coneDirection = new Vector3f();
         float cutoff = 0.0f;
@@ -390,11 +389,11 @@ public class LightingRenderer extends ShaderRenderHandler {
             cutoff = spotLight.getCutOff();
             pointLight = spotLight.getPointLight();
         }
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 prefix + ".coneDir",
                 coneDirection
         );
-        super.uniforms.setUniform(
+        uniforms.setUniform(
                 prefix + ".coneDir",
                 cutoff
         );
@@ -405,7 +404,6 @@ public class LightingRenderer extends ShaderRenderHandler {
     public void cleanup() {
         super.cleanup();
         this.quadMesh.cleanup();
-        this.shader.cleanup();
     }
 
 }

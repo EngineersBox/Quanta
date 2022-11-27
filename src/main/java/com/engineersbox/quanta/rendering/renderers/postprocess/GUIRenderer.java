@@ -16,6 +16,7 @@ import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
+import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import imgui.ImDrawData;
 import imgui.ImFontAtlas;
@@ -49,10 +50,11 @@ public class GUIRenderer extends ShaderRenderHandler {
 
     public GUIRenderer() {
         super(new ShaderProgram(
+                "GUI",
                 new ShaderModuleData("assets/shaders/gui/gui.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/gui/gui.frag", ShaderType.FRAGMENT)
         ));
-        this.uniforms.createUniform("scale");
+        super.getUniforms("GUI").createUniform("scale");
         this.scale = new Vector2f();
     }
 
@@ -89,7 +91,8 @@ public class GUIRenderer extends ShaderRenderHandler {
             return;
         }
         guiInstance.drawGUI();
-        super.bind();
+        super.bind("GUI");
+        final Uniforms uniforms = super.getUniforms("GUI");
         glEnable(GL_BLEND);
         glBlendEquation(GL_FUNC_ADD);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -103,7 +106,7 @@ public class GUIRenderer extends ShaderRenderHandler {
         final ImGuiIO io = ImGui.getIO();
         this.scale.x = 2.0f / io.getDisplaySizeX();
         this.scale.y = -2.0f / io.getDisplaySizeY();
-        super.uniforms.setUniform("scale", this.scale);
+        uniforms.setUniform("scale", this.scale);
         final ImDrawData drawData = ImGui.getDrawData();
         final int numLists = drawData.getCmdListsCount();
         for (int i = 0; i < numLists; i++) {
@@ -125,7 +128,7 @@ public class GUIRenderer extends ShaderRenderHandler {
             glEnable(GL_CULL_FACE);
         }
         glDisable(GL_BLEND);
-        super.unbind();
+        super.unbind("GUI");
     }
 
     @Override

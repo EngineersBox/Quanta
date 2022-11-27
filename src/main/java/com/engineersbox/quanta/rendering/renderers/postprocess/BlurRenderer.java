@@ -11,6 +11,7 @@ import com.engineersbox.quanta.resources.assets.object.QuadMesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderType;
+import com.engineersbox.quanta.resources.assets.shader.Uniforms;
 
 import java.util.stream.Stream;
 
@@ -33,24 +34,26 @@ public class BlurRenderer extends ShaderRenderHandler {
 
     public BlurRenderer() {
         super(new ShaderProgram(
+                "Bloom Blur",
                 new ShaderModuleData("assets/shaders/postprocessing/blur.vert", ShaderType.VERTEX),
                 new ShaderModuleData("assets/shaders/postprocessing/blur.frag", ShaderType.FRAGMENT)
         ));
         createUniforms();
         this.quadMesh = new QuadMesh();
-        super.bind();
-        super.uniforms.setUniform(
+        super.bind("Bloom Blur");
+        super.getUniforms("Bloom Blur").setUniform(
                 "image",
                 0
         );
-        super.unbind();
+        super.unbind("Bloom Blur");
     }
 
     private void createUniforms() {
+        final Uniforms uniforms = super.getUniforms("Bloom Blur");
         Stream.of(
                 "image",
                 "horizontal"
-        ).forEach(super.uniforms::createUniform);
+        ).forEach(uniforms::createUniform);
     }
 
     @Override
@@ -59,10 +62,11 @@ public class BlurRenderer extends ShaderRenderHandler {
         boolean horizontal = BloomRenderer.BLUR_HORIZONTAL;
         boolean firstIteration = true;
         final HDRBuffer buffer = context.hdrBuffer();
-        super.bind();
+        super.bind("Bloom Blur");
+        final Uniforms uniforms = super.getUniforms("Bloom Blur");
         for (int i = 0; i < BLUR_AMOUNT; i++) {
             glBindFramebuffer(GL_FRAMEBUFFER, buffer.getPingPongFBOs()[horizontal ? 1 : 0]);
-            super.uniforms.setUniform(
+            uniforms.setUniform(
                     "horizontal",
                     horizontal
             );
@@ -85,7 +89,7 @@ public class BlurRenderer extends ShaderRenderHandler {
                 firstIteration = false;
             }
         }
-        super.unbind();
+        super.unbind("Bloom Blur");
     }
 
     @Override

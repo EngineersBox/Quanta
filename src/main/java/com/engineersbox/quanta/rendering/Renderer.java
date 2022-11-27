@@ -149,17 +149,20 @@ public class Renderer {
     private static BiConsumer<String, ShaderRenderHandler> createRenderHandlerConsumer(final ShaderStage stage,
                                                                                        final RenderContext context) {
         return (final String name, final ShaderRenderHandler handler) -> {
-            final ShaderProgram shader = handler.provideShader();
-            final ShaderValidationState validationState = shader.validate();
-            if (!validationState.isValid()) {
-                Renderer.LOGGER.warn(
-                        "[Shader: {} Stage: {}] Failed to validate shader, skipping {}. Reason: {}",
-                        shader.getProgramId(),
-                        stage,
-                        name,
-                        validationState.message()
-                );
-                return;
+            for (final ShaderProgram shader : handler.provideShaders()) {
+                final ShaderValidationState validationState = shader.validate();
+                if (!validationState.isValid()) {
+                    Renderer.LOGGER.warn(
+                            "[Handler: {} Stage: {}] [Shader: {} Id: {}] Failed to validate shader, skipping {}. Reason: {}",
+                            handler.getName(),
+                            stage,
+                            shader.getName(),
+                            shader.getProgramId(),
+                            name,
+                            validationState.message()
+                    );
+                    return;
+                }
             }
 //            Renderer.LOGGER.debug("[Shader: {}, Stage: {}] Invoking render handler {}", shader.program(), stage, name);
             handler.render(context);
