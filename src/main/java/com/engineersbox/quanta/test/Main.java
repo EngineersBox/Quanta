@@ -180,13 +180,10 @@ public class Main implements IAppLogic {
         windowEntity.updateModelMatrix();
         context.scene().addEntity(windowEntity);
 
-        final Model sphereModel = ModelLoader.loadModel(
+        final com.engineersbox.quanta.resources.assets.object.builtin.Sphere sphereModel = new com.engineersbox.quanta.resources.assets.object.builtin.Sphere(
                 "sphere-model",
-                "assets/models/sphere.obj",
                 context.scene().getTextureCache(),
-                context.scene().getMaterialCache(),
-                false,
-                true
+                context.scene().getMaterialCache()
         );
         context.scene().addModel(sphereModel);
         final Material sphereMaterial = context.scene().getMaterialCache().getMaterial(sphereModel.getMeshData().get(0).getMaterialIdx());

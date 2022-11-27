@@ -1,12 +1,13 @@
 package com.engineersbox.quanta.rendering;
 
 import com.engineersbox.quanta.core.Window;
-import com.engineersbox.quanta.rendering.deferred.GBuffer;
+import com.engineersbox.quanta.rendering.buffers.GBuffer;
+import com.engineersbox.quanta.rendering.buffers.SSAOBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
-import com.engineersbox.quanta.rendering.hdr.HDRBuffer;
+import com.engineersbox.quanta.rendering.buffers.HDRBuffer;
 import com.engineersbox.quanta.rendering.indirect.RenderBuffers;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.assets.object.Model;
@@ -45,6 +46,7 @@ public class Renderer {
 
     private final GBuffer gBuffer;
     private final HDRBuffer hdrBuffer;
+    private final SSAOBuffer ssaoBuffer;
     private final RenderBuffers renderBuffers;
 
     private LinkedMap<String, ShaderRenderHandler> preProcessRenderHandlers;
@@ -56,6 +58,7 @@ public class Renderer {
     public Renderer(final Window window) {
         this.gBuffer = new GBuffer(window);
         this.hdrBuffer = new HDRBuffer(window);
+        this.ssaoBuffer = new SSAOBuffer(window);
         this.renderBuffers = new RenderBuffers();
         this.preProcessRenderHandlers = new LinkedMap<>();
         this.coreRenderHandlers = new LinkedMap<>();
@@ -266,7 +269,8 @@ public class Renderer {
                     window,
                     this.renderBuffers,
                     this.gBuffer,
-                    this.hdrBuffer
+                    this.hdrBuffer,
+                    this.ssaoBuffer
             );
         }
     }

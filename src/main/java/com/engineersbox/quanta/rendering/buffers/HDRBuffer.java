@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.rendering.hdr;
+package com.engineersbox.quanta.rendering.buffers;
 
 import com.engineersbox.quanta.core.Window;
 

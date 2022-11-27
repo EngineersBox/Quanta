@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.rendering.deferred;
+package com.engineersbox.quanta.rendering.buffers;
 
 import com.engineersbox.quanta.core.Window;
 import org.lwjgl.opengl.GL30;

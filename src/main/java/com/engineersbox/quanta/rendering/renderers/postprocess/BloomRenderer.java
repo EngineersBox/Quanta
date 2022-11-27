@@ -6,7 +6,7 @@ import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
-import com.engineersbox.quanta.rendering.hdr.HDRBuffer;
+import com.engineersbox.quanta.rendering.buffers.HDRBuffer;
 import com.engineersbox.quanta.resources.assets.object.QuadMesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
@@ -18,7 +18,6 @@ import java.util.stream.Stream;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL30.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 @RenderHandler(
         name = BloomRenderer.RENDERER_NAME,

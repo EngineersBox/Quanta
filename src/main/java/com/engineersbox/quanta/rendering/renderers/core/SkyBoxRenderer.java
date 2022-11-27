@@ -25,7 +25,7 @@ import static org.lwjgl.opengl.GL30.glBindVertexArray;
 
 @RenderHandler(
         name = SkyBoxRenderer.RENDERER_NAME,
-        priority = RenderPriority.DEFAULT + 2,
+        priority = RenderPriority.DEFAULT + 3,
         stage = ShaderStage.CORE
 )
 public class SkyBoxRenderer extends ShaderRenderHandler {

@@ -18,7 +18,8 @@ public class Sphere extends Model {
                 Sphere.MODEL_RESOURCE_PATH,
                 textureCache,
                 materialCache,
-                false
+                false,
+                true
         );
         super.getMeshData().addAll(model.getMeshData());
     }

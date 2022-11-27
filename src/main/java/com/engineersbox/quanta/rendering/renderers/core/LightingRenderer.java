@@ -5,12 +5,12 @@ import com.engineersbox.quanta.debug.hooks.HookValidationException;
 import com.engineersbox.quanta.debug.hooks.HookValidator;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.RenderContext;
-import com.engineersbox.quanta.rendering.deferred.GBuffer;
+import com.engineersbox.quanta.rendering.buffers.GBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
-import com.engineersbox.quanta.rendering.hdr.HDRBuffer;
+import com.engineersbox.quanta.rendering.buffers.HDRBuffer;
 import com.engineersbox.quanta.rendering.renderers.preprocess.ShadowRenderer;
 import com.engineersbox.quanta.rendering.shadow.ShadowCascade;
 import com.engineersbox.quanta.resources.assets.object.QuadMesh;
@@ -23,7 +23,6 @@ import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.*;
 import org.joml.Matrix4f;
-import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
@@ -39,7 +38,7 @@ import static org.lwjgl.opengl.GL30.*;
 
 @RenderHandler(
         name = LightingRenderer.RENDERER_NAME,
-        priority = RenderPriority.DEFAULT + 1,
+        priority = RenderPriority.DEFAULT + 2,
         stage = ShaderStage.CORE
 )
 public class LightingRenderer extends ShaderRenderHandler {
@@ -102,6 +101,7 @@ public class LightingRenderer extends ShaderRenderHandler {
                 "normalSampler",
                 "specularSampler",
                 "depthSampler",
+                "ssaoSampler",
                 "inverseProjectionMatrix",
                 "inverseViewMatrix",
                 "ambientLight.factor",
@@ -184,6 +184,8 @@ public class LightingRenderer extends ShaderRenderHandler {
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D, textureIds[i]);
         }
+        glActiveTexture(GL_TEXTURE0 + numTextures);
+        glBindTexture(GL_TEXTURE_2D, context.ssaoBuffer().getColourBufferBlur());
         uniforms.setUniform(
                 "farPlane",
                 (float) ConfigHandler.CONFIG.render.camera.zFar
@@ -228,6 +230,10 @@ public class LightingRenderer extends ShaderRenderHandler {
                 "depthSampler",
                 3
         );
+        uniforms.setUniform(
+                "ssaoSampler",
+                4
+        );
         final Fog fog = context.scene().getFog();
         uniforms.setUniform(
                 "fog.activeFog",
@@ -248,7 +254,7 @@ public class LightingRenderer extends ShaderRenderHandler {
         final List<ShadowCascade> cascadeShadows = shadowRenderer.getShadowCascades();
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             glActiveTexture(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES + i);
-            uniforms.setUniform("shadowMap_" + i, GBuffer.TOTAL_TEXTURES + i);
+            uniforms.setUniform("shadowMap_" + i, GBuffer.TOTAL_TEXTURES + 1 + i);
             final ShadowCascade cascadeShadow = cascadeShadows.get(i);
             uniforms.setUniform(
                     "shadowCascade[" + i + "]" + ".projectionViewMatrix",
@@ -259,7 +265,7 @@ public class LightingRenderer extends ShaderRenderHandler {
                     cascadeShadow.getSplitDistance()
             );
         }
-        shadowRenderer.getShadowBuffer().bindTextures(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES);
+        shadowRenderer.getShadowBuffer().bindTextures(GL_TEXTURE0 + GBuffer.TOTAL_TEXTURES + 1);
         uniforms.setUniform(
                 "inverseProjectionMatrix",
                 context.scene().getProjection().getInverseProjectionMatrix()
