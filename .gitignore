@@ -11,6 +11,9 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 .idea/
 .settings/
+.factorypath
+.classpath
+.project
 
 # Prevent Sponza +3.6GB models from being uploaded
 assets/models/sponza/
