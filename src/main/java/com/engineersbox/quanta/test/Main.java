@@ -204,7 +204,7 @@ public class Main implements IAppLogic {
 
         final SceneLights sceneLights = new SceneLights();
         final AmbientLight ambientLight = sceneLights.getAmbientLight();
-        ambientLight.setIntensity(0.5f);
+        ambientLight.setIntensity(0.3f);
         ambientLight.setColor(0.3f, 0.3f, 0.3f);
 
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();

@@ -67,7 +67,9 @@ uniform AmbientLight ambientLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 uniform DirectionalLight directionalLight;
+
 uniform Fog fog;
+
 uniform ShadowCascade shadowCascade[NUM_CASCADES];
 uniform sampler2D shadowMap_0;
 uniform sampler2D shadowMap_1;
@@ -78,8 +80,10 @@ uniform bool showDepth;
 uniform bool showShadows;
 
 uniform float farPlane;
+
 uniform float shadowFactor;
 uniform float shadowBias;
+
 uniform vec3 brightnessThreshold;
 
 vec4 calcAmbient(AmbientLight ambientLight, vec4 ambient) {
@@ -226,7 +230,8 @@ void main() {
         }
     }
     float ambientOcclusion = texture(ssaoSampler, outTextCoord).r;
-    vec4 ambient = calcAmbient(ambientLight, diffuse) * ambientOcclusion;
+    vec4 ambient = calcAmbient(ambientLight, diffuse);
+    ambient.rgb = ambient.rgb * ambientOcclusion;
     FragColor = ambient + diffuseSpecularComp;
     FragColor.rgb = FragColor.rgb * shadowFactor;
     if (fog.activeFog == 1) {
