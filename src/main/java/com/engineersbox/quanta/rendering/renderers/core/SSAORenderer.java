@@ -132,4 +132,10 @@ public class SSAORenderer extends ShaderRenderHandler {
         super.unbind("SSAO Blur");
     }
 
+    @Override
+    public void cleanup() {
+        super.cleanup();
+        this.quadMesh.cleanup();
+    }
+
 }

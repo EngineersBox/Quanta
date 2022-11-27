@@ -122,6 +122,7 @@ public class Renderer {
     public void cleanup() {
         this.gBuffer.cleanup();
         this.hdrBuffer.cleanup();
+        this.ssaoBuffer.cleanup();
         this.renderBuffers.cleanup();
         this.preProcessRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
         this.coreRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);

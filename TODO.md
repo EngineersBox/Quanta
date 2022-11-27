@@ -23,3 +23,7 @@
 * Shader graph
 * Fix console widget texture bindings/active texture not stencilling properly
 * Implement SSAO
+* Dynamically create global constants shader for inclusion in other shaders, allowing for programmatic definition of elements that would otherwise we constants
+  * Use `#extension GL_ARB_shading_language_include: require` to initially expose this functionality in a shader
+  * Including other shaders can be done after the extension is declared as `#include <name>`
+  * Targets for inclusion are declared as named strings via the `glNamedStringARG(...)` function
