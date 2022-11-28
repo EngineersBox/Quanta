@@ -119,12 +119,10 @@ public class SSAOBuffer {
                     (float) RANDOM.nextUniform(0.0, 1.0) * 2.0f - 1.0f,
                     (float) RANDOM.nextUniform(0.0, 1.0)
             );
-            sample = sample.normalize();
-            sample = sample.mul((float) RANDOM.nextUniform(0.0, 1.0));
+            sample = sample.normalize().mul((float) RANDOM.nextUniform(0.0, 1.0));
             float scale = (float) i / (float) this.KERNEL_SIZE;
             scale = lerp(0.1f, 1.0f, scale * scale);
-            sample = sample.mul(scale);
-            kernelValues.add(sample);
+            kernelValues.add(sample.mul(scale));
         }
         return kernelValues;
     }
