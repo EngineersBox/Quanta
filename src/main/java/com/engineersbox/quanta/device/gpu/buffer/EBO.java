@@ -4,15 +4,10 @@ import com.engineersbox.quanta.device.gpu.GPUResource;
 
 import static org.lwjgl.opengl.GL15.glGenBuffers;
 
-public class EBO extends GPUResource {
+public final class EBO extends DataBuffer {
 
     public EBO() {
-        super.id = glGenBuffers();
-        // TODO: Finish this
+        super(DataBufferType.EAB);
     }
 
-    @Override
-    public void unbind() {
-
-    }
 }
