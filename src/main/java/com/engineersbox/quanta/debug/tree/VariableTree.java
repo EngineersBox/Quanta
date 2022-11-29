@@ -8,12 +8,14 @@ import java.util.*;
 
 public class VariableTree<T> extends DefaultTreeModel {
 
-    private static final String ROOT_NODE_VALUE = "@__INTERNAL_TREE_ROOT__";
+    private static final String ROOT_NODE_VALUE = "@quanta__INTERNAL_TREE_ROOT";
+    private final Map<String, DefaultMutableTreeNode> leaves;
     private final String pathDelimiter;
 
     public VariableTree(final String pathDelimiter) {
         super(new DefaultMutableTreeNode(VariableTree.ROOT_NODE_VALUE));
         this.pathDelimiter = pathDelimiter;
+        this.leaves = new HashMap<>();
     }
 
     private String formatPathString(final String path) {
@@ -36,7 +38,9 @@ public class VariableTree<T> extends DefaultTreeModel {
             current.add(next);
             current = next;
         }
-        current.add(new DefaultMutableTreeNode(value));
+        final DefaultMutableTreeNode newLeaf = new DefaultMutableTreeNode(value);
+        current.add(newLeaf);
+        this.leaves.put(path, newLeaf);
     }
 
     private DefaultMutableTreeNode findMatchingChild(final DefaultMutableTreeNode current,
@@ -94,6 +98,7 @@ public class VariableTree<T> extends DefaultTreeModel {
         return ((tokenCount > 0) && (tokenCount - 1 == tokenFoundCount)) ? new TreePath(path) : null;
     }
 
+    @SuppressWarnings({"unchecked"})
     public T get(final String path) throws NoSuchElementException {
         final TreePath treePath = getPath(path);
         if (treePath == null) {
@@ -107,10 +112,14 @@ public class VariableTree<T> extends DefaultTreeModel {
         return (T) child.getUserObject();
     }
 
-    public List<DefaultMutableTreeNode> getLeafNodes() {
-        final List<DefaultMutableTreeNode> leaves = new ArrayList<>();
-        getLeafNodesRecursive((DefaultMutableTreeNode) super.getRoot(), leaves);
-        return leaves;
+    public Collection<DefaultMutableTreeNode> getLeafNodes() {
+        return this.leaves.values();
+    }
+
+    public Collection<DefaultMutableTreeNode> traverseGetLeafNodes() {
+        final List<DefaultMutableTreeNode> traversedLeaves = new ArrayList<>();
+        getLeafNodesRecursive((DefaultMutableTreeNode) super.getRoot(), traversedLeaves);
+        return traversedLeaves;
     }
 
     private void getLeafNodesRecursive(final DefaultMutableTreeNode parent, final List<DefaultMutableTreeNode> leaves) {

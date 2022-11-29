@@ -14,6 +14,7 @@ import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
 import com.engineersbox.quanta.resources.assets.shader.ShaderValidationState;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
+import com.engineersbox.quanta.resources.config.shader.ShaderConfig;
 import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.utils.StreamUtils;
 import org.apache.commons.collections4.map.LinkedMap;
@@ -54,6 +55,7 @@ public class Renderer {
     private LinkedMap<String, ShaderRenderHandler> postProcessRenderHandlers;
     private RenderContext context;
     private int sceneHash;
+    private static ShaderConfig SHADER_CONFIG;
 
     public Renderer(final Window window) {
         this.gBuffer = new GBuffer(window);
@@ -63,6 +65,8 @@ public class Renderer {
         this.preProcessRenderHandlers = new LinkedMap<>();
         this.coreRenderHandlers = new LinkedMap<>();
         this.postProcessRenderHandlers = new LinkedMap<>();
+        Renderer.SHADER_CONFIG = new ShaderConfig();
+        Renderer.SHADER_CONFIG.createNamedString();
         resolveShaders();
     }
 
