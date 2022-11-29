@@ -51,6 +51,7 @@ public class ShaderConfig {
                 formatConfigString()
         );
         this.bound = true;
+        // TODO: Need to recompile all shaders if named string is re-created
     }
 
     public void destroyNamedString() {
