@@ -1,6 +1,7 @@
 package com.engineersbox.quanta.rendering.renderers.core;
 
 import com.engineersbox.quanta.debug.hooks.VariableHook;
+import com.engineersbox.quanta.device.gpu.buffer.FBOType;
 import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;

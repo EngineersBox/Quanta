@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11.glTexImage2D;
 
-public class MemoryTexture2D extends MemoryTexture {
+public final class MemoryTexture2D extends MemoryTexture {
 
     public MemoryTexture2D() {
         super(TextureType.T2D);

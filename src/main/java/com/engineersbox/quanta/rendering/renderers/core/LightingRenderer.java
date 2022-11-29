@@ -4,6 +4,8 @@ import com.engineersbox.quanta.core.Window;
 import com.engineersbox.quanta.debug.hooks.HookValidationException;
 import com.engineersbox.quanta.debug.hooks.HookValidator;
 import com.engineersbox.quanta.debug.hooks.VariableHook;
+import com.engineersbox.quanta.device.gpu.buffer.FBOType;
+import com.engineersbox.quanta.device.gpu.texture.MemoryTexture;
 import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.buffers.GBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;

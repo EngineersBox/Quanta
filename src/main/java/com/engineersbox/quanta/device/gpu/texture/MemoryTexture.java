@@ -8,8 +8,10 @@ import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.glTexParameterf;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 
-public abstract class MemoryTexture extends GPUResource {
+public abstract sealed class MemoryTexture extends GPUResource permits MemoryTexture1D, MemoryTexture2D, MemoryTexture3D {
 
     protected final TextureType type;
 
@@ -48,6 +50,10 @@ public abstract class MemoryTexture extends GPUResource {
         return this.type;
     }
 
+    public void activate(final int index) {
+        glActiveTexture(GL_TEXTURE0 + index);
+    }
+
     @Override
     public void bind() {
         super.bind();
@@ -56,6 +62,7 @@ public abstract class MemoryTexture extends GPUResource {
 
     @Override
     public void unbind() {
+        super.unbind();
         glBindTexture(this.type.glType(), 0);
     }
 

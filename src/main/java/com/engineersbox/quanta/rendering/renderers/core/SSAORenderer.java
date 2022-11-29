@@ -1,5 +1,6 @@
 package com.engineersbox.quanta.rendering.renderers.core;
 
+import com.engineersbox.quanta.device.gpu.texture.MemoryTexture;
 import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.buffers.GBuffer;
 import com.engineersbox.quanta.rendering.buffers.SSAOBuffer;

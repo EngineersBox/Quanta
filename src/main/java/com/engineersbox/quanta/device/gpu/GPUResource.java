@@ -26,6 +26,7 @@ public abstract class GPUResource implements Bindable {
                     getClass().getSimpleName()
             ));
         }
+        this.bound = false;
     }
 
     @Override
@@ -41,6 +42,7 @@ public abstract class GPUResource implements Bindable {
                     getClass().getSimpleName()
             ));
         }
+        this.bound = true;
     }
 
     @Override

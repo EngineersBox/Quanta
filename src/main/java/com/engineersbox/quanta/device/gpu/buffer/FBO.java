@@ -8,11 +8,10 @@ import static org.lwjgl.opengl.GL30.GL_FRAMEBUFFER_COMPLETE;
 
 public class FBO extends GPUResource {
 
-    private final FBOType type;
+    private FBOType type;
 
-    public FBO(final FBOType type) {
+    public FBO() {
         super.id = glGenFramebuffers();
-        this.type = type;
     }
 
     @Override
@@ -22,13 +21,14 @@ public class FBO extends GPUResource {
         }
     }
 
-    @Override
-    public void bind() {
+    public void bind(final FBOType type) {
+        super.bind();
+        this.type = type;
         glBindFramebuffer(this.type.glType(), super.id);
     }
 
-    @Override
     public void unbind() {
+        super.unbind();
         glBindFramebuffer(this.type.glType(), 0);
     }
 

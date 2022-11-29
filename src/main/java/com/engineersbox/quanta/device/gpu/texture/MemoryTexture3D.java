@@ -5,7 +5,7 @@ import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL12.glTexImage3D;
 
-public class MemoryTexture3D extends MemoryTexture {
+public final class MemoryTexture3D extends MemoryTexture {
 
     public MemoryTexture3D() {
         super(TextureType.T3D);
