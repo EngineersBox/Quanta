@@ -19,7 +19,7 @@ float bias = 0.025;
 const vec2 noiseScale = vec2(
     1920.0 / 4.0,
     1080.0 / 4.0
-); 
+);
 
 uniform mat4 projection;
 
@@ -34,7 +34,7 @@ void main() {
     mat3 TBN = mat3(tangent, bitangent, normal);
     // iterate over the sample kernel and calculate occlusion factor
     float occlusion = 0.0;
-    for(int i = 0; i < kernelSize; ++i) {
+    for(int i = 0; i < kernelSize; i++) {
         // get sample position
         vec3 samplePos = TBN * samples[i]; // from tangent to view-space
         samplePos = fragPos + samplePos * radius; 
@@ -54,5 +54,5 @@ void main() {
     }
     occlusion = 1.0 - (occlusion / kernelSize);
     
-    FragColor = occlusion * 0.2;
+    FragColor = occlusion;
 }
