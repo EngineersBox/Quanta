@@ -136,25 +136,25 @@ public class Main implements IAppLogic {
         this.coneEntity.updateModelMatrix();
         context.scene().addEntity(coneEntity);
 
-        final Precision.DoubleEquivalence precision = Precision.doubleEquivalenceOfEpsilon(1e-6);
-        final RegionBSPTree3D tree = Parallelepiped.unitCube(precision).toTree();
-        final Sphere sphere = Sphere.from(
-                Vector3D.ZERO,
-                0.65,
-                precision
-        );
-        tree.difference(sphere.toTree(3));
-        final GeometryBuffer geoBuffer = new GeometryBuffer(tree.toTriangleMesh(precision));
-        final Model testGeoModel = geoBuffer.getModel(
-                "test-geomtry-model",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache()
-        );
-        context.scene().addModel(testGeoModel);
-        final Entity testGeoEntity = new Entity("test-geometry-entity", testGeoModel.getId());
-        testGeoEntity.setPosition(4, 4, -4);
-        testGeoEntity.updateModelMatrix();
-        context.scene().addEntity(testGeoEntity);
+//        final Precision.DoubleEquivalence precision = Precision.doubleEquivalenceOfEpsilon(1e-6);
+//        final RegionBSPTree3D tree = Parallelepiped.unitCube(precision).toTree();
+//        final Sphere sphere = Sphere.from(
+//                Vector3D.ZERO,
+//                0.65,
+//                precision
+//        );
+//        tree.difference(sphere.toTree(3));
+//        final GeometryBuffer geoBuffer = new GeometryBuffer(tree.toTriangleMesh(precision));
+//        final Model testGeoModel = geoBuffer.getModel(
+//                "test-geomtry-model",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache()
+//        );
+//        context.scene().addModel(testGeoModel);
+//        final Entity testGeoEntity = new Entity("test-geometry-entity", testGeoModel.getId());
+//        testGeoEntity.setPosition(4, 4, -4);
+//        testGeoEntity.updateModelMatrix();
+//        context.scene().addEntity(testGeoEntity);
 
         final Model sponzaModel = ModelLoader.loadModel(
                 "sponza-model",
@@ -167,18 +167,18 @@ public class Main implements IAppLogic {
         this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
         context.scene().addEntity(this.sponzaEntity);
 
-        final Model windowModel = ModelLoader.loadModel(
-                "window",
-                "assets/models/window/window.obj",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache(),
-                false
-        );
-        context.scene().addModel(windowModel);
-        final Entity windowEntity = new Entity("window-entity", windowModel.getId());
-        windowEntity.setPosition(0, 3, -3);
-        windowEntity.updateModelMatrix();
-        context.scene().addEntity(windowEntity);
+//        final Model windowModel = ModelLoader.loadModel(
+//                "window",
+//                "assets/models/window/window.obj",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache(),
+//                false
+//        );
+//        context.scene().addModel(windowModel);
+//        final Entity windowEntity = new Entity("window-entity", windowModel.getId());
+//        windowEntity.setPosition(0, 3, -3);
+//        windowEntity.updateModelMatrix();
+//        context.scene().addEntity(windowEntity);
 
         final com.engineersbox.quanta.resources.assets.object.builtin.Sphere sphereModel = new com.engineersbox.quanta.resources.assets.object.builtin.Sphere(
                 "sphere-model",
@@ -192,7 +192,7 @@ public class Main implements IAppLogic {
         sphereMaterial.setReflectance(0.95f);
         sphereMaterial.setSpecularColor(new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
         final Entity sphereEntity = new Entity("sphere-entity", sphereModel.getId());
-        sphereEntity.setPosition(-5, 2, 1);
+        sphereEntity.setPosition(-4, 2, 2.5f);
         sphereEntity.setScale(0.5f);
         sphereEntity.updateModelMatrix();
         context.scene().addEntity(sphereEntity);
