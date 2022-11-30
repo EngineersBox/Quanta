@@ -12,8 +12,7 @@
 * Volumetric lighting
 * Water
 * Refactor material system to BRDF
-* Scene entity selection
-  * Outline with post-processing shader
+* Scene entity selection via stencilling
 * Fix shadow acne and bias
 * Fix shadow sampling and smoothing
 * Replace usages of `RuntimeException` with custom exceptions
