@@ -19,25 +19,28 @@ public class SSAOBuffer {
 
     private final int fbo;
     private final int blurFbo;
+    private final int applyFbo;
     private final int colourBuffer;
     private final int colourBufferBlur;
+    private final int colourBufferApply;
     private final int noiseTexture;
     private final List<Vector3f> kernel;
 
     public SSAOBuffer(final Window window) {
         this.fbo = glGenFramebuffers();
         this.blurFbo = glGenFramebuffers();
+        this.applyFbo = glGenFramebuffers();
         glBindFramebuffer(GL_FRAMEBUFFER, this.fbo);
         this.colourBuffer = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, this.colourBuffer);
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_RED,
+                GL_RGBA,
                 window.getWidth(),
                 window.getHeight(),
                 0,
-                GL_RED,
+                GL_RGBA,
                 GL_FLOAT,
                 NULL
         );
@@ -59,11 +62,11 @@ public class SSAOBuffer {
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_RED,
+                GL_RGBA,
                 window.getWidth(),
                 window.getHeight(),
                 0,
-                GL_RED,
+                GL_RGBA,
                 GL_FLOAT,
                 NULL
         );
@@ -74,6 +77,32 @@ public class SSAOBuffer {
                 GL_COLOR_ATTACHMENT0,
                 GL_TEXTURE_2D,
                 this.colourBufferBlur,
+                0
+        );
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            throw new RuntimeException("Cannot complete framebuffer");
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, this.applyFbo);
+        this.colourBufferApply = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, this.colourBufferApply);
+        glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA,
+                window.getWidth(),
+                window.getHeight(),
+                0,
+                GL_RGBA,
+                GL_FLOAT,
+                NULL
+        );
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glFramebufferTexture2D(
+                GL_FRAMEBUFFER,
+                GL_COLOR_ATTACHMENT0,
+                GL_TEXTURE_2D,
+                this.colourBufferApply,
                 0
         );
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -141,12 +170,20 @@ public class SSAOBuffer {
         return this.blurFbo;
     }
 
+    public int getApplyFboId() {
+        return this.applyFbo;
+    }
+
     public int getColourBuffer() {
         return this.colourBuffer;
     }
 
     public int getColourBufferBlur() {
         return this.colourBufferBlur;
+    }
+
+    public int getColourBufferApply() {
+        return this.colourBufferApply;
     }
 
     public int getNoiseTexture() {
@@ -160,11 +197,13 @@ public class SSAOBuffer {
     public void cleanup() {
         glDeleteFramebuffers(new int[]{
                 this.fbo,
-                this.blurFbo
+                this.blurFbo,
+                this.applyFbo
         });
         glDeleteTextures(new int[]{
                 this.colourBuffer,
-                this.colourBufferBlur
+                this.colourBufferBlur,
+                this.colourBufferApply
         });
     }
 

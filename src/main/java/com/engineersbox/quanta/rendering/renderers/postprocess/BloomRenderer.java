@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL30.*;
+import static org.lwjgl.opengl.GL30.glBindFramebuffer;
 
 @RenderHandler(
         name = BloomRenderer.RENDERER_NAME,
@@ -97,7 +98,7 @@ public class BloomRenderer extends ShaderRenderHandler {
     }
 
     private void renderBloom(final RenderContext context) {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindFramebuffer(GL_FRAMEBUFFER, context.ssaoBuffer().getApplyFboId());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         final HDRBuffer buffer = context.hdrBuffer();
         super.bind("Bloom Final");

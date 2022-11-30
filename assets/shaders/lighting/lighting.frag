@@ -58,7 +58,6 @@ uniform sampler2D albedoSampler;
 uniform sampler2D normalSampler;
 uniform sampler2D specularSampler;
 uniform sampler2D depthSampler;
-uniform sampler2D ssaoSampler;
 
 uniform mat4 inverseProjectionMatrix;
 uniform mat4 inverseViewMatrix;
@@ -229,9 +228,7 @@ void main() {
             diffuseSpecularComp += calcSpotLight(diffuse, specular, reflectance, spotLights[i], view_pos, normal);
         }
     }
-    float ambientOcclusion = texture(ssaoSampler, outTextCoord).r;
     vec4 ambient = calcAmbient(ambientLight, diffuse);
-    ambient.rgb = ambient.rgb * ambientOcclusion;
     FragColor = ambient + diffuseSpecularComp;
     FragColor.rgb = FragColor.rgb * shadowFactor;
     if (fog.activeFog == 1) {

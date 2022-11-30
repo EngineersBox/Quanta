@@ -26,4 +26,4 @@
   * Use `#extension GL_ARB_shading_language_include: require` to initially expose this functionality in a shader
   * Including other shaders can be done after the extension is declared as `#include <name>`
   * Targets for inclusion are declared as named strings via the `glNamedStringARB(...)` function
-* Fix SSAO shader output all black, view space coordinates not calculated correctly?
+* Fix error in `LightingRenderer` and associated shader: `GL_INVALID_OPERATION error generated. Wrong component type or count`

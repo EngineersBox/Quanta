@@ -103,7 +103,6 @@ public class LightingRenderer extends ShaderRenderHandler {
                 "normalSampler",
                 "specularSampler",
                 "depthSampler",
-                "ssaoSampler",
                 "inverseProjectionMatrix",
                 "inverseViewMatrix",
                 "ambientLight.factor",
@@ -186,8 +185,6 @@ public class LightingRenderer extends ShaderRenderHandler {
             glActiveTexture(GL_TEXTURE0 + i);
             glBindTexture(GL_TEXTURE_2D, textureIds[bindingTextureIds[i]]);
         }
-        glActiveTexture(GL_TEXTURE0 + bindingTextureIds.length);
-        glBindTexture(GL_TEXTURE_2D, context.ssaoBuffer().getColourBufferBlur());
         uniforms.setUniform(
                 "farPlane",
                 (float) ConfigHandler.CONFIG.render.camera.zFar
@@ -231,10 +228,6 @@ public class LightingRenderer extends ShaderRenderHandler {
         uniforms.setUniform(
                 "depthSampler",
                 3
-        );
-        uniforms.setUniform(
-                "ssaoSampler",
-                4
         );
         final Fog fog = context.scene().getFog();
         uniforms.setUniform(

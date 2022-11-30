@@ -43,7 +43,7 @@ public class SSAORenderer extends ShaderRenderHandler {
                 ),
                 new ShaderProgram(
                         "SSAO Blur",
-                        new ShaderModuleData("assets/shaders/ssao/ssao_blur.vert", ShaderType.VERTEX),
+                        new ShaderModuleData("assets/shaders/ssao/ssao.vert", ShaderType.VERTEX),
                         new ShaderModuleData("assets/shaders/ssao/ssao_blur.frag", ShaderType.FRAGMENT)
                 )
         );
