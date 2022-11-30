@@ -44,13 +44,13 @@ public class BloomRenderer extends ShaderRenderHandler {
         super(
                 new ShaderProgram(
                         "Bloom Blur",
-                        new ShaderModuleData("assets/shaders/postprocessing/blur.vert", ShaderType.VERTEX),
-                        new ShaderModuleData("assets/shaders/postprocessing/blur.frag", ShaderType.FRAGMENT)
+                        new ShaderModuleData("assets/shaders/postprocessing/bloom/blur.vert", ShaderType.VERTEX),
+                        new ShaderModuleData("assets/shaders/postprocessing/bloom/blur.frag", ShaderType.FRAGMENT)
                 ),
                 new ShaderProgram(
                         "Bloom Final",
-                        new ShaderModuleData("assets/shaders/postprocessing/bloom.vert", ShaderType.VERTEX),
-                        new ShaderModuleData("assets/shaders/postprocessing/bloom.frag", ShaderType.FRAGMENT)
+                        new ShaderModuleData("assets/shaders/postprocessing/bloom/bloom.vert", ShaderType.VERTEX),
+                        new ShaderModuleData("assets/shaders/postprocessing/bloom/bloom.frag", ShaderType.FRAGMENT)
                 )
         );
         createUniforms();

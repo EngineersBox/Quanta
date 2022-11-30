@@ -34,8 +34,8 @@ public class SSAOApplyRenderer extends ShaderRenderHandler {
     public SSAOApplyRenderer() {
         super(new ShaderProgram(
                 "SSAO Apply",
-                new ShaderModuleData("assets/shaders/ssao/ssao.vert", ShaderType.VERTEX),
-                new ShaderModuleData("assets/shaders/ssao/ssao_apply.frag", ShaderType.FRAGMENT)
+                new ShaderModuleData("assets/shaders/postprocessing/ssao/ssao.vert", ShaderType.VERTEX),
+                new ShaderModuleData("assets/shaders/postprocessing/ssao/ssao_apply.frag", ShaderType.FRAGMENT)
         ));
         this.quadMesh = new QuadMesh();
         createUniforms();

@@ -38,13 +38,13 @@ public class SSAORenderer extends ShaderRenderHandler {
         super(
                 new ShaderProgram(
                         "SSAO",
-                        new ShaderModuleData("assets/shaders/ssao/ssao.vert", ShaderType.VERTEX),
-                        new ShaderModuleData("assets/shaders/ssao/ssao.frag", ShaderType.FRAGMENT)
+                        new ShaderModuleData("assets/shaders/postprocessing/ssao/ssao.vert", ShaderType.VERTEX),
+                        new ShaderModuleData("assets/shaders/postprocessing/ssao/ssao.frag", ShaderType.FRAGMENT)
                 ),
                 new ShaderProgram(
                         "SSAO Blur",
-                        new ShaderModuleData("assets/shaders/ssao/ssao.vert", ShaderType.VERTEX),
-                        new ShaderModuleData("assets/shaders/ssao/ssao_blur.frag", ShaderType.FRAGMENT)
+                        new ShaderModuleData("assets/shaders/postprocessing/ssao/ssao.vert", ShaderType.VERTEX),
+                        new ShaderModuleData("assets/shaders/postprocessing/ssao/ssao_blur.frag", ShaderType.FRAGMENT)
                 )
         );
         this.quadMesh = new QuadMesh();
