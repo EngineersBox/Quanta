@@ -21,6 +21,7 @@ public class Entity {
     private final Quaternionf rotation;
     private float scale;
     private AnimationData animationData;
+    private boolean selected;
 
     public Entity(final String id,
                   final String modelId) {
@@ -30,6 +31,7 @@ public class Entity {
         this.position = new Vector3f();
         this.rotation = new Quaternionf();
         this.scale = 1;
+        this.selected = false;
     }
 
     @JsonCreator
@@ -38,13 +40,15 @@ public class Entity {
                   @JsonProperty("model_matrix") @JsonDeserializeExternalizable final Matrix4f modelMatrix,
                   @JsonProperty("position") @JsonDeserializeExternalizable final Vector3f position,
                   @JsonProperty("rotation") @JsonDeserializeExternalizable final Quaternionf rotation,
-                  @JsonProperty("scale") final float scale) {
+                  @JsonProperty("scale") final float scale,
+                  @JsonProperty("selected") final boolean selected) {
         this.id = id;
         this.modelId = modelId;
         this.modelMatrix = modelMatrix;
         this.position = position;
         this.rotation = rotation;
         this.scale = scale;
+        this.selected = selected;
     }
 
     @JsonProperty("id")
@@ -80,6 +84,11 @@ public class Entity {
         return this.scale;
     }
 
+    @JsonProperty("selected")
+    public boolean getSelected() {
+        return this.selected;
+    }
+
     public void setPosition(final float x, final float y, final float z) {
         this.position.x = x;
         this.position.y = y;
@@ -113,6 +122,10 @@ public class Entity {
 
     public void setAnimationData(final AnimationData animationData) {
         this.animationData = animationData;
+    }
+
+    public void setSelected(final boolean selected) {
+        this.selected = selected;
     }
 
     @JsonIgnore

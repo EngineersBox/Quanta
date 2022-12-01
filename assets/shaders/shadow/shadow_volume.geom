@@ -1,4 +1,4 @@
-#version 120
+#version 330
 
 #extension GL_EXT_geometry_shader4: enable
 
@@ -47,7 +47,7 @@ void main() {
         faces_light = false;
     }
     // Render caps. This is only needed for z-fail.
-    if ( zpass == 0 ) {
+    if (zpass == 0) {
         // Near cap: simply render triangle.
         gl_Position = gl_ProjectionMatrix * or_pos[0];
         EmitVertex();
@@ -68,11 +68,11 @@ void main() {
         EmitVertex(); EndPrimitive();
     }
     // Loop over all edges and extrude if needed.
-    for ( int i=0; i<3; i++ ) {
+    for (int i = 0; i < 3; i++) {
         // Compute indices of neighbor triangle.
-        int v0 = i*2;
-        int nb = (i*2+1);
-        int v1 = (i*2+2) % 6;
+        int v0 = i * 2;
+        int nb = (i * 2 + 1);
+        int v1 = (i * 2 + 2) % 6;
         // Compute normals at vertices, the *exact*
         // same way as done above!
         ns[0] = cross(
