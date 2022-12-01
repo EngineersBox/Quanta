@@ -26,7 +26,7 @@ public abstract class LoggerCompat {
         GLFWErrorCallback.createPrint(LoggerCompat.asPrintStream(logger, level)).set();
     }
 
-    public static Callback registerGLErrorLogger(final Logger logger,
+    public static Callback registerGLDebugLogger(final Logger logger,
                                                  final Level level) {
         return GLUtil.setupDebugMessageCallback(LoggerCompat.asPrintStream(logger, level));
     }

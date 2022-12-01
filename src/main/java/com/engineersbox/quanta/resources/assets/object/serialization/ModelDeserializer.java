@@ -8,21 +8,16 @@ import com.engineersbox.quanta.scene.Scene;
 import com.engineersbox.quanta.utils.StreamUtils;
 import com.engineersbox.quanta.utils.UncheckedThrowsAdapter;
 import com.engineersbox.quanta.utils.serialization.SerializationUtils;
-import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.StreamSupport;
-
-import static com.engineersbox.quanta.utils.UncheckedThrowsAdapter.unchecked;
 
 public class ModelDeserializer extends StdDeserializer<Model> {
 
@@ -70,7 +65,7 @@ public class ModelDeserializer extends StdDeserializer<Model> {
         }
         final List<Entity> entities = model.getEntities();
         StreamSupport.stream(entitiesNode.spliterator(), false)
-                .map(UncheckedThrowsAdapter.<JsonNode, Entity>unchecked(
+                .map(UncheckedThrowsAdapter.<JsonNode, Entity>uncheckedFunction(
                         SerializationUtils.OBJECT_MAPPER.reader()
                         .forType(new TypeReference<Entity>(){})::readValue // TODO: Fix this updating previously deserialized objects
                 )).map(StreamUtils.passThrough(Entity::updateModelMatrix))

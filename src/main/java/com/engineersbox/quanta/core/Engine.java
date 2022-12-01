@@ -13,7 +13,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Callback;
 
 import static org.lwjgl.opengl.GL11.*;
@@ -75,9 +74,9 @@ public class Engine {
     private void init() {
         GL.createCapabilities();
         if (ConfigHandler.CONFIG.engine.glOptions.debug) {
-            this.debugCallback = LoggerCompat.registerGLErrorLogger(
+            this.debugCallback = LoggerCompat.registerGLDebugLogger(
                     Engine.LOGGER,
-                    Level.ERROR
+                    Level.DEBUG
             );
         }
         glEnable(GL_DEPTH_TEST);

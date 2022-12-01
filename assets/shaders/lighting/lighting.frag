@@ -1,9 +1,12 @@
 #version 330
 
-const int MAX_POINT_LIGHTS = 5;
-const int MAX_SPOT_LIGHTS = 5;
-const float SPECULAR_POWER = 10;
-const int NUM_CASCADES = 3;
+#extension GL_ARB_shading_language_include: require
+#include </quanta/shader_config.incl>
+
+// const int MAX_POINT_LIGHTS = 5;
+// const int MAX_SPOT_LIGHTS = 5;
+// const float SPECULAR_POWER = 10;
+// const int NUM_CASCADES = 3;
 // const float BIAS = 0.0005;
 // const float SHADOW_FACTOR = 0.25;
 // const vec3 brightnessThreshold = vec3(0.2126, 0.7152, 0.0722);
@@ -230,7 +233,7 @@ void main() {
     }
     vec4 ambient = calcAmbient(ambientLight, diffuse);
     FragColor = ambient + diffuseSpecularComp;
-    FragColor.rgb = FragColor.rgb * shadowFactor;
+    FragColor.rgb *= shadowFactor;
     if (fog.activeFog == 1) {
         FragColor = calcFog(view_pos, FragColor, fog, ambientLight.color, directionalLight);
     }

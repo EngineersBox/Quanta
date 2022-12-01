@@ -55,7 +55,7 @@ public class Renderer {
     private LinkedMap<String, ShaderRenderHandler> postProcessRenderHandlers;
     private RenderContext context;
     private int sceneHash;
-    private static ShaderConfig SHADER_CONFIG;
+    private final ShaderConfig shaderConfig;
 
     public Renderer(final Window window) {
         this.gBuffer = new GBuffer(window);
@@ -65,8 +65,8 @@ public class Renderer {
         this.preProcessRenderHandlers = new LinkedMap<>();
         this.coreRenderHandlers = new LinkedMap<>();
         this.postProcessRenderHandlers = new LinkedMap<>();
-        Renderer.SHADER_CONFIG = new ShaderConfig();
-        Renderer.SHADER_CONFIG.createNamedString();
+        this.shaderConfig = new ShaderConfig();
+        this.shaderConfig.createNamedString();
         resolveShaders();
     }
 

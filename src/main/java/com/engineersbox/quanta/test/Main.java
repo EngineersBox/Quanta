@@ -10,8 +10,8 @@ import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.assets.object.builtin.Cone;
-import com.engineersbox.quanta.resources.assets.object.builtin.GeometryBuffer;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
+import com.engineersbox.quanta.resources.config.shader.provide.ShaderDefine;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
@@ -20,11 +20,6 @@ import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
-import org.apache.commons.geometry.euclidean.threed.RegionBSPTree3D;
-import org.apache.commons.geometry.euclidean.threed.Vector3D;
-import org.apache.commons.geometry.euclidean.threed.shape.Parallelepiped;
-import org.apache.commons.geometry.euclidean.threed.shape.Sphere;
-import org.apache.commons.numbers.core.Precision;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
@@ -33,6 +28,20 @@ import org.joml.Vector4f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
+@ShaderDefine(data = """
+// Lighting
+const int MAX_POINT_LIGHTS = 5;
+const int MAX_SPOT_LIGHTS = 5;
+const float SPECULAR_POWER = 10;
+const int NUM_CASCADES = 3;
+
+// Scene
+const int MAX_DRAW_ELEMENTS = 100;
+const int MAX_ENTITIES = 50;
+const int MAX_MATERIALS = 100;
+const int MAX_TEXTURES = 100;
+"""
+)
 public class Main implements IAppLogic {
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);

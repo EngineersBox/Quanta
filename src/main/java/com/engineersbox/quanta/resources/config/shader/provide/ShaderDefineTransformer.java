@@ -1,4 +1,4 @@
-package com.engineersbox.quanta.resources.config.shader.registration;
+package com.engineersbox.quanta.resources.config.shader.provide;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

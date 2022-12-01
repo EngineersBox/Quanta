@@ -1,7 +1,10 @@
 #version 330
 
-const int MAX_MATERIALS  = 100;
-const int MAX_TEXTURES = 100;
+#extension GL_ARB_shading_language_include: require
+#include </quanta/shader_config.incl>
+
+// const int MAX_MATERIALS = 100;
+// const int MAX_TEXTURES = 100;
 
 in vec3 outNormal;
 in vec3 outTangent;
