@@ -8,7 +8,7 @@ import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.buffers.HDRBuffer;
-import com.engineersbox.quanta.rendering.indirect.RenderBuffers;
+import com.engineersbox.quanta.rendering.indirect.AnimationRenderBuffers;
 import com.engineersbox.quanta.rendering.view.Camera;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
@@ -48,7 +48,7 @@ public class Renderer {
     private final GBuffer gBuffer;
     private final HDRBuffer hdrBuffer;
     private final SSAOBuffer ssaoBuffer;
-    private final RenderBuffers renderBuffers;
+    private final AnimationRenderBuffers animationRenderBuffers;
 
     private LinkedMap<String, ShaderRenderHandler> preProcessRenderHandlers;
     private LinkedMap<String, ShaderRenderHandler> coreRenderHandlers;
@@ -61,7 +61,7 @@ public class Renderer {
         this.gBuffer = new GBuffer(window);
         this.hdrBuffer = new HDRBuffer(window);
         this.ssaoBuffer = new SSAOBuffer(window);
-        this.renderBuffers = new RenderBuffers();
+        this.animationRenderBuffers = new AnimationRenderBuffers();
         this.preProcessRenderHandlers = new LinkedMap<>();
         this.coreRenderHandlers = new LinkedMap<>();
         this.postProcessRenderHandlers = new LinkedMap<>();
@@ -127,7 +127,7 @@ public class Renderer {
         this.gBuffer.cleanup();
         this.hdrBuffer.cleanup();
         this.ssaoBuffer.cleanup();
-        this.renderBuffers.cleanup();
+        this.animationRenderBuffers.cleanup();
         this.preProcessRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
         this.coreRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
         this.postProcessRenderHandlers.values().forEach(ShaderRenderHandler::cleanup);
@@ -245,8 +245,8 @@ public class Renderer {
     public void setupData(final Scene scene,
                           final Window window) {
         updateContext(scene, window);
-        this.renderBuffers.loadStaticModels(scene);
-        this.renderBuffers.loadAnimatedModels(scene);
+        this.animationRenderBuffers.loadStaticModels(scene);
+        this.animationRenderBuffers.loadAnimatedModels(scene);
         StreamUtils.zipForEach(
                 Arrays.stream(ShaderStage.values()),
                 Stream.of(
@@ -272,7 +272,7 @@ public class Renderer {
             this.context = new RenderContext(
                     scene,
                     window,
-                    this.renderBuffers,
+                    this.animationRenderBuffers,
                     this.gBuffer,
                     this.hdrBuffer,
                     this.ssaoBuffer

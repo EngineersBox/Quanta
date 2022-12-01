@@ -147,7 +147,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.staticRenderBufferHandle);
-        glBindVertexArray(context.renderBuffers().getStaticVaoId());
+        glBindVertexArray(context.animationRenderBuffers().getStaticVaoId());
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             glFramebufferTexture2D(
                     GL_FRAMEBUFFER,
@@ -189,7 +189,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.animRenderBufferHandle);
-        glBindVertexArray(context.renderBuffers().getAnimVaoId());
+        glBindVertexArray(context.animationRenderBuffers().getAnimVaoId());
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             glFramebufferTexture2D(
                     GL_FRAMEBUFFER,

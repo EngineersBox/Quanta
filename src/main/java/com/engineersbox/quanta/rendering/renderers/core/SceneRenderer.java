@@ -1,7 +1,6 @@
 package com.engineersbox.quanta.rendering.renderers.core;
 
 import com.engineersbox.quanta.debug.hooks.VariableHook;
-import com.engineersbox.quanta.device.gpu.buffer.FBOType;
 import com.engineersbox.quanta.rendering.RenderContext;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
@@ -181,7 +180,7 @@ public class SceneRenderer extends ShaderRenderHandler {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.staticRenderBufferHandle);
-        glBindVertexArray(context.renderBuffers().getStaticVaoId());
+        glBindVertexArray(context.animationRenderBuffers().getStaticVaoId());
         glMultiDrawElementsIndirect(
                 GL_TRIANGLES,
                 GL_UNSIGNED_INT,
@@ -213,7 +212,7 @@ public class SceneRenderer extends ShaderRenderHandler {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.animRenderBufferHandle);
-        glBindVertexArray(context.renderBuffers().getAnimVaoId());
+        glBindVertexArray(context.animationRenderBuffers().getAnimVaoId());
         glMultiDrawElementsIndirect(
                 GL_TRIANGLES,
                 GL_UNSIGNED_INT,

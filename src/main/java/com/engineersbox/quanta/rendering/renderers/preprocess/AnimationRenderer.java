@@ -49,10 +49,10 @@ public class AnimationRenderer extends ShaderRenderHandler {
     public void render(final RenderContext context) {
         super.bind("Animation");
         final Uniforms uniforms = super.getUniforms("Animation");
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, context.renderBuffers().getBindingPosesBuffer());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, context.renderBuffers().getBonesIndicesWeightsBuffer());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, context.renderBuffers().getBonesMatricesBuffer());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, context.renderBuffers().getDestAnimationBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, context.animationRenderBuffers().getBindingPosesBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, context.animationRenderBuffers().getBonesIndicesWeightsBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, context.animationRenderBuffers().getBonesMatricesBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, context.animationRenderBuffers().getDestAnimationBuffer());
         int dstOffset = 0;
         for (final Model model : context.scene().getModels().values()) {
             if (!model.isAnimated()) {

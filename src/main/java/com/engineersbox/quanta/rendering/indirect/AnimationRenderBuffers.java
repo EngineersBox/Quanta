@@ -23,7 +23,7 @@ import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL30.*;
 import static org.lwjgl.opengl.GL43.GL_SHADER_STORAGE_BUFFER;
 
-public class RenderBuffers {
+public class AnimationRenderBuffers {
 
     private int staticVaoId;
     private int animVaoId;
@@ -33,7 +33,7 @@ public class RenderBuffers {
     private int destAnimationBuffer;
     private final List<Integer> vboIdList;
 
-    public RenderBuffers() {
+    public AnimationRenderBuffers() {
         this.vboIdList = new ArrayList<>();
     }
 
