@@ -26,3 +26,4 @@
   * Including other shaders can be done after the extension is declared as `#include <name>`
   * Targets for inclusion are declared as named strings via the `glNamedStringARB(...)` function
 * Fix error in `LightingRenderer` and associated shader: `GL_INVALID_OPERATION error generated. Wrong component type or count`
+* Add JavaDocs to all implementations
