@@ -8,7 +8,24 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.TYPE})
 public @interface ShaderDefine {
+    /**
+     * Name to supply in {@code #define <name> <value>} statement, where
+     * the value is supplied by the value of the annotated field. Can be
+     * supplemented with a transformer to apply a transformation to the
+     * value stored in the field before being included in the define
+     * statement.
+     */
     String name() default "";
+
+    /**
+     * Literal data to concatenate into named string for inclusion. Is only
+     * available annotated types. Does not support the use of a transformer.
+     */
     String data() default "";
+
+    /**
+     * Name of an {@code @}{@link ShaderDefineTransformer} annotated method to
+     * invoke with the value of the annotated field.
+     */
     String transformer() default "";
 }

@@ -40,8 +40,7 @@ const int MAX_DRAW_ELEMENTS = 100;
 const int MAX_ENTITIES = 50;
 const int MAX_MATERIALS = 100;
 const int MAX_TEXTURES = 100;
-"""
-)
+""")
 public class Main implements IAppLogic {
 
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
