@@ -18,12 +18,6 @@ public @interface ShaderDefine {
     String name() default "";
 
     /**
-     * Literal data to concatenate into named string for inclusion. Is only
-     * available annotated types. Does not support the use of a transformer.
-     */
-    String data() default "";
-
-    /**
      * Name of an {@code @}{@link ShaderDefineTransformer} annotated method to
      * invoke with the value of the annotated field.
      */

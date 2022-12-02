@@ -4,6 +4,7 @@ import com.engineersbox.quanta.debug.GLVersion;
 import com.engineersbox.quanta.resources.config.shader.provide.ShaderDefine;
 import com.engineersbox.quanta.resources.config.shader.provide.ShaderDefineProvider;
 import com.engineersbox.quanta.resources.config.shader.provide.ShaderDefineTransformer;
+import com.engineersbox.quanta.resources.config.shader.provide.ShaderIncludeLiteral;
 import com.engineersbox.quanta.utils.UncheckedThrowsAdapter;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.LogManager;
@@ -26,8 +27,6 @@ import static org.lwjgl.opengl.ARBShadingLanguageInclude.*;
 
 public class ShaderConfig {
     private static final Logger LOGGER = LogManager.getLogger(ShaderConfig.class);
-    private static final String GLSL_INCLUDE_EXTENSION_ARB = "GL_ARB_shading_language_include";
-    private static final Pattern GLSL_DEFINE_PATTERN = Pattern.compile("#define\\s\\w+\\s.+");
     public static final String SHADER_CONFIG_INCLUDE_NAME = "/quanta/shader_config.incl";
     private static final Reflections REFLECTIONS = new Reflections(new ConfigurationBuilder()
             .addScanners(
@@ -102,11 +101,11 @@ public class ShaderConfig {
     }
 
     private List<Class<?>> retrieveClasses() {
-        return ShaderConfig.REFLECTIONS.getTypesAnnotatedWith(ShaderDefine.class)
+        return ShaderConfig.REFLECTIONS.getTypesAnnotatedWith(ShaderIncludeLiteral.class)
                 .stream()
                 .filter((final Class<?> clazz) -> {
-                    final ShaderDefine annotation = clazz.getAnnotation(ShaderDefine.class);
-                    if (annotation.data().isBlank()) {
+                    final ShaderIncludeLiteral annotation = clazz.getAnnotation(ShaderIncludeLiteral.class);
+                    if (annotation.value().isBlank()) {
                         ShaderConfig.LOGGER.error(
                                 "Class {} annotated with @ShaderDefine does not provider any value in data() method",
                                 clazz.getName()
@@ -148,7 +147,7 @@ public class ShaderConfig {
     }
 
     private void checkCompatibility() {
-        if (!GLVersion.isExtensionSupported(ShaderConfig.GLSL_INCLUDE_EXTENSION_ARB)) {
+        if (!GLVersion.isExtensionSupported(ShaderIncludes.GLSL_INCLUDE_EXTENSION_ARB)) {
             throw new IllegalStateException("Shader includes are not supported on this version of OpenGL");
             // TODO: Revert to default defines in shaders
         }
@@ -177,8 +176,8 @@ public class ShaderConfig {
                     .append("\n");
         }));
         this.definesClasses.forEach(UncheckedThrowsAdapter.uncheckedConsumer((final Class<?> clazz) -> {
-            final ShaderDefine annotation = clazz.getAnnotation(ShaderDefine.class);
-            sb.append(annotation.data()).append("\n");
+            final ShaderIncludeLiteral annotation = clazz.getAnnotation(ShaderIncludeLiteral.class);
+            sb.append(annotation.value()).append("\n");
         }));
         this.definesProviders.forEach(UncheckedThrowsAdapter.uncheckedConsumer((final Method method) -> {
             final String value = (String) method.invoke(null);
@@ -192,12 +191,12 @@ public class ShaderConfig {
             throw new IllegalStateException("Config is already bound as a named string");
         }
         final String formattedInclude = formatConfigString();
-        LOGGER.debug("Include shader code:\n{}", formattedInclude);
         glNamedStringARB(
                 GL_SHADER_INCLUDE_ARB,
                 ShaderConfig.SHADER_CONFIG_INCLUDE_NAME,
                 formattedInclude
         );
+        ShaderConfig.LOGGER.debug("Created config shader include with name {}", ShaderConfig.SHADER_CONFIG_INCLUDE_NAME);
         this.bound = true;
         // TODO: Need to recompile all shaders if named string is re-created
     }

@@ -11,7 +11,8 @@ import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.assets.object.builtin.Cone;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
-import com.engineersbox.quanta.resources.config.shader.provide.ShaderDefine;
+import com.engineersbox.quanta.resources.config.shader.provide.ShaderIncludePathProvider;
+import com.engineersbox.quanta.resources.config.shader.provide.ShaderIncludeLiteral;
 import com.engineersbox.quanta.resources.loader.ModelLoader;
 import com.engineersbox.quanta.scene.Entity;
 import com.engineersbox.quanta.scene.Scene;
@@ -28,7 +29,7 @@ import org.joml.Vector4f;
 
 import static org.lwjgl.glfw.GLFW.*;
 
-@ShaderDefine(data = """
+@ShaderIncludeLiteral("""
 // Lighting
 const int MAX_POINT_LIGHTS = 5;
 const int MAX_SPOT_LIGHTS = 5;
@@ -52,6 +53,13 @@ public class Main implements IAppLogic {
                 main
         );
         engine.start();
+    }
+
+    @ShaderIncludePathProvider
+    public static String[] provideShaderIncludes() {
+        return new String[]{
+                "assets/shaders"
+        };
     }
 
     private AnimationData animationData1;
