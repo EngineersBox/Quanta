@@ -205,7 +205,14 @@ void main() {
     vec3 view_pos  = view_w.xyz / view_w.w;
     vec4 world_pos = inverseViewMatrix * vec4(view_pos, 1);
 
-    vec4 diffuseSpecularComp = calcDirectionalLight(diffuse, specular, reflectance, directionalLight, view_pos, normal);
+    vec4 diffuseSpecularComp = calcDirectionalLight(
+        diffuse,
+        specular,
+        reflectance,
+        directionalLight,
+        view_pos,
+        normal
+    );
 
     int cascadeIndex;
     for (int i = 0; i < NUM_CASCADES - 1; i++) {
@@ -222,27 +229,46 @@ void main() {
 
     for (int i = 0; i < MAX_POINT_LIGHTS; i++) {
         if (pointLights[i].intensity > 0) {
-            diffuseSpecularComp += calcPointLight(diffuse, specular, reflectance, pointLights[i], view_pos, normal);
+            diffuseSpecularComp += calcPointLight(
+                diffuse,
+                specular,
+                reflectance,
+                pointLights[i],
+                view_pos,
+                normal
+            );
         }
     }
 
     for (int i = 0; i < MAX_SPOT_LIGHTS; i++) {
         if (spotLights[i].pl.intensity > 0) {
-            diffuseSpecularComp += calcSpotLight(diffuse, specular, reflectance, spotLights[i], view_pos, normal);
+            diffuseSpecularComp += calcSpotLight(
+                diffuse,
+                specular,
+                reflectance,
+                spotLights[i],
+                view_pos,
+                normal
+            );
         }
     }
     vec4 ambient = calcAmbient(ambientLight, diffuse);
     FragColor = ambient + diffuseSpecularComp;
     FragColor.rgb *= shadowFactor;
     if (fog.activeFog == 1) {
-        FragColor = calcFog(view_pos, FragColor, fog, ambientLight.color, directionalLight);
+        FragColor = calcFog(
+            view_pos,
+            FragColor,
+            fog,
+            ambientLight.color,
+            directionalLight
+        );
     }
     float brightness = dot(FragColor.rgb, brightnessThreshold);
-    if (brightness > 1.0) {
-        BrightColor = vec4(FragColor.rgb, 1.0);
-    } else {
-        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
-    }
+    BrightColor = vec4(
+        brightness > 1.0 ? FragColor.rgb : vec3(0.0),
+        1.0
+    );
 #define RENDER_CASCADE(r,g,b) FragColor.rgb *= vec3(r,g,b); break;
     if (showCascades) {
         switch (cascadeIndex) {
