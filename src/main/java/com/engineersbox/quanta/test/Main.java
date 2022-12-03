@@ -20,12 +20,15 @@ import com.engineersbox.quanta.scene.SkyBox;
 import com.engineersbox.quanta.scene.atmosphere.Fog;
 import com.engineersbox.quanta.scene.lighting.AmbientLight;
 import com.engineersbox.quanta.scene.lighting.DirectionalLight;
+import com.engineersbox.quanta.scene.lighting.PointLight;
 import com.engineersbox.quanta.scene.lighting.SceneLights;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
+
+import java.util.List;
 
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -205,7 +208,7 @@ public class Main implements IAppLogic {
         final Material sphereMaterial = context.scene().getMaterialCache().getMaterial(sphereModel.getMeshData().get(0).getMaterialIdx());
         sphereMaterial.setAmbientColor(new Vector4f(0.8f, 0.7f, 0.9f, 1.0f));
         sphereMaterial.setDiffuseColor(new Vector4f(0.8f, 0.7f, 0.9f, 1.0f));
-        sphereMaterial.setReflectance(0.95f);
+        sphereMaterial.setReflectance(5.0f);
         sphereMaterial.setSpecularColor(new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
         final Entity sphereEntity = new Entity("sphere-entity", sphereModel.getId());
         sphereEntity.setPosition(-4, 2, 2.5f);
@@ -220,12 +223,24 @@ public class Main implements IAppLogic {
 
         final SceneLights sceneLights = new SceneLights();
         final AmbientLight ambientLight = sceneLights.getAmbientLight();
-        ambientLight.setIntensity(0.3f);
+        ambientLight.setIntensity(0.05f);
         ambientLight.setColor(0.3f, 0.3f, 0.3f);
 
         final DirectionalLight dirLight = sceneLights.getDirectionalLight();
         dirLight.setPosition(0, 60, 0);
-        dirLight.setIntensity(1.0f);
+        dirLight.setIntensity(0.03f);
+
+        final List<PointLight> pointLights = sceneLights.getPointLights();
+        final PointLight pointLight = new PointLight(
+                new Vector3f(
+                        0.75f,
+                        0.59f,
+                        0.14f
+                ),
+                new Vector3f(0, 3.5f, 2),
+                12f
+        );
+        pointLights.add(pointLight);
         context.scene().setSceneLights(sceneLights);
 
         final SkyBox skyBox = new SkyBox(
