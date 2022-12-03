@@ -14,6 +14,7 @@ public class ShaderProgram {
 
     private final String name;
     private final int programId;
+    private final Uniforms uniforms;
     private boolean bound;
 
     public ShaderProgram(final String name,
@@ -36,6 +37,7 @@ public class ShaderProgram {
                         data.type()
                 )).toList();
         link(moduleIds);
+        this.uniforms = new Uniforms(this.programId);
     }
 
     private void validateUniqueShaderTypes(final List<ShaderModuleData> shaderModuleData) {
@@ -119,6 +121,10 @@ public class ShaderProgram {
 
     public int getProgramId() {
         return this.programId;
+    }
+
+    public Uniforms getUniforms() {
+        return this.uniforms;
     }
 
     public String getName() {

@@ -92,10 +92,8 @@ public class ShaderIncludes {
 
     private Optional<String> getMatchingFile(final File path) {
         final String pathLiteral = path.getPath();
-        if (path.isDirectory() && !path.isFile()) {
-            return Optional.empty();
-        }
-        if (GLSL_FILE_EXTENSIONS.stream().noneMatch(pathLiteral::endsWith)) {
+        if (path.isDirectory() && !path.isFile()
+            || GLSL_FILE_EXTENSIONS.stream().noneMatch(pathLiteral::endsWith)) {
             return Optional.empty();
         }
         return Optional.of(pathLiteral);

@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class ShaderRenderHandler {
@@ -18,15 +19,12 @@ public abstract class ShaderRenderHandler {
     private static final Logger LOGGER = LogManager.getLogger(ShaderRenderHandler.class);
 
     protected final String handlerName;
-    protected final Map<String, Pair<ShaderProgram, Uniforms>> shaderPrograms;
+    protected final Map<String, ShaderProgram> shaderPrograms;
 
     protected ShaderRenderHandler(final ShaderProgram ...shaders) {
         this.shaderPrograms = Arrays.stream(shaders).collect(Collectors.toMap(
                 ShaderProgram::getName,
-                (final ShaderProgram shader) -> ImmutablePair.of(
-                        shader,
-                        new Uniforms(shader.getProgramId())
-                )
+                Function.identity()
         ));
         this.handlerName = resolveHandlerName();
     }
@@ -54,44 +52,40 @@ public abstract class ShaderRenderHandler {
     public List<ShaderProgram> provideShaders() {
         return this.shaderPrograms.values()
                 .stream()
-                .map(Pair::getLeft)
                 .toList();
     }
 
-    private Pair<ShaderProgram, Uniforms> getPair(final String name) {
-        final Pair<ShaderProgram, Uniforms> pair = this.shaderPrograms.get(name);
-        if (pair == null) {
+    private ShaderProgram getShaderInternal(final String name) {
+        final ShaderProgram shader = this.shaderPrograms.get(name);
+        if (shader == null) {
             throw new IllegalArgumentException(String.format(
                     "No shader present with name \"%s\"",
                     name
             ));
         }
-        return pair;
+        return shader;
     }
 
     public void bind(final String name) {
-        final Pair<ShaderProgram, Uniforms> shader = getPair(name);
-        shader.getLeft().bind();
+        final ShaderProgram shader = getShaderInternal(name);
+        shader.bind();
     }
 
     public void unbind(final String name) {
-        final Pair<ShaderProgram, Uniforms> shader = getPair(name);
-        shader.getLeft().unbind();
+        final ShaderProgram shader = getShaderInternal(name);
+        shader.unbind();
     }
 
     public ShaderProgram getShader(final String name) {
-        final Pair<ShaderProgram, Uniforms> shader = getPair(name);
-        return shader.getLeft();
+        return getShaderInternal(name);
     }
+
     public Uniforms getUniforms(final String name) {
-        final Pair<ShaderProgram, Uniforms> shader = getPair(name);
-        return shader.getRight();
+        final ShaderProgram shader = getShaderInternal(name);
+        return shader.getUniforms();
     }
 
     public void cleanup() {
-        this.shaderPrograms.values()
-                .stream()
-                .map(Pair::getLeft)
-                .forEach(ShaderProgram::cleanup);
+        this.shaderPrograms.values().forEach(ShaderProgram::cleanup);
     }
 }
