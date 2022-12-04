@@ -69,11 +69,12 @@ public class HeightMapMesh extends Mesh {
             }
         }
         final float[] posArr = ListUtils.floatListToArray(positions);
+        final float[] normals = calcNormals(posArr, width, height);
         return new MeshData(
                 posArr,
-                calcNormals(posArr, width, height),
-                new float[0],
-                new float[0],
+                normals,
+                new float[normals.length],
+                new float[normals.length],
                 ListUtils.floatListToArray(texCoords),
                 ListUtils.intListToArray(indices),
                 new int[0],
