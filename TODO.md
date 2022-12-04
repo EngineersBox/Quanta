@@ -7,7 +7,7 @@
     * Scale
     * Material values
     * Culling
-* Partial transparency blending support
+* Partial transparency blending support (Potentially dual depth peeling)
 * Radiosity
 * Volumetric lighting
 * Water
@@ -15,6 +15,7 @@
 * Scene entity selection via stencilling
 * Fix shadow acne and bias
 * Fix shadow sampling and smoothing
+* Implement cube-mapped point light shadows
 * Replace usages of `RuntimeException` with custom exceptions
 * Implement frustum culling
 * Implement draw distance control
