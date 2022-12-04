@@ -21,6 +21,7 @@ public class Torus extends Model {
                 false
         );
         super.getMeshData().addAll(model.getMeshData());
+        super.setInternalState(true);
     }
 
 }

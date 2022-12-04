@@ -21,6 +21,7 @@ public class Pyramid extends Model {
                 false
         );
         super.getMeshData().addAll(model.getMeshData());
+        super.setInternalState(true);
     }
 
 }

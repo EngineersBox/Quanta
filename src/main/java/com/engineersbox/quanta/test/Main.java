@@ -218,7 +218,7 @@ public class Main implements IAppLogic {
         context.scene().addEntity(sphereEntity);
 
         final Terrain terrain = new Terrain(
-            "heightmap",
+                "heightmap",
                 3,
                 10.0f,
                 -0.1f,

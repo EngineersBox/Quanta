@@ -14,17 +14,22 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
+import java.lang.reflect.*;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+
+import static com.engineersbox.quanta.utils.UncheckedThrowsAdapter.uncheckedFunction;
 
 public class SceneDeserializer extends StdDeserializer<Scene> {
 
@@ -127,23 +132,61 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
                                 0
                         ),
                         false
-                ).map((final Map.Entry<String, JsonNode> entry) -> {
-                    try {
-                        return ImmutablePair.of(
-                                entry.getKey(),
-                                modelDeserializer.deserialize(
-                                        entry.getValue().traverse(codec),
-                                        deserializationContext
-                                )
-                        );
-                    } catch (final IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }).collect(Collectors.toMap(
+                ).map(uncheckedFunction((final Map.Entry<String, JsonNode> entry) -> {
+                    final JsonDeserializer<? extends Model> deserializer = parseDeserializer(
+                            entry.getValue(),
+                            scene
+                    );
+                    return ImmutablePair.of(
+                            entry.getKey(),
+                            deserializer.deserialize(
+                                    entry.getValue().traverse(codec),
+                                    deserializationContext
+                            )
+                    );
+                })).collect(Collectors.toMap(
                         Pair::getKey,
                         Pair::getValue
                 ));
         scene.getModels().putAll(modelsMap);
+    }
+
+    @SuppressWarnings({"unchecked"})
+    private JsonDeserializer<? extends Model> parseDeserializer(final JsonNode node,
+                                                                final Scene scene) throws ClassNotFoundException {
+        final JsonNode typeNode = node.get("type");
+        if (typeNode == null) {
+            throw new IllegalStateException("Expected type field in model");
+        }
+        final Class<?> modelClass = Class.forName(typeNode.asText());
+        if (!modelClass.isAnnotationPresent(JsonDeserialize.class)) {
+            return new ModelDeserializer(scene);
+        }
+        final JsonDeserialize annotation = modelClass.getAnnotation(JsonDeserialize.class);
+        final Class<? extends JsonDeserializer<?>> deserializer = (Class<? extends JsonDeserializer<?>>) annotation.using();
+        if (deserializer.equals(JsonDeserializer.None.class)) {
+            return new ModelDeserializer(scene);
+        }
+        try {
+            final Constructor<?> constructor = deserializer.getConstructor(Scene.class);
+            final Type typeVariable = ((ParameterizedType) deserializer.getGenericSuperclass()).getActualTypeArguments()[0];
+            final Class<?> typeVarClass = Class.forName(typeVariable.toString());
+            if (!typeVarClass.isAssignableFrom(Model.class)) {
+                throw new IllegalStateException(String.format(
+                        "Expected deserializer %s to build an instance of Model not %s",
+                        deserializer.getName(),
+                        typeVarClass.getName()
+                ));
+            }
+            return (JsonDeserializer<? extends Model>) constructor.newInstance(scene);
+        } catch (final NoSuchMethodException e) {
+            throw new IllegalStateException("Expected deserializer to take single Scene object in constructor");
+        } catch (final InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new IllegalStateException(String.format(
+                    "Unable to instantiate custom deserializer for type %s",
+                    deserializer.getName()
+            ), e);
+        }
     }
 
 }

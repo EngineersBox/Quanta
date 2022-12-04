@@ -6,8 +6,11 @@ import com.engineersbox.quanta.resources.assets.material.TextureCache;
 import com.engineersbox.quanta.resources.assets.object.HeightMapMesh;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.builtin.primitive.Box2D;
+import com.engineersbox.quanta.resources.assets.object.serialization.TerrainDeserializer;
 import com.engineersbox.quanta.resources.loader.ResourceLoader;
 import com.engineersbox.quanta.scene.Entity;
+import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import org.joml.Vector3f;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -18,6 +21,12 @@ import java.nio.IntBuffer;
 
 import static org.lwjgl.stb.STBImage.*;
 
+@JsonIgnoreProperties({
+        "path",
+        "is_animated",
+        "entities"
+})
+@JsonDeserialize(using = TerrainDeserializer.class)
 public class Terrain extends Model {
 
     private static final String TERRAIN_PATH = "@quanta__TERRAIN_MODEL";
@@ -25,6 +34,12 @@ public class Terrain extends Model {
     private final HeightMapMesh heightMapMesh;
     private final Box2D[][] boundingBoxes;
     private final int size;
+    private final float scale;
+    private final float minY;
+    private final float maxY;
+    private final int textureIncrement;
+    private final String heightMapFile;
+    private final String textureFile;
     private final int verticesPerCol;
     private final int verticesPerRow;
 
@@ -58,17 +73,23 @@ public class Terrain extends Model {
                    final float scale,
                    final float minY,
                    final float maxY,
-                   final int textInc,
+                   final int textureIncrement,
                    final String heightMapFile,
                    final String textureFile,
                    final MaterialCache materialCache,
                    final TextureCache textureCache,
-                   final boolean classPathResource) {
+                   boolean classPathResource) {
         super(
                 id,
                 TERRAIN_PATH
         );
         this.size = terrainSize;
+        this.scale = scale;
+        this.minY = minY;
+        this.maxY = maxY;
+        this.textureIncrement = textureIncrement;
+        this.heightMapFile = heightMapFile;
+        this.textureFile = textureFile;
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             final IntBuffer w = stack.mallocInt(1);
             final IntBuffer h = stack.mallocInt(1);
@@ -109,7 +130,7 @@ public class Terrain extends Model {
                     decodedImage,
                     width,
                     height,
-                    textInc
+                    textureIncrement
             );
             stbi_image_free(decodedImage);
             textureCache.createTexture(textureFile);
@@ -141,6 +162,7 @@ public class Terrain extends Model {
         }
     }
 
+    @JsonIgnore
     public float getHeight(final Vector3f position) {
         Box2D boundingBox = null;
         boolean found = false;
@@ -161,6 +183,7 @@ public class Terrain extends Model {
         return Float.MIN_VALUE;
     }
 
+    @JsonIgnore
     protected Vector3f[] getTriangle(final Vector3f position,
                                      final Box2D boundingBox,
                                      final Entity terrainChunk) {
@@ -198,6 +221,7 @@ public class Terrain extends Model {
         return triangle;
     }
 
+    @JsonIgnore
     protected float getDiagonalZCoord(final float x1,
                                       final float z1,
                                       final float x2,
@@ -206,6 +230,7 @@ public class Terrain extends Model {
         return ((z1 - z2) / (x1 - x2)) * (x - x1) + z1;
     }
 
+    @JsonIgnore
     protected float getWorldHeight(final int row,
                                    final int col,
                                    final Entity sceneElement) {
@@ -213,6 +238,7 @@ public class Terrain extends Model {
         return y * sceneElement.getScale() + sceneElement.getPosition().y;
     }
 
+    @JsonIgnore
     protected float interpolateHeight(final Vector3f pA,
                                       final Vector3f pB,
                                       final Vector3f pC,
@@ -225,6 +251,7 @@ public class Terrain extends Model {
         return (-d - a * x - c * z) / b;
     }
 
+    @JsonIgnore
     private Box2D getBoundingBox(final Entity terrainChunk) {
         final float scale = terrainChunk.getScale();
         final Vector3f position = terrainChunk.getPosition();
@@ -234,6 +261,41 @@ public class Terrain extends Model {
         final float width = Math.abs(HeightMapMesh.START_X * 2) * scale;
         final float height = Math.abs(HeightMapMesh.START_Z * 2) * scale;
         return new Box2D(topLeftX, topLeftZ, width, height);
+    }
+
+    @JsonProperty("size")
+    public int getSize() {
+        return this.size;
+    }
+
+    @JsonProperty("scale")
+    public float getScale() {
+        return this.scale;
+    }
+
+    @JsonProperty("min_y")
+    public final float getMinY() {
+        return this.minY;
+    }
+
+    @JsonProperty("max_y")
+    public final float getMaxY() {
+        return this.maxY;
+    }
+
+    @JsonProperty("texture_increment")
+    public final int getTextureIncrement() {
+        return this.textureIncrement;
+    }
+
+    @JsonProperty("height_map_file")
+    public final String getHeightMapFile() {
+        return this.heightMapFile;
+    }
+
+    @JsonProperty("texture_file")
+    public final String getTextureFile() {
+        return this.textureFile;
     }
 
 }

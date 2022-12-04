@@ -1,12 +1,14 @@
 package com.engineersbox.quanta.resources.assets.object;
 
 import com.engineersbox.quanta.utils.ListUtils;
+import com.fasterxml.jackson.annotation.JsonIgnoreType;
 import org.joml.Vector3f;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonIgnoreType
 public class HeightMapMesh extends Mesh {
 
     private static final int MAX_CHANNEL_VALUE = 255;

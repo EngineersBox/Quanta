@@ -24,3 +24,4 @@
 * Fix console widget texture bindings/active texture not stencilling properly
 * Fix error in `LightingRenderer` and associated shader: `GL_INVALID_OPERATION error generated. Wrong component type or count`
 * Add JavaDocs to all implementations
+* Add support for terrain save/load

@@ -52,12 +52,18 @@ public class ModelDeserializer extends StdDeserializer<Model> {
             throw new JsonParseException(jsonParser, "Expected is_animated node in model node");
         }
         final boolean isAnimated = isAnimatedNode.asBoolean();
+        final JsonNode isInternalNode = node.get("is_internal");
+        if (isInternalNode == null) {
+            throw new JsonParseException(jsonParser, "Expected is_internal node in model node");
+        }
+        final boolean isInternal = isInternalNode.asBoolean();
         final Model model = ModelLoader.loadModel(
                 id,
                 path,
                 this.scene.getTextureCache(),
                 this.scene.getMaterialCache(),
-                isAnimated
+                isAnimated,
+                isInternal
         );
         final JsonNode entitiesNode = node.get("entities");
         if (entitiesNode == null || !entitiesNode.isArray()) {

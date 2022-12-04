@@ -22,6 +22,7 @@ public class Sphere extends Model {
                 true
         );
         super.getMeshData().addAll(model.getMeshData());
+        super.setInternalState(true);
     }
 
 }

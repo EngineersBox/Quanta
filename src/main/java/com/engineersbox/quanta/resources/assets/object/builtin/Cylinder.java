@@ -21,6 +21,7 @@ public class Cylinder extends Model {
                 false
         );
         super.getMeshData().addAll(model.getMeshData());
+        super.setInternalState(true);
     }
 
 }
