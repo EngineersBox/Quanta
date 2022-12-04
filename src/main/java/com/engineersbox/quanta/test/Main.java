@@ -95,132 +95,132 @@ public class Main implements IAppLogic {
 //        terrainEntity.updateModelMatrix();
 //        context.scene().addEntity(terrainEntity);
 //
-        final String bobModelId = "bobModel";
-        final Model bobModel = ModelLoader.loadModel(
-                bobModelId,
-                "assets/models/bob/boblamp.md5mesh",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache(),
-                true
-        );
-        context.scene().addModel(bobModel);
-        final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
-        bobEntity.setScale(0.05f);
-        bobEntity.updateModelMatrix();
-        this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
-        bobEntity.setAnimationData(this.animationData1);
-        context.scene().addEntity(bobEntity);
-
-        final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
-        bobEntity2.setPosition(2, 0, 0);
-        bobEntity2.setScale(0.025f);
-        bobEntity2.updateModelMatrix();
-        this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
-        bobEntity2.setAnimationData(this.animationData2);
-        context.scene().addEntity(bobEntity2);
-//
-        final Model cubeModel = ModelLoader.loadModel(
-                "cube-model",
-                "assets/models/cube/cube.obj",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache(),
-                false
-        );
-        context.scene().addModel(cubeModel);
-        this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
-        this.cubeEntity1.setPosition(0, 2, -1);
-        this.cubeEntity1.updateModelMatrix();
-        context.scene().addEntity(this.cubeEntity1);
-
-        this.cubeEntity2 = new Entity("cube-entity-2", cubeModel.getId());
-        this.cubeEntity2.setPosition(-2, 2, -1);
-        this.cubeEntity2.updateModelMatrix();
-        context.scene().addEntity(this.cubeEntity2);
-
-        final Cone coneModel = new Cone(
-                "cone-model",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache()
-        );
-        context.scene()
-                .getMaterialCache()
-                .getMaterial(coneModel
-                        .getMeshData()
-                        .get(0)
-                        .getMaterialIdx()
-                ).setDiffuseColor(new Vector4f(1, 0, 0, 1));
-        context.scene().addModel(coneModel);
-        this.coneEntity = new Entity("cone-entity", coneModel.getId());
-        this.coneEntity.setPosition(1, 2, 4);
-        this.coneEntity.setScale(0.25f);
-        this.coneEntity.updateModelMatrix();
-        context.scene().addEntity(coneEntity);
-
-//        final Precision.DoubleEquivalence precision = Precision.doubleEquivalenceOfEpsilon(1e-6);
-//        final RegionBSPTree3D tree = Parallelepiped.unitCube(precision).toTree();
-//        final Sphere sphere = Sphere.from(
-//                Vector3D.ZERO,
-//                0.65,
-//                precision
-//        );
-//        tree.difference(sphere.toTree(3));
-//        final GeometryBuffer geoBuffer = new GeometryBuffer(tree.toTriangleMesh(precision));
-//        final Model testGeoModel = geoBuffer.getModel(
-//                "test-geomtry-model",
+//        final String bobModelId = "bobModel";
+//        final Model bobModel = ModelLoader.loadModel(
+//                bobModelId,
+//                "assets/models/bob/boblamp.md5mesh",
 //                context.scene().getTextureCache(),
-//                context.scene().getMaterialCache()
+//                context.scene().getMaterialCache(),
+//                true
 //        );
-//        context.scene().addModel(testGeoModel);
-//        final Entity testGeoEntity = new Entity("test-geometry-entity", testGeoModel.getId());
-//        testGeoEntity.setPosition(4, 4, -4);
-//        testGeoEntity.updateModelMatrix();
-//        context.scene().addEntity(testGeoEntity);
-
-        final Model sponzaModel = ModelLoader.loadModel(
-                "sponza-model",
-                "assets/models/sponza_simple/sponza.obj",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache(),
-                false
-        );
-        context.scene().addModel(sponzaModel);
-        this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
-        context.scene().addEntity(this.sponzaEntity);
-
-//        final Model windowModel = ModelLoader.loadModel(
-//                "window",
-//                "assets/models/window/window.obj",
+//        context.scene().addModel(bobModel);
+//        final Entity bobEntity = new Entity("bobEntity-1", bobModelId);
+//        bobEntity.setScale(0.05f);
+//        bobEntity.updateModelMatrix();
+//        this.animationData1 = new AnimationData(bobModel.getAnimations().get(0));
+//        bobEntity.setAnimationData(this.animationData1);
+//        context.scene().addEntity(bobEntity);
+//
+//        final Entity bobEntity2 = new Entity("bobEntity-2", bobModelId);
+//        bobEntity2.setPosition(2, 0, 0);
+//        bobEntity2.setScale(0.025f);
+//        bobEntity2.updateModelMatrix();
+//        this.animationData2 = new AnimationData(bobModel.getAnimations().get(0));
+//        bobEntity2.setAnimationData(this.animationData2);
+//        context.scene().addEntity(bobEntity2);
+////
+//        final Model cubeModel = ModelLoader.loadModel(
+//                "cube-model",
+//                "assets/models/cube/cube.obj",
 //                context.scene().getTextureCache(),
 //                context.scene().getMaterialCache(),
 //                false
 //        );
-//        context.scene().addModel(windowModel);
-//        final Entity windowEntity = new Entity("window-entity", windowModel.getId());
-//        windowEntity.setPosition(0, 3, -3);
-//        windowEntity.updateModelMatrix();
-//        context.scene().addEntity(windowEntity);
-
-        final com.engineersbox.quanta.resources.assets.object.builtin.Sphere sphereModel = new com.engineersbox.quanta.resources.assets.object.builtin.Sphere(
-                "sphere-model",
-                context.scene().getTextureCache(),
-                context.scene().getMaterialCache()
-        );
-        context.scene().addModel(sphereModel);
-        final Material sphereMaterial = context.scene().getMaterialCache().getMaterial(sphereModel.getMeshData().get(0).getMaterialIdx());
-        sphereMaterial.setAmbientColor(new Vector4f(0.8f, 0.7f, 0.9f, 1.0f));
-        sphereMaterial.setDiffuseColor(new Vector4f(0.8f, 0.7f, 0.9f, 1.0f));
-        sphereMaterial.setReflectance(5.0f);
-        sphereMaterial.setSpecularColor(new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
-        final Entity sphereEntity = new Entity("sphere-entity", sphereModel.getId());
-        sphereEntity.setPosition(-4, 2, 2.5f);
-        sphereEntity.setScale(0.5f);
-        sphereEntity.updateModelMatrix();
-        context.scene().addEntity(sphereEntity);
+//        context.scene().addModel(cubeModel);
+//        this.cubeEntity1 = new Entity("cube-entity-1", cubeModel.getId());
+//        this.cubeEntity1.setPosition(0, 2, -1);
+//        this.cubeEntity1.updateModelMatrix();
+//        context.scene().addEntity(this.cubeEntity1);
+//
+//        this.cubeEntity2 = new Entity("cube-entity-2", cubeModel.getId());
+//        this.cubeEntity2.setPosition(-2, 2, -1);
+//        this.cubeEntity2.updateModelMatrix();
+//        context.scene().addEntity(this.cubeEntity2);
+//
+//        final Cone coneModel = new Cone(
+//                "cone-model",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache()
+//        );
+//        context.scene()
+//                .getMaterialCache()
+//                .getMaterial(coneModel
+//                        .getMeshData()
+//                        .get(0)
+//                        .getMaterialIdx()
+//                ).setDiffuseColor(new Vector4f(1, 0, 0, 1));
+//        context.scene().addModel(coneModel);
+//        this.coneEntity = new Entity("cone-entity", coneModel.getId());
+//        this.coneEntity.setPosition(1, 2, 4);
+//        this.coneEntity.setScale(0.25f);
+//        this.coneEntity.updateModelMatrix();
+//        context.scene().addEntity(coneEntity);
+//
+////        final Precision.DoubleEquivalence precision = Precision.doubleEquivalenceOfEpsilon(1e-6);
+////        final RegionBSPTree3D tree = Parallelepiped.unitCube(precision).toTree();
+////        final Sphere sphere = Sphere.from(
+////                Vector3D.ZERO,
+////                0.65,
+////                precision
+////        );
+////        tree.difference(sphere.toTree(3));
+////        final GeometryBuffer geoBuffer = new GeometryBuffer(tree.toTriangleMesh(precision));
+////        final Model testGeoModel = geoBuffer.getModel(
+////                "test-geomtry-model",
+////                context.scene().getTextureCache(),
+////                context.scene().getMaterialCache()
+////        );
+////        context.scene().addModel(testGeoModel);
+////        final Entity testGeoEntity = new Entity("test-geometry-entity", testGeoModel.getId());
+////        testGeoEntity.setPosition(4, 4, -4);
+////        testGeoEntity.updateModelMatrix();
+////        context.scene().addEntity(testGeoEntity);
+//
+//        final Model sponzaModel = ModelLoader.loadModel(
+//                "sponza-model",
+//                "assets/models/sponza_simple/sponza.obj",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache(),
+//                false
+//        );
+//        context.scene().addModel(sponzaModel);
+//        this.sponzaEntity = new Entity("sponza-entity", sponzaModel.getId());
+//        context.scene().addEntity(this.sponzaEntity);
+//
+////        final Model windowModel = ModelLoader.loadModel(
+////                "window",
+////                "assets/models/window/window.obj",
+////                context.scene().getTextureCache(),
+////                context.scene().getMaterialCache(),
+////                false
+////        );
+////        context.scene().addModel(windowModel);
+////        final Entity windowEntity = new Entity("window-entity", windowModel.getId());
+////        windowEntity.setPosition(0, 3, -3);
+////        windowEntity.updateModelMatrix();
+////        context.scene().addEntity(windowEntity);
+//
+//        final com.engineersbox.quanta.resources.assets.object.builtin.Sphere sphereModel = new com.engineersbox.quanta.resources.assets.object.builtin.Sphere(
+//                "sphere-model",
+//                context.scene().getTextureCache(),
+//                context.scene().getMaterialCache()
+//        );
+//        context.scene().addModel(sphereModel);
+//        final Material sphereMaterial = context.scene().getMaterialCache().getMaterial(sphereModel.getMeshData().get(0).getMaterialIdx());
+//        sphereMaterial.setAmbientColor(new Vector4f(0.8f, 0.7f, 0.9f, 1.0f));
+//        sphereMaterial.setDiffuseColor(new Vector4f(0.8f, 0.7f, 0.9f, 1.0f));
+//        sphereMaterial.setReflectance(5.0f);
+//        sphereMaterial.setSpecularColor(new Vector4f(1.0f, 1.0f, 1.0f, 1.0f));
+//        final Entity sphereEntity = new Entity("sphere-entity", sphereModel.getId());
+//        sphereEntity.setPosition(-4, 2, 2.5f);
+//        sphereEntity.setScale(0.5f);
+//        sphereEntity.updateModelMatrix();
+//        context.scene().addEntity(sphereEntity);
 
         final Terrain terrain = new Terrain(
             "heightmap",
                 3,
-                10,
+                10.0f,
                 -0.1f,
                 0.1f,
                 40,
@@ -229,7 +229,7 @@ public class Main implements IAppLogic {
                 context.scene().getMaterialCache(),
                 context.scene().getTextureCache()
         );
-        terrain.bind(context.scene());
+        context.scene().addModel(terrain);
 
         context.renderer().setupData(
                 context.scene(),
@@ -377,19 +377,19 @@ public class Main implements IAppLogic {
     public void update(final Window window,
                        final Scene scene,
                        final long diffTimeMillis) {
-        animationData1.nextFrame();
-        if (diffTimeMillis % 2 == 0) {
-            animationData2.nextFrame();
-        }
+//        animationData1.nextFrame();
+//        if (diffTimeMillis % 2 == 0) {
+//            animationData2.nextFrame();
+//        }
         this.rotation += 1.5;
         if (this.rotation > 360) {
             this.rotation = 0;
         }
-        this.cubeEntity1.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
-        this.cubeEntity1.updateModelMatrix();
-
-        this.cubeEntity2.setRotation(1, 1, 1, (float) Math.toRadians(360 - this.rotation));
-        this.cubeEntity2.updateModelMatrix();
+//        this.cubeEntity1.setRotation(1, 1, 1, (float) Math.toRadians(this.rotation));
+//        this.cubeEntity1.updateModelMatrix();
+//
+//        this.cubeEntity2.setRotation(1, 1, 1, (float) Math.toRadians(360 - this.rotation));
+//        this.cubeEntity2.updateModelMatrix();
     }
 
     @Override

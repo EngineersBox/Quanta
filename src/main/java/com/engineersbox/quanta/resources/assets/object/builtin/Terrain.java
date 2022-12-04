@@ -2,16 +2,13 @@ package com.engineersbox.quanta.resources.assets.object.builtin;
 
 import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.resources.assets.material.MaterialCache;
-import com.engineersbox.quanta.resources.assets.material.Texture;
 import com.engineersbox.quanta.resources.assets.material.TextureCache;
 import com.engineersbox.quanta.resources.assets.object.HeightMapMesh;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.builtin.primitive.Box2D;
 import com.engineersbox.quanta.resources.loader.ResourceLoader;
 import com.engineersbox.quanta.scene.Entity;
-import com.engineersbox.quanta.scene.Scene;
 import org.joml.Vector3f;
-import org.lwjgl.stb.STBImage;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
@@ -19,8 +16,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-import static org.lwjgl.stb.STBImage.stbi_load;
-import static org.lwjgl.stb.STBImage.stbi_load_from_memory;
+import static org.lwjgl.stb.STBImage.*;
 
 public class Terrain extends Model {
 
@@ -100,6 +96,9 @@ public class Terrain extends Model {
                         4
                 );
             }
+            if (decodedImage == null) {
+                throw new IllegalStateException("Unable to find height map at " + heightMapFile);
+            }
             final int width = w.get();
             final int height = h.get();
             this.verticesPerCol = width - 1;
@@ -112,11 +111,13 @@ public class Terrain extends Model {
                     height,
                     textInc
             );
+            stbi_image_free(decodedImage);
             textureCache.createTexture(textureFile);
             final Material material = new Material();
             material.setTexturePath(textureFile);
             materialCache.addMaterial(material);
             this.heightMapMesh.getMeshData().setMaterialIdx(material.getMaterialIdx());
+            super.meshData.add(this.heightMapMesh.getMeshData());
             this.boundingBoxes = new Box2D[terrainSize][terrainSize];
             for (int row = 0; row < terrainSize; row++) {
                 for (int col = 0; col < terrainSize; col++) {
@@ -124,11 +125,12 @@ public class Terrain extends Model {
                     final float zDisplacement = (row - ((float) terrainSize - 1) / (float) 2) * scale * HeightMapMesh.getZLength();
 
                     final Entity terrainBlock = new Entity(
-                            id + "_" + (row + col),
+                            id + "_" + (row * terrainSize + col),
                             super.getId()
                     );
                     terrainBlock.setScale(scale);
                     terrainBlock.setPosition(xDisplacement, 0, zDisplacement);
+                    terrainBlock.updateModelMatrix();
                     this.entities.add(terrainBlock);
 
                     this.boundingBoxes[row][col] = getBoundingBox(terrainBlock);
@@ -227,16 +229,11 @@ public class Terrain extends Model {
         final float scale = terrainChunk.getScale();
         final Vector3f position = terrainChunk.getPosition();
 
-        final float topLeftX = HeightMapMesh.STARTX * scale + position.x;
-        final float topLeftZ = HeightMapMesh.STARTZ * scale + position.z;
-        final float width = Math.abs(HeightMapMesh.STARTX * 2) * scale;
-        final float height = Math.abs(HeightMapMesh.STARTZ * 2) * scale;
+        final float topLeftX = HeightMapMesh.START_X * scale + position.x;
+        final float topLeftZ = HeightMapMesh.START_Z * scale + position.z;
+        final float width = Math.abs(HeightMapMesh.START_X * 2) * scale;
+        final float height = Math.abs(HeightMapMesh.START_Z * 2) * scale;
         return new Box2D(topLeftX, topLeftZ, width, height);
-    }
-
-    public void bind(final Scene scene) {
-        scene.addModel(this);
-        super.entities.forEach(scene::addEntity);
     }
 
 }

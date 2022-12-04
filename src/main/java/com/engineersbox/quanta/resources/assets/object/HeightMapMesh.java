@@ -11,8 +11,8 @@ public class HeightMapMesh extends Mesh {
 
     private static final int MAX_CHANNEL_VALUE = 255;
     private static final int MAX_COLOUR = MAX_CHANNEL_VALUE * MAX_CHANNEL_VALUE * MAX_CHANNEL_VALUE;
-    public static final float STARTX = -0.5f;
-    public static final float STARTZ = -0.5f;
+    public static final float START_X = -0.5f;
+    public static final float START_Z = -0.5f;
 
     private final float minY;
     private final float maxY;
@@ -32,9 +32,9 @@ public class HeightMapMesh extends Mesh {
     }
 
     private MeshData buildMesh(final int width,
-                           final int height,
-                           final ByteBuffer heightMapImage,
-                           final int texInc) {
+                               final int height,
+                               final ByteBuffer heightMapImage,
+                               final int texInc) {
         final float incX = getXLength() / (width - 1);
         final float incZ = getZLength() / (height - 1);
         final List<Float> positions = new ArrayList<>();
@@ -43,11 +43,11 @@ public class HeightMapMesh extends Mesh {
 
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
-                positions.add(STARTX + col * incX);
+                positions.add(START_X + col * incX);
                 final float currentHeight = getHeight(col, row, width, heightMapImage);
                 this.heightArray[row][col] = currentHeight;
                 positions.add(currentHeight);
-                positions.add(STARTZ + row * incZ);
+                positions.add(START_Z + row * incZ);
 
                 texCoords.add((float) texInc * (float) col / (float) width);
                 texCoords.add((float) texInc * (float) row / (float) height);
@@ -93,11 +93,11 @@ public class HeightMapMesh extends Mesh {
     }
 
     public static float getXLength() {
-        return Math.abs(-STARTX * 2);
+        return Math.abs(-START_X * 2);
     }
 
     public static float getZLength() {
-        return Math.abs(-STARTZ * 2);
+        return Math.abs(-START_Z * 2);
     }
 
     private float[] calcNormals(final float[] posArr,
