@@ -23,7 +23,6 @@ public class Config {
   public static class Engine {
     public final Engine.Features features;
     public final Engine.GlOptions glOptions;
-    public final Engine.Resources resources;
 
     public static class Features {
       public final boolean showAxis;
@@ -65,39 +64,6 @@ public class Config {
       }
     }
 
-    public static class Resources {
-      public final java.lang.String fonts;
-      public final java.lang.String models;
-      public final java.lang.String shaders;
-      public final java.lang.String sounds;
-      public final java.lang.String textures;
-
-      public Resources(
-          com.typesafe.config.Config c,
-          java.lang.String parentPath,
-          $TsCfgValidator $tsCfgValidator) {
-        this.fonts = $_reqStr(parentPath, c, "fonts", $tsCfgValidator);
-        this.models = $_reqStr(parentPath, c, "models", $tsCfgValidator);
-        this.shaders = $_reqStr(parentPath, c, "shaders", $tsCfgValidator);
-        this.sounds = $_reqStr(parentPath, c, "sounds", $tsCfgValidator);
-        this.textures = $_reqStr(parentPath, c, "textures", $tsCfgValidator);
-      }
-
-      private static java.lang.String $_reqStr(
-          java.lang.String parentPath,
-          com.typesafe.config.Config c,
-          java.lang.String path,
-          $TsCfgValidator $tsCfgValidator) {
-        if (c == null) return null;
-        try {
-          return c.getString(path);
-        } catch (com.typesafe.config.ConfigException e) {
-          $tsCfgValidator.addBadPath(parentPath + path, e);
-          return null;
-        }
-      }
-    }
-
     public Engine(
         com.typesafe.config.Config c,
         java.lang.String parentPath,
@@ -117,14 +83,6 @@ public class Config {
               : new Engine.GlOptions(
                   com.typesafe.config.ConfigFactory.parseString("glOptions{}"),
                   parentPath + "glOptions.",
-                  $tsCfgValidator);
-      this.resources =
-          c.hasPathOrNull("resources")
-              ? new Engine.Resources(
-                  c.getConfig("resources"), parentPath + "resources.", $tsCfgValidator)
-              : new Engine.Resources(
-                  com.typesafe.config.ConfigFactory.parseString("resources{}"),
-                  parentPath + "resources.",
                   $tsCfgValidator);
     }
   }
