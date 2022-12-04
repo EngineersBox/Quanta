@@ -20,6 +20,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.lang.reflect.*;
@@ -32,6 +34,8 @@ import java.util.stream.StreamSupport;
 import static com.engineersbox.quanta.utils.UncheckedThrowsAdapter.uncheckedFunction;
 
 public class SceneDeserializer extends StdDeserializer<Scene> {
+
+    private static final Logger LOGGER = LogManager.getLogger(SceneDeserializer.class);
 
     private final int width;
     private final int height;
@@ -160,11 +164,13 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
         }
         final Class<?> modelClass = Class.forName(typeNode.asText());
         if (!modelClass.isAnnotationPresent(JsonDeserialize.class)) {
+            SceneDeserializer.LOGGER.debug("Found no @JsonDeserialize annotation on model class {}, defaulting to ModelDeserializer", modelClass.getName());
             return new ModelDeserializer(scene);
         }
         final JsonDeserialize annotation = modelClass.getAnnotation(JsonDeserialize.class);
         final Class<? extends JsonDeserializer<?>> deserializer = (Class<? extends JsonDeserializer<?>>) annotation.using();
         if (deserializer.equals(JsonDeserializer.None.class)) {
+            SceneDeserializer.LOGGER.debug("Model class {} @JsonDeserialize annotation specified none for using(), defaulting to ModelDeserializer", modelClass.getName());
             return new ModelDeserializer(scene);
         }
         try {
