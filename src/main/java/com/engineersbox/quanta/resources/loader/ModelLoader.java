@@ -19,7 +19,6 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.*;
@@ -432,8 +431,8 @@ public class ModelLoader {
             }
         }
         return new AnimMeshData(
-                ListUtils.listFloatToArray(weights),
-                ListUtils.listIntToArray(boneIds)
+                ListUtils.floatListToArray(weights),
+                ListUtils.intListToArray(boneIds)
         );
     }
 

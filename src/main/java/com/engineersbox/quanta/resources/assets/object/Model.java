@@ -13,10 +13,10 @@ public class Model {
 
     private final String id;
     private final String path;
-    private final List<Animation> animations;
-    private final List<Entity> entities;
-    private final List<MeshData> meshData;
-    private final List<MeshDrawData> meshDrawData;
+    protected final List<Animation> animations;
+    protected final List<Entity> entities;
+    protected final List<MeshData> meshData;
+    protected final List<MeshDrawData> meshDrawData;
 
     public Model(final String id,
                  final String path) {

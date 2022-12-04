@@ -18,14 +18,20 @@ import static org.lwjgl.opengl.GL30.*;
 public class Mesh {
 
     public static final int MAX_WEIGHTS = 4;
-    private final Vector3f aabbMax;
-    private final Vector3f aabbMin;
-    private final int numVertices;
-    private final int vaoId;
-    private final List<Integer> vboIds;
-    private final MeshData meshData;
+    private Vector3f aabbMax;
+    private Vector3f aabbMin;
+    private int numVertices;
+    private int vaoId;
+    private List<Integer> vboIds;
+    private MeshData meshData;
+
+    public Mesh() {}
 
     public Mesh(final MeshData meshData) {
+        build(meshData);
+    }
+
+    public void build(final MeshData meshData) {
         try (final MemoryStack stack = MemoryStack.stackPush()) {
             this.aabbMin = meshData.getAabbMin();
             this.aabbMax = meshData.getAabbMax();

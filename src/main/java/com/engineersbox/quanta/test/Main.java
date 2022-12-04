@@ -10,6 +10,7 @@ import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimationData;
 import com.engineersbox.quanta.resources.assets.object.builtin.Cone;
+import com.engineersbox.quanta.resources.assets.object.builtin.Terrain;
 import com.engineersbox.quanta.resources.config.ConfigHandler;
 import com.engineersbox.quanta.resources.config.shader.provide.ShaderIncludePathProvider;
 import com.engineersbox.quanta.resources.config.shader.provide.ShaderIncludeLiteral;
@@ -215,6 +216,20 @@ public class Main implements IAppLogic {
         sphereEntity.setScale(0.5f);
         sphereEntity.updateModelMatrix();
         context.scene().addEntity(sphereEntity);
+
+        final Terrain terrain = new Terrain(
+            "heightmap",
+                3,
+                10,
+                -0.1f,
+                0.1f,
+                40,
+                "assets/textures/heightmap/heightmap.png",
+                "assets/textures/heightmap/terrain.png",
+                context.scene().getMaterialCache(),
+                context.scene().getTextureCache()
+        );
+        terrain.bind(context.scene());
 
         context.renderer().setupData(
                 context.scene(),
