@@ -29,9 +29,9 @@ void main() {
         gl_PositionIn[2].xyz - gl_PositionIn[4].xyz
     );
     // Compute direction from vertices to light.
-    d[0] = l_pos.xyz - l_pos.w * gl_PositionIn[0].xyz;
-    d[1] = l_pos.xyz - l_pos.w * gl_PositionIn[2].xyz;
-    d[2] = l_pos.xyz - l_pos.w * gl_PositionIn[4].xyz;
+    d[0] = lightPos.xyz - lightPos.w * gl_PositionIn[0].xyz;
+    d[1] = lightPos.xyz - lightPos.w * gl_PositionIn[2].xyz;
+    d[2] = lightPos.xyz - lightPos.w * gl_PositionIn[4].xyz;
     // Check if the main triangle faces the light.
     bool faces_light = true;
     if (!(dot(ns[0], d[0]) > 0
@@ -88,9 +88,9 @@ void main() {
             gl_PositionIn[nb].xyz - gl_PositionIn[v1].xyz
         );
         // Compute direction to light, again as above.
-        d[0] = l_pos.xyz - l_pos.w * gl_PositionIn[v0].xyz;
-        d[1] = l_pos.xyz - l_pos.w * gl_PositionIn[nb].xyz;
-        d[2] = l_pos.xyz - l_pos.w * gl_PositionIn[v1].xyz;
+        d[0] = lightPos.xyz - lightPos.w * gl_PositionIn[v0].xyz;
+        d[1] = lightPos.xyz - lightPos.w * gl_PositionIn[nb].xyz;
+        d[2] = lightPos.xyz - lightPos.w * gl_PositionIn[v1].xyz;
         // Extrude the edge if it does not have a
         // neighbor, or if it's a possible silhouette.
         if (gl_PositionIn[nb].w < 1e-3
