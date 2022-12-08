@@ -9,11 +9,11 @@ in vec2 outTextCoord;
 
 uniform vec4 diffuse;
 uniform sampler2D textureSampler;
-uniform int hasTexture;
+uniform bool hasTexture;
 uniform vec3 brightnessThreshold;
 
 void main() {
-    if (hasTexture == 1) {
+    if (hasTexture) {
         FragColor = texture(textureSampler, outTextCoord);
     } else {
         FragColor = diffuse;
