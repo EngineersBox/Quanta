@@ -253,7 +253,7 @@ public class Renderer {
                     handlers.forEach((final String name, final ShaderRenderHandler handler) -> handler.setupData(this.context));
                 }
         );
-        new ArrayList<>(scene.getModels().values())
+        scene.getModels().values()
                 .stream()
                 .map(Model::getMeshData)
                 .forEach(List::clear);
@@ -265,7 +265,8 @@ public class Renderer {
             this.sceneHash = scene.hashCode();
             this.context = new RenderContext(
                     scene,
-                    window
+                    window,
+                    this.context.attributes()
             );
         }
     }
