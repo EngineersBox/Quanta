@@ -49,7 +49,7 @@ public class Engine {
         this.targetFPS = ConfigHandler.CONFIG.video.fps;
         this.targetUPS = ConfigHandler.CONFIG.video.ups;
         this.appLogic = appLogic;
-        this.renderer = new Renderer(this.window);
+        this.renderer = new Renderer();
         this.scene = new Scene(
                 this.window.getWidth(),
                 this.window.getHeight()

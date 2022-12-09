@@ -95,7 +95,7 @@ public class SkyBoxRenderer extends ShaderRenderHandler {
         );
         uniforms.setUniform(
                 "hasTexture",
-                texture.getPath().equals(TextureCache.DEFAULT_TEXTURE) ? 0 : 1
+                texture.getPath().equals(TextureCache.DEFAULT_TEXTURE)
         );
         glBindVertexArray(mesh.getVaoId());
         uniforms.setUniform(

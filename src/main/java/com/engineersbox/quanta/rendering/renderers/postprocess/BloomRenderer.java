@@ -2,6 +2,7 @@ package com.engineersbox.quanta.rendering.renderers.postprocess;
 
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.RenderContext;
+import com.engineersbox.quanta.rendering.buffers.SSAOBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
@@ -98,15 +99,16 @@ public class BloomRenderer extends ShaderRenderHandler {
     }
 
     private void renderBloom(final RenderContext context) {
-        glBindFramebuffer(GL_FRAMEBUFFER, context.ssaoBuffer().getApplyFboId());
+        final HDRBuffer hdrBuffer = (HDRBuffer) context.attributes().get("hdrBuffer");
+        final SSAOBuffer ssaoBuffer = (SSAOBuffer) context.attributes().get("ssaoBuffer");
+        glBindFramebuffer(GL_FRAMEBUFFER, ssaoBuffer.getApplyFboId());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        final HDRBuffer buffer = context.hdrBuffer();
         super.bind("Bloom Final");
         final Uniforms uniforms = super.getUniforms("Bloom Final");
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, buffer.getColourBuffers()[0]);
+        glBindTexture(GL_TEXTURE_2D, hdrBuffer.getColourBuffers()[0]);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, buffer.getPingPongColourBuffers()[!BLUR_HORIZONTAL ? 1 : 0]);
+        glBindTexture(GL_TEXTURE_2D, hdrBuffer.getPingPongColourBuffers()[!BLUR_HORIZONTAL ? 1 : 0]);
         uniforms.setUniform(
                 "bloom",
                 BLOOM_ENABLE
@@ -124,7 +126,7 @@ public class BloomRenderer extends ShaderRenderHandler {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         boolean horizontal = BloomRenderer.BLUR_HORIZONTAL;
         boolean firstIteration = true;
-        final HDRBuffer buffer = context.hdrBuffer();
+        final HDRBuffer buffer = (HDRBuffer) context.attributes().get("hdrBuffer");
         super.bind("Bloom Blur");
         final Uniforms uniforms = super.getUniforms("Bloom Blur");
         for (int i = 0; i < BLUR_AMOUNT; i++) {
@@ -149,8 +151,8 @@ public class BloomRenderer extends ShaderRenderHandler {
     }
 
     @Override
-    public void cleanup() {
-        super.cleanup();
+    public void cleanup(final RenderContext context) {
+        super.cleanup(context);
         this.quadMesh.cleanup();
     }
 }

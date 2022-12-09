@@ -8,6 +8,7 @@ import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
+import com.engineersbox.quanta.rendering.indirect.AnimationRenderBuffers;
 import com.engineersbox.quanta.resources.assets.object.QuadMesh;
 import com.engineersbox.quanta.resources.assets.shader.ShaderModuleData;
 import com.engineersbox.quanta.resources.assets.shader.ShaderProgram;
@@ -91,17 +92,27 @@ public class SSAORenderer extends ShaderRenderHandler {
     }
 
     @Override
+    public void setupData(final RenderContext context) {
+        context.attributes().put(
+                "ssaoBuffer",
+                new SSAOBuffer(context.window())
+        );
+    }
+
+    @Override
     public void render(final RenderContext context) {
         renderSSAO(context);
         renderSSAOBlur(context);
     }
 
     private void renderSSAO(final RenderContext context) {
-        glBindFramebuffer(GL_FRAMEBUFFER, context.ssaoBuffer().getFboId());
+        final SSAOBuffer ssaoBuffer = (SSAOBuffer) context.attributes().get("ssaoBuffer");
+        final GBuffer gBuffer = (GBuffer) context.attributes().get("gBuffer");
+        glBindFramebuffer(GL_FRAMEBUFFER, ssaoBuffer.getFboId());
         glClear(GL_COLOR_BUFFER_BIT);
         super.bind("SSAO");
         final Uniforms uniforms = super.getUniforms("SSAO");
-        final List<Vector3f> kernel = context.ssaoBuffer().getKernel();
+        final List<Vector3f> kernel = ssaoBuffer.getKernel();
         for (int i = 0; i < SSAOBuffer.KERNEL_SIZE; i++) {
             uniforms.setUniform(
                     "samples[" + i + "]",
@@ -113,30 +124,32 @@ public class SSAORenderer extends ShaderRenderHandler {
                 context.scene().getProjection().getProjectionMatrix()
         );
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, context.gBuffer().getTextureIds()[3]);
+        glBindTexture(GL_TEXTURE_2D, gBuffer.getTextureIds()[3]);
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, context.gBuffer().getTextureIds()[1]);
+        glBindTexture(GL_TEXTURE_2D, gBuffer.getTextureIds()[1]);
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, context.ssaoBuffer().getNoiseTexture());
+        glBindTexture(GL_TEXTURE_2D, ssaoBuffer.getNoiseTexture());
         this.quadMesh.render();
         super.unbind("SSAO");
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     private void renderSSAOBlur(final RenderContext context) {
-        glBindFramebuffer(GL_FRAMEBUFFER, context.ssaoBuffer().getBlurFboId());
+        final SSAOBuffer ssaoBuffer = (SSAOBuffer) context.attributes().get("ssaoBuffer");
+        glBindFramebuffer(GL_FRAMEBUFFER, ssaoBuffer.getBlurFboId());
         glClear(GL_COLOR_BUFFER_BIT);
         super.bind("SSAO Blur");
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, context.ssaoBuffer().getColourBuffer());
+        glBindTexture(GL_TEXTURE_2D, ssaoBuffer.getColourBuffer());
         this.quadMesh.render();
         super.unbind("SSAO Blur");
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     @Override
-    public void cleanup() {
-        super.cleanup();
+    public void cleanup(final RenderContext context) {
+        super.cleanup(context);
+        ((SSAOBuffer) context.attributes().get("ssaoBuffer")).cleanup();
         this.quadMesh.cleanup();
     }
 

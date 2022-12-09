@@ -85,7 +85,7 @@ public abstract class ShaderRenderHandler {
         return shader.getUniforms();
     }
 
-    public void cleanup() {
+    public void cleanup(final RenderContext context) {
         this.shaderPrograms.values().forEach(ShaderProgram::cleanup);
     }
 }

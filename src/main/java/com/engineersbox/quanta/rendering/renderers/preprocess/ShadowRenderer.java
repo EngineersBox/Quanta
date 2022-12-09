@@ -6,6 +6,7 @@ import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
+import com.engineersbox.quanta.rendering.indirect.AnimationRenderBuffers;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
 import com.engineersbox.quanta.rendering.renderers.core.SceneRenderer;
 import com.engineersbox.quanta.rendering.shadow.ShadowBuffer;
@@ -79,8 +80,8 @@ public class ShadowRenderer extends ShaderRenderHandler {
     }
 
     @Override
-    public void cleanup() {
-        super.cleanup();
+    public void cleanup(final RenderContext context) {
+        super.cleanup(context);
         this.shadowBuffer.cleanup();
         glDeleteBuffers(this.staticRenderBufferHandle);
         glDeleteBuffers(this.animRenderBufferHandle);
@@ -102,6 +103,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
             }
             glCullFace(GL_FRONT);
         }
+        final AnimationRenderBuffers animationRenderBuffers = (AnimationRenderBuffers) context.attributes().get("animationRenderBuffers");
         context.attributes().putIfAbsent(ShadowRenderer.RENDERER_NAME, this);
         ShadowCascade.updateCascadeShadows(this.shadowCascades, context.scene());
         glBindFramebuffer(GL_FRAMEBUFFER, this.shadowBuffer.getDepthMapFBO());
@@ -147,7 +149,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.staticRenderBufferHandle);
-        glBindVertexArray(context.animationRenderBuffers().getStaticVaoId());
+        glBindVertexArray(animationRenderBuffers.getStaticVaoId());
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             glFramebufferTexture2D(
                     GL_FRAMEBUFFER,
@@ -189,7 +191,7 @@ public class ShadowRenderer extends ShaderRenderHandler {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.animRenderBufferHandle);
-        glBindVertexArray(context.animationRenderBuffers().getAnimVaoId());
+        glBindVertexArray(animationRenderBuffers.getAnimVaoId());
         for (int i = 0; i < ShadowCascade.SHADOW_MAP_CASCADE_COUNT; i++) {
             glFramebufferTexture2D(
                     GL_FRAMEBUFFER,

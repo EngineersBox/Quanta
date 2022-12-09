@@ -61,7 +61,7 @@ public class SSAOApplyRenderer extends ShaderRenderHandler {
 
     @Override
     public void render(final RenderContext context) {
-        final SSAOBuffer ssaoBuffer = context.ssaoBuffer();
+        final SSAOBuffer ssaoBuffer = (SSAOBuffer) context.attributes().get("ssaoBuffer");
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, ssaoBuffer.getApplyFboId());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -76,8 +76,8 @@ public class SSAOApplyRenderer extends ShaderRenderHandler {
     }
 
     @Override
-    public void cleanup() {
-        super.cleanup();
+    public void cleanup(final RenderContext context) {
+        super.cleanup(context);
         this.quadMesh.cleanup();
     }
 

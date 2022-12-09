@@ -1,11 +1,13 @@
 package com.engineersbox.quanta.rendering.renderers.preprocess;
 
 import com.engineersbox.quanta.rendering.RenderContext;
+import com.engineersbox.quanta.rendering.buffers.GBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
+import com.engineersbox.quanta.rendering.indirect.AnimationRenderBuffers;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
 import com.engineersbox.quanta.resources.assets.object.Model;
 import com.engineersbox.quanta.resources.assets.object.animation.AnimatedFrame;
@@ -46,13 +48,25 @@ public class AnimationRenderer extends ShaderRenderHandler {
     }
 
     @Override
+    public void setupData(final RenderContext context) {
+        final AnimationRenderBuffers animationRenderBuffers = new AnimationRenderBuffers();
+        animationRenderBuffers.loadStaticModels(context.scene());
+        animationRenderBuffers.loadAnimatedModels(context.scene());
+        context.attributes().put(
+                "animationRenderBuffers",
+                animationRenderBuffers
+        );
+    }
+
+    @Override
     public void render(final RenderContext context) {
         super.bind("Animation");
         final Uniforms uniforms = super.getUniforms("Animation");
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, context.animationRenderBuffers().getBindingPosesBuffer());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, context.animationRenderBuffers().getBonesIndicesWeightsBuffer());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, context.animationRenderBuffers().getBonesMatricesBuffer());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, context.animationRenderBuffers().getDestAnimationBuffer());
+        final AnimationRenderBuffers animationRenderBuffers = (AnimationRenderBuffers) context.attributes().get("animationRenderBuffers");
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, animationRenderBuffers.getBindingPosesBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, animationRenderBuffers.getBonesIndicesWeightsBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, animationRenderBuffers.getBonesMatricesBuffer());
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, animationRenderBuffers.getDestAnimationBuffer());
         int dstOffset = 0;
         for (final Model model : context.scene().getModels().values()) {
             if (!model.isAnimated()) {
@@ -89,6 +103,12 @@ public class AnimationRenderer extends ShaderRenderHandler {
         }
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
         super.unbind("Animation");
+    }
+
+    @Override
+    public void cleanup(final RenderContext context) {
+        super.cleanup(context);
+        ((AnimationRenderBuffers) context.attributes().get("animationRenderBuffers")).cleanup();
     }
 
 }

@@ -139,8 +139,8 @@ public class GUIRenderer extends ShaderRenderHandler {
     }
 
     @Override
-    public void cleanup() {
-        super.cleanup();
+    public void cleanup(final RenderContext context) {
+        super.cleanup(context);
         this.texture.cleanup();
     }
 }

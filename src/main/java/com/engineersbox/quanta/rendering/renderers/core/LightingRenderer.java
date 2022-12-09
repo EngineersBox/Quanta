@@ -168,18 +168,28 @@ public class LightingRenderer extends ShaderRenderHandler {
     }
 
     @Override
+    public void setupData(final RenderContext context) {
+        context.attributes().put(
+                "hdrBuffer",
+                new HDRBuffer(context.window())
+        );
+    }
+
+    @Override
     public void render(final RenderContext context) {
+        final GBuffer gBuffer = (GBuffer) context.attributes().get("gBuffer");
+        final HDRBuffer hdrBuffer = (HDRBuffer) context.attributes().get("hdrBuffer");
         lightingRenderStart(
                 context.window(),
-                context.gBuffer(),
-                context.hdrBuffer()
+                gBuffer,
+                hdrBuffer
         );
         super.bind("Lighting");
         final Uniforms uniforms = super.getUniforms("Lighting");
         updateLights(context.scene());
 
         // Bind the G-Buffer textures
-        final int[] textureIds = context.gBuffer().getTextureIds();
+        final int[] textureIds = gBuffer.getTextureIds();
         final int[] bindingTextureIds = new int[]{0,1,2,4};
         for (int i = 0; i < bindingTextureIds.length; i++) {
             glActiveTexture(GL_TEXTURE0 + i);
@@ -400,8 +410,9 @@ public class LightingRenderer extends ShaderRenderHandler {
     }
 
     @Override
-    public void cleanup() {
-        super.cleanup();
+    public void cleanup(final RenderContext context) {
+        super.cleanup(context);
+        ((HDRBuffer) context.attributes().get("hdrBuffer")).cleanup();
         this.quadMesh.cleanup();
     }
 

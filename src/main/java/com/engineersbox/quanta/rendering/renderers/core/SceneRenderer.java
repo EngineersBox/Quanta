@@ -2,11 +2,13 @@ package com.engineersbox.quanta.rendering.renderers.core;
 
 import com.engineersbox.quanta.debug.hooks.VariableHook;
 import com.engineersbox.quanta.rendering.RenderContext;
+import com.engineersbox.quanta.rendering.buffers.GBuffer;
 import com.engineersbox.quanta.rendering.handler.RenderHandler;
 import com.engineersbox.quanta.rendering.handler.RenderPriority;
 import com.engineersbox.quanta.rendering.handler.ShaderRenderHandler;
 import com.engineersbox.quanta.rendering.handler.ShaderStage;
 import com.engineersbox.quanta.rendering.indirect.AnimMeshDrawData;
+import com.engineersbox.quanta.rendering.indirect.AnimationRenderBuffers;
 import com.engineersbox.quanta.rendering.indirect.MeshDrawData;
 import com.engineersbox.quanta.resources.assets.material.Material;
 import com.engineersbox.quanta.resources.assets.material.MaterialCache;
@@ -71,8 +73,9 @@ public class SceneRenderer extends ShaderRenderHandler {
     }
 
     @Override
-    public void cleanup() {
-        super.cleanup();
+    public void cleanup(final RenderContext context) {
+        super.cleanup(context);
+        ((GBuffer) context.attributes().get("gBuffer")).cleanup();
         glDeleteBuffers(this.staticRenderBufferHandle);
         glDeleteBuffers(this.animRenderBufferHandle);
     }
@@ -114,9 +117,11 @@ public class SceneRenderer extends ShaderRenderHandler {
         if (ConfigHandler.CONFIG.engine.glOptions.wireframe) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, context.gBuffer().getGBufferId());
+        final GBuffer gBuffer = (GBuffer) context.attributes().get("gBuffer");
+        final AnimationRenderBuffers animationRenderBuffers = (AnimationRenderBuffers) context.attributes().get("animationRenderBuffers");
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, gBuffer.getGBufferId());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glViewport(0, 0, context.gBuffer().getWidth(), context.gBuffer().getHeight());
+        glViewport(0, 0, gBuffer.getWidth(), gBuffer.getHeight());
         glDisable(GL_BLEND);
         super.bind("Scene");
         final Uniforms uniforms = super.getUniforms("Scene");
@@ -180,7 +185,7 @@ public class SceneRenderer extends ShaderRenderHandler {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.staticRenderBufferHandle);
-        glBindVertexArray(context.animationRenderBuffers().getStaticVaoId());
+        glBindVertexArray(animationRenderBuffers.getStaticVaoId());
         glMultiDrawElementsIndirect(
                 GL_TRIANGLES,
                 GL_UNSIGNED_INT,
@@ -212,7 +217,7 @@ public class SceneRenderer extends ShaderRenderHandler {
             }
         }
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, this.animRenderBufferHandle);
-        glBindVertexArray(context.animationRenderBuffers().getAnimVaoId());
+        glBindVertexArray(animationRenderBuffers.getAnimVaoId());
         glMultiDrawElementsIndirect(
                 GL_TRIANGLES,
                 GL_UNSIGNED_INT,
@@ -266,6 +271,10 @@ public class SceneRenderer extends ShaderRenderHandler {
 
     @Override
     public void setupData(final RenderContext context) {
+        context.attributes().put(
+                "gBuffer",
+                new GBuffer(context.window())
+        );
         final Scene scene = context.scene();
         setupEntitiesData(scene);
         setupStaticCommandBuffer(scene);
