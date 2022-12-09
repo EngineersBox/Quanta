@@ -129,7 +129,6 @@ public class SceneDeserializer extends StdDeserializer<Scene> {
                                      final Scene scene,
                                      final ObjectCodec codec,
                                      final DeserializationContext deserializationContext) {
-        final ModelDeserializer modelDeserializer = new ModelDeserializer(scene);
         final Map<String, Model> modelsMap = StreamSupport.stream(
                         Spliterators.spliteratorUnknownSize(
                                 modelMapFields,
