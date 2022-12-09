@@ -97,7 +97,8 @@ public class Renderer {
                 Function.identity(),
                 (final ShaderRenderHandler handler1, final ShaderRenderHandler handler2) -> {
                     throw new IllegalStateException("Unexpected duplicate shader: " + handler1.getClass().getAnnotation(RenderHandler.class).name());
-                }, LinkedMap::new
+                },
+                LinkedMap::new
         ));
     }
 
@@ -149,18 +150,19 @@ public class Renderer {
         return (final String name, final ShaderRenderHandler handler) -> {
             for (final ShaderProgram shader : handler.provideShaders()) {
                 final ShaderValidationState validationState = shader.validate();
-                if (!validationState.isValid()) {
-                    Renderer.LOGGER.warn(
-                            "[Handler: {} Stage: {}] [Shader: {} Id: {}] Failed to validate shader, skipping {}. Reason: {}",
-                            handler.getName(),
-                            stage,
-                            shader.getName(),
-                            shader.getProgramId(),
-                            name,
-                            validationState.message()
-                    );
-                    return;
+                if (validationState.isValid()) {
+                    continue;
                 }
+                Renderer.LOGGER.warn(
+                        "[Handler: {} Stage: {}] [Shader: {} Id: {}] Failed to validate shader, skipping {}. Reason: {}",
+                        handler.getName(),
+                        stage,
+                        shader.getName(),
+                        shader.getProgramId(),
+                        name,
+                        validationState.message()
+                );
+                return;
             }
 //            Renderer.LOGGER.debug("[Shader: {}, Stage: {}] Invoking render handler {}", shader.program(), stage, name);
             handler.render(context);
