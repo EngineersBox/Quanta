@@ -44,7 +44,7 @@ void main() {
     buffPosition = outViewPosition;
     Material material = materials[outMaterialIdx];
     vec4 text_color = texture(textureSampler[material.textureIdx], outTextCoord);
-    if (text_color.a < 0.1) {
+    if (text_color.a < 0.01) {
         discard;
     }
     vec4 diffuse = text_color + material.diffuse;
