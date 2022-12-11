@@ -25,3 +25,4 @@
 * Fix error in `LightingRenderer` and associated shader: `GL_INVALID_OPERATION error generated. Wrong component type or count`
 * Add JavaDocs to all implementations
 * Add support for terrain save/load
+* Test for `GL_ARB_shading_language_include` presence and add a default handler to manually pre-process includes if not available
