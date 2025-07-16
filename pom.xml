@@ -74,148 +74,148 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>${commons-collections.version}</version>
+            <version>4.4</version>
         </dependency>
         <!-- HOCON Typesafe -->
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
-            <version>${typesafe-config.version}</version>
+            <version>1.4.2</version>
         </dependency>
         <!-- Eclipse Collections API -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
-            <version>${eclipse.colections.version}</version>
+            <version>11.1.0</version>
         </dependency>
         <!-- Eclipse Collections -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections</artifactId>
-            <version>${eclipse.colections.version}</version>
+            <version>11.1.0</version>
         </dependency>
         <!-- JAXB API -->
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>${jaxb-api.version}</version>
+            <version>2.4.0-b180830.0359</version>
         </dependency>
         <!-- JAXB Runtime -->
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>${jaxb-runtime.version}</version>
+            <version>4.0.0</version>
             <scope>runtime</scope>
         </dependency>
         <!-- Jackson FasterXML -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>2.15.0</version>
         </dependency>
         <!-- Jupiter API for writing tests -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>${junit.jupiter.version}</version>
+            <version>5.9.0</version>
             <scope>test</scope>
         </dependency>
         <!-- Apache Commons Utils -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>${commons-lang3.version}</version>
+            <version>3.12.0</version>
         </dependency>
         <!-- Apache Commons Math -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
-            <version>${commons-math3.version}</version>
+            <version>3.6.1</version>
         </dependency>
 
         <!-- log4j IO Streams -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-iostreams</artifactId>
-            <version>${log4j-core.version}</version>
+            <version>2.19.0</version>
         </dependency>
         <!-- log4j api -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
-            <version>${log4j-core.version}</version>
+            <version>2.19.0</version>
         </dependency>
         <!-- log4j core -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>${log4j-core.version}</version>
+            <version>2.19.0</version>
         </dependency>
         <!-- Maven Shade -->
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>${maven-shade.version}</version>
+            <version>3.6.0</version>
         </dependency>
         <!-- LWJGL 3 -->
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-glfw</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.0</version>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-opengl</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.1</version>
         </dependency>
         <!-- Natives -->
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.0</version>
             <classifier>${native.target}</classifier>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-opengl</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.1</version>
             <classifier>${native.target}</classifier>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-glfw</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.0</version>
             <classifier>${native.target}</classifier>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-stb</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-stb</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.1</version>
             <classifier>${native.target}</classifier>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-assimp</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.1</version>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-assimp</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.3.1</version>
             <classifier>${native.target}</classifier>
             <scope>runtime</scope>
         </dependency>
@@ -223,12 +223,12 @@
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-openal</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.lwjgl</groupId>
             <artifactId>lwjgl-openal</artifactId>
-            <version>${lwjgl.version}</version>
+            <version>3.1.0</version>
             <classifier>${native.target}</classifier>
             <scope>runtime</scope>
         </dependency>
@@ -236,7 +236,7 @@
         <dependency>
             <groupId>io.github.spair</groupId>
             <artifactId>imgui-java-binding</artifactId>
-            <version>${imgui.version}</version>
+            <version>1.86.4</version>
         </dependency>
         <dependency>
             <groupId>io.github.spair</groupId>
@@ -247,46 +247,46 @@
         <dependency>
             <groupId>io.github.spair</groupId>
             <artifactId>imgui-java-lwjgl3</artifactId>
-            <version>${imgui.version}</version>
+            <version>1.86.4</version>
         </dependency>
         <!-- JOML -->
         <dependency>
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
-            <version>${joml.version}</version>
+            <version>1.10.4</version>
         </dependency>
         <!-- Reflection Utils -->
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
-            <version>${reflections.version}</version>
+            <version>0.10.2</version>
         </dependency>
         <!-- AspectJ -->
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <version>${aspectj.version}</version>
+            <version>1.9.9</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
-            <version>${aspectj.version}</version>
+            <version>1.9.9</version>
         </dependency>
         <!-- Apache Commons Geometry -->
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-geometry-core</artifactId>
-            <version>${commons-geometry.version}</version>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-geometry-io-euclidean</artifactId>
-            <version>${commons-geometry.version}</version>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-geometry-io-core</artifactId>
-            <version>${commons-geometry.version}</version>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 
@@ -312,7 +312,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>${maven-shade-plugin.version}</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
